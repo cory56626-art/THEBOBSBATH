@@ -1,0 +1,1159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11100f">
+  <title>FNAF-Verse | Animatronic Archive</title>
+  <style>
+    :root {
+      --ink: #f5efe0;
+      --muted: #b6aea0;
+      --paper: #e4d6bb;
+      --gold: #c9a66b;
+      --rust: #a94b3e;
+      --night: #11100f;
+      --surface: rgba(25, 22, 20, .78);
+      --line: rgba(236, 221, 190, .17);
+      --shadow: 0 30px 80px rgba(0, 0, 0, .48);
+      --section-wash: linear-gradient(135deg, rgba(35, 25, 19, .9), rgba(10, 12, 12, .98));
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      background: var(--night);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -3;
+      background: var(--section-wash);
+      transition: background 900ms ease;
+    }
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      opacity: .38;
+      background-image:
+        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.013) 1px, transparent 1px);
+      background-size: 5px 5px, 5px 5px;
+      mix-blend-mode: screen;
+    }
+    body[data-game="1"] { --section-wash: linear-gradient(118deg, #1f1812 0%, #0e0f0e 52%, #2d2118 100%); }
+    body[data-game="2"] { --section-wash: linear-gradient(118deg, #17222a 0%, #101213 52%, #20313a 100%); }
+    body[data-game="3"] { --section-wash: linear-gradient(118deg, #192418 0%, #0d110f 52%, #26321e 100%); }
+    body[data-game="4"] { --section-wash: linear-gradient(118deg, #21161b 0%, #08090d 52%, #211421 100%); }
+
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .landing {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 66% 45%, rgba(212, 162, 96, .22), transparent 13rem),
+        linear-gradient(90deg, rgba(7,7,7,.94), rgba(15,12,10,.47) 52%, rgba(7,7,7,.92)),
+        url("https://freddy-fazbears-pizza.fandom.com/wiki/Special:FilePath/The%20Office.png?width=1920") center / cover,
+        #17120f;
+      transition: opacity 700ms ease, visibility 700ms ease;
+    }
+    .landing::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: .52;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.78)),
+        repeating-linear-gradient(0deg, rgba(255,255,255,.024) 0 1px, transparent 1px 5px);
+    }
+    .landing.exit {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .office-card {
+      position: relative;
+      width: min(1120px, calc(100vw - 34px));
+      min-height: min(700px, calc(100vh - 42px));
+      display: grid;
+      align-items: center;
+      grid-template-columns: 1fr minmax(260px, .62fr);
+      gap: 2.5rem;
+      padding: clamp(2rem, 7vw, 7rem);
+      border: 1px solid rgba(240, 220, 182, .2);
+      border-radius: 28px;
+      background: linear-gradient(110deg, rgba(15,13,12,.85), rgba(27,20,16,.43));
+      box-shadow: 0 40px 100px rgba(0,0,0,.62);
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .office-card::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 23%;
+      z-index: -1;
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,.76));
+    }
+    .landing-copy { max-width: 590px; }
+    .kicker, .eyebrow {
+      margin: 0 0 .72rem;
+      color: var(--gold);
+      font-size: .73rem;
+      font-weight: 800;
+      letter-spacing: .17em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      max-width: 9ch;
+      margin-bottom: 1.15rem;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(3.7rem, 9vw, 8.8rem);
+      font-weight: 500;
+      letter-spacing: -.075em;
+      line-height: .82;
+    }
+    .landing-copy > p:not(.kicker) {
+      max-width: 42ch;
+      margin-bottom: 1.6rem;
+      color: #d7c9ae;
+      font-size: clamp(.96rem, 1.6vw, 1.15rem);
+      line-height: 1.7;
+    }
+    .landing-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+    .primary-button, .quiet-button {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: .8rem 1.05rem;
+      color: var(--ink);
+      background: rgba(248,239,218,.08);
+      font-weight: 750;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+    .primary-button {
+      border-color: rgba(211, 169, 102, .58);
+      background: var(--gold);
+      color: #20170f;
+    }
+    .primary-button:hover, .quiet-button:hover { transform: translateY(-2px); }
+    .quiet-button:hover { border-color: rgba(239,215,167,.5); background: rgba(248,239,218,.14); }
+    .poster-wrap {
+      position: relative;
+      justify-self: end;
+      width: min(100%, 348px);
+      aspect-ratio: .72;
+      padding: 18px;
+      border: 7px solid #3c2f26;
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.13), transparent 35%),
+        radial-gradient(circle at 50% 31%, #8a4032, #2d1b19 55%, #100e0e);
+      box-shadow: 23px 28px 46px rgba(0,0,0,.53), inset 0 0 0 1px rgba(255,244,225,.21);
+      transform: rotate(3deg);
+    }
+    .poster-wrap::before {
+      content: "FREDDY FAZBEAR'S";
+      position: absolute;
+      top: 15px;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      color: #f0dfb9;
+      font-family: Georgia, serif;
+      font-size: clamp(.72rem, 1.4vw, 1rem);
+      font-weight: 900;
+      letter-spacing: .13em;
+      text-align: center;
+      text-shadow: 0 2px 4px #000;
+    }
+    .poster-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center bottom;
+      filter: sepia(.2) contrast(1.2) drop-shadow(0 20px 17px rgba(0,0,0,.63));
+      opacity: .98;
+    }
+    .freddy-nose {
+      position: absolute;
+      left: 50%;
+      top: 44.6%;
+      z-index: 4;
+      width: 31px;
+      height: 24px;
+      border: 2px solid rgba(255,235,183,.82);
+      border-radius: 50%;
+      background: radial-gradient(circle at 37% 30%, #f1d4a0 0 7%, #8f6352 16%, #1c1311 65%);
+      box-shadow: 0 0 0 6px rgba(248,219,161,.11), 0 0 30px rgba(251,209,125,.45);
+      transform: translateX(-50%);
+      animation: nosePulse 1.8s ease-in-out infinite;
+    }
+    .freddy-nose:hover { animation-duration: .45s; }
+    .nose-hint {
+      position: absolute;
+      left: 50%;
+      bottom: -1.9rem;
+      width: max-content;
+      color: #f3d59c;
+      font-size: .75rem;
+      font-weight: 750;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      transform: translateX(-50%);
+    }
+    @keyframes nosePulse {
+      0%, 100% { box-shadow: 0 0 0 6px rgba(248,219,161,.08), 0 0 15px rgba(251,209,125,.22); }
+      50% { box-shadow: 0 0 0 11px rgba(248,219,161,.18), 0 0 31px rgba(251,209,125,.54); }
+    }
+
+    .jump-scare {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      opacity: 0;
+      background: #050404;
+      transition: opacity 90ms linear;
+    }
+    .jump-scare.active { opacity: 1; }
+    .jump-scare.active .jump-face { animation: faceHit 790ms cubic-bezier(.1,.8,.2,1) both; }
+    .jump-face {
+      position: relative;
+      width: min(73vw, 720px);
+      aspect-ratio: 1;
+      border-radius: 46% 46% 42% 42%;
+      background:
+        radial-gradient(ellipse at 50% 61%, #150804 0 18%, transparent 18.5%),
+        radial-gradient(ellipse at 34% 38%, #e7dfca 0 5%, #210f09 5.5% 13%, transparent 13.5%),
+        radial-gradient(ellipse at 66% 38%, #e7dfca 0 5%, #210f09 5.5% 13%, transparent 13.5%),
+        radial-gradient(circle at 50% 17%, #9b5f3e 0 10%, transparent 10.5%),
+        radial-gradient(ellipse at 50% 50%, #a75f3d 0 56%, #35180f 57% 74%, #080707 75%);
+      filter: contrast(1.48) saturate(.82) drop-shadow(0 0 70px #9f190e);
+    }
+    .jump-face::before, .jump-face::after {
+      content: "";
+      position: absolute;
+      top: 31%;
+      width: 23%;
+      height: 21%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 50%, #ffdf9b 0 11%, #0e0504 12% 52%, #f3e9cc 54% 59%, transparent 60%);
+    }
+    .jump-face::before { left: 20%; }
+    .jump-face::after { right: 20%; }
+    @keyframes faceHit {
+      0% { transform: scale(.08) rotate(-8deg); filter: brightness(.2) contrast(2); }
+      25% { transform: scale(1.2) rotate(3deg); }
+      52% { transform: scale(.94) rotate(-1deg); }
+      100% { transform: scale(1.05); filter: contrast(1.6) saturate(.8) drop-shadow(0 0 70px #9f190e); }
+    }
+
+    .site-shell {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 700ms ease 350ms, transform 700ms ease 350ms;
+    }
+    body.entered .site-shell { opacity: 1; transform: none; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 15;
+      display: grid;
+      grid-template-columns: auto minmax(170px, 1fr) auto;
+      gap: 1rem;
+      align-items: center;
+      min-height: 70px;
+      padding: .8rem clamp(1rem, 3vw, 3.2rem);
+      border-bottom: 1px solid rgba(243,230,202,.12);
+      background: rgba(12,12,12,.72);
+      backdrop-filter: blur(18px);
+    }
+    .brand {
+      color: #f4e6c8;
+      font-family: Georgia, serif;
+      font-size: 1.05rem;
+      letter-spacing: .02em;
+      white-space: nowrap;
+    }
+    .brand span { color: var(--gold); }
+    .filter-row {
+      display: flex;
+      justify-content: center;
+      gap: .45rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter-button {
+      flex: 0 0 auto;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      padding: .43rem .69rem;
+      color: #bdb4a6;
+      background: transparent;
+      font-size: .79rem;
+      font-weight: 750;
+    }
+    .filter-button[aria-pressed="true"] {
+      border-color: rgba(214,176,113,.55);
+      color: #22180e;
+      background: var(--gold);
+    }
+    .sound-toggle {
+      border: 1px solid rgba(220,189,135,.35);
+      border-radius: 999px;
+      padding: .5rem .75rem;
+      color: #e8d6b5;
+      background: rgba(244,229,194,.08);
+      font-size: .78rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .archive-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, .8fr);
+      gap: 2rem;
+      align-items: end;
+      width: min(1260px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: clamp(5rem, 10vw, 9rem) 0 clamp(3rem, 7vw, 6rem);
+    }
+    .archive-head h2 {
+      max-width: 10ch;
+      margin-bottom: 1rem;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(3rem, 8vw, 7.5rem);
+      font-weight: 500;
+      letter-spacing: -.07em;
+      line-height: .84;
+    }
+    .archive-head p:not(.kicker) {
+      max-width: 57ch;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+    .search-panel {
+      position: relative;
+      padding: 1.15rem;
+      border: 1px solid rgba(233,217,184,.19);
+      border-radius: 20px;
+      background: rgba(22,20,18,.68);
+      box-shadow: var(--shadow);
+    }
+    .search-panel label {
+      display: block;
+      margin-bottom: .58rem;
+      color: var(--paper);
+      font-size: .78rem;
+      font-weight: 750;
+    }
+    .search-line {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: .55rem;
+      align-items: center;
+      padding: .34rem .45rem .34rem .85rem;
+      border: 1px solid rgba(226,207,170,.23);
+      border-radius: 13px;
+      background: #151310;
+    }
+    #character-search {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      color: var(--ink);
+      background: transparent;
+    }
+    #character-search::placeholder { color: #847b6e; }
+    .type-filter {
+      max-width: 122px;
+      border: 1px solid rgba(226,207,170,.25);
+      border-radius: 9px;
+      padding: .4rem .3rem;
+      color: #dfcfac;
+      background: #252018;
+      font-size: .72rem;
+      font-weight: 700;
+    }
+    .search-results {
+      position: absolute;
+      right: 1.15rem;
+      left: 1.15rem;
+      top: calc(100% - .6rem);
+      z-index: 5;
+      display: none;
+      overflow: hidden;
+      border: 1px solid rgba(235,210,166,.25);
+      border-radius: 14px;
+      background: #1b1814;
+      box-shadow: var(--shadow);
+    }
+    .search-results.open { display: block; }
+    .search-result {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      border: 0;
+      border-bottom: 1px solid rgba(235,210,166,.12);
+      padding: .78rem .85rem;
+      color: #f5ead4;
+      background: transparent;
+      text-align: left;
+    }
+    .search-result:last-child { border-bottom: 0; }
+    .search-result:hover { background: rgba(219,181,111,.12); }
+    .search-result small { color: #bcae95; }
+    .note {
+      position: fixed;
+      z-index: 35;
+      color: #e7c580;
+      font-size: 1.25rem;
+      font-weight: 900;
+      pointer-events: none;
+      animation: noteFly 900ms ease-out forwards;
+    }
+    @keyframes noteFly {
+      from { opacity: 0; transform: translate(-50%, 0) rotate(-14deg) scale(.55); }
+      20% { opacity: 1; }
+      to { opacity: 0; transform: translate(var(--drift), -92px) rotate(18deg) scale(1.16); }
+    }
+
+    .game-section {
+      position: relative;
+      width: min(1260px, calc(100% - 2rem));
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: clamp(3rem, 7vw, 6rem) 0;
+      scroll-margin-top: 84px;
+    }
+    .game-intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(220px, .55fr);
+      gap: 2rem;
+      align-items: end;
+      padding: 0 0 clamp(2.5rem, 6vw, 4.8rem);
+      border-bottom: 1px solid var(--line);
+    }
+    .game-intro h2 {
+      margin-bottom: .9rem;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(3rem, 7vw, 6rem);
+      font-weight: 500;
+      letter-spacing: -.07em;
+      line-height: .86;
+    }
+    .game-intro p { max-width: 52ch; color: #c2b8a7; line-height: 1.72; }
+    .game-stamp {
+      justify-self: end;
+      width: 100%;
+      max-width: 240px;
+      padding: 1rem;
+      border-top: 2px solid var(--gold);
+      color: #cfc0a4;
+      background: rgba(8,8,8,.22);
+      font-size: .85rem;
+      line-height: 1.55;
+    }
+    .character-grid {
+      display: grid;
+      gap: 1.25rem;
+      padding-top: 1.4rem;
+    }
+    .character-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1.12fr) minmax(260px, .74fr);
+      min-height: 410px;
+      overflow: hidden;
+      border: 1px solid rgba(236,219,185,.16);
+      border-radius: 24px;
+      background:
+        linear-gradient(90deg, rgba(30,26,22,.92), rgba(18,17,15,.72)),
+        radial-gradient(circle at 80% 45%, var(--accent-glow), transparent 33%);
+      box-shadow: 0 18px 40px rgba(0,0,0,.26);
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 680ms ease, transform 680ms cubic-bezier(.2,.7,.2,1), border-color 250ms ease;
+    }
+    .character-card.in-view { opacity: 1; transform: translateY(0); }
+    .character-card:hover { border-color: rgba(237,198,125,.42); }
+    .character-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(1.7rem, 4vw, 4rem);
+    }
+    .character-copy h3 {
+      margin-bottom: 1rem;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2.1rem, 4.5vw, 4.1rem);
+      font-weight: 500;
+      letter-spacing: -.06em;
+      line-height: .92;
+    }
+    .character-copy .description { max-width: 56ch; color: #dfd3be; font-size: 1rem; line-height: 1.72; }
+    .character-copy .lore {
+      max-width: 62ch;
+      margin: .25rem 0 0;
+      color: #9f9587;
+      font-size: .85rem;
+      line-height: 1.65;
+    }
+    .tag-row { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: 1.4rem; }
+    .tag {
+      border: 1px solid rgba(236,219,185,.18);
+      border-radius: 999px;
+      padding: .38rem .56rem;
+      color: #d7c6a6;
+      background: rgba(248,235,207,.05);
+      font-size: .69rem;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+    .portrait-stage {
+      position: relative;
+      display: grid;
+      place-items: end center;
+      min-height: 330px;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 50% 80%, var(--accent-glow), transparent 42%),
+        linear-gradient(145deg, rgba(255,255,255,.035), transparent 50%);
+    }
+    .portrait-stage::before {
+      content: "";
+      position: absolute;
+      right: 8%;
+      bottom: 6%;
+      width: 62%;
+      aspect-ratio: 1;
+      border: 1px solid rgba(241,223,186,.19);
+      border-radius: 50%;
+      box-shadow: inset 0 0 48px var(--accent-glow);
+      opacity: .68;
+    }
+    .portrait-stage::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 28%;
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,.58));
+    }
+    .portrait {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 430px);
+      max-height: 390px;
+      object-fit: contain;
+      object-position: center bottom;
+      filter: drop-shadow(18px 25px 19px rgba(0,0,0,.74)) drop-shadow(0 0 27px var(--accent-glow));
+      transform: perspective(900px) rotateY(-5deg) translateY(7px);
+      transition: transform 450ms cubic-bezier(.2,.8,.2,1), filter 450ms ease;
+    }
+    .character-card:hover .portrait {
+      filter: drop-shadow(23px 28px 22px rgba(0,0,0,.78)) drop-shadow(0 0 34px var(--accent-glow));
+      transform: perspective(900px) rotateY(-1deg) translateY(-8px) scale(1.025);
+    }
+    .fallback-art {
+      position: relative;
+      z-index: 1;
+      width: min(77%, 300px);
+      aspect-ratio: .75;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      border: 1px solid rgba(255,232,188,.34);
+      border-radius: 49% 49% 33% 33%;
+      color: #e9d5ac;
+      background:
+        radial-gradient(circle at 37% 36%, #f6dfb0 0 5%, #150c09 6% 18%, transparent 19%),
+        radial-gradient(circle at 63% 36%, #f6dfb0 0 5%, #150c09 6% 18%, transparent 19%),
+        radial-gradient(ellipse at 50% 46%, #7e4e35 0 54%, #261512 55% 73%, transparent 74%);
+      box-shadow: 20px 28px 37px rgba(0,0,0,.6), 0 0 38px var(--accent-glow);
+      font-family: Georgia, serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-align: center;
+      text-shadow: 0 2px 7px #000;
+      transform: perspective(900px) rotateY(-5deg);
+    }
+    .character-card[hidden] { display: none; }
+
+    .footer {
+      width: min(1260px, calc(100% - 2rem));
+      display: grid;
+      gap: .7rem;
+      margin: 0 auto;
+      padding: 3rem 0 4rem;
+      border-top: 1px solid var(--line);
+      color: #a69a87;
+      font-size: .8rem;
+      line-height: 1.6;
+    }
+    .footer strong { color: #e1c797; }
+
+    @media (max-width: 820px) {
+      .office-card, .archive-head, .game-intro, .character-card {
+        grid-template-columns: 1fr;
+      }
+      .office-card { align-content: center; padding: 2rem; }
+      .poster-wrap { justify-self: center; width: min(250px, 66vw); }
+      .topbar { grid-template-columns: 1fr auto; }
+      .filter-row { grid-column: 1 / -1; grid-row: 2; justify-content: flex-start; }
+      .archive-head { padding-top: 4.5rem; }
+      .game-stamp { justify-self: start; }
+      .character-card { min-height: 0; }
+      .portrait-stage { min-height: 310px; order: -1; }
+      .character-copy { padding-top: 1.7rem; }
+    }
+    @media (max-width: 510px) {
+      .landing-copy { padding-top: 1rem; }
+      .landing-copy h1 { font-size: clamp(3.35rem, 19vw, 5.4rem); }
+      .office-card { min-height: 0; padding: 1.5rem; }
+      .poster-wrap { width: 200px; }
+      .nose-hint { bottom: -1.5rem; font-size: .62rem; }
+      .sound-toggle { padding: .46rem .58rem; font-size: .7rem; }
+      .archive-head, .game-section, .footer { width: min(100% - 1.25rem, 1260px); }
+      .character-copy h3 { font-size: 2.45rem; }
+      .portrait-stage { min-height: 270px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body data-game="1">
+  <div class="landing" id="landing">
+    <section class="office-card" aria-label="FNAF-Verse introduction">
+      <div class="landing-copy">
+        <p class="kicker">Unofficial character archive · 1987–1993</p>
+        <h1>Welcome to the FNAF-Verse!</h1>
+        <p>Start in the security office. Find Freddy on the poster, then touch his nose to unlock the archive. Headphones are recommended.</p>
+        <div class="landing-actions">
+          <button class="primary-button" id="hint-button" type="button">Find Freddy's nose</button>
+          <button class="quiet-button" id="skip-intro" type="button">Skip intro</button>
+        </div>
+      </div>
+      <div class="poster-wrap" aria-label="Freddy Fazbear poster">
+        <img class="poster-image" id="poster-image" alt="Freddy Fazbear on a vintage office poster">
+        <button class="freddy-nose" id="freddy-nose" type="button" aria-label="Press Freddy's nose"></button>
+        <span class="nose-hint">Press the nose</span>
+      </div>
+    </section>
+  </div>
+
+  <div class="jump-scare" id="jump-scare" aria-hidden="true"><div class="jump-face" aria-hidden="true"></div></div>
+
+  <main class="site-shell" id="archive">
+    <header class="topbar">
+      <a class="brand" href="#top">FNAF<span>-Verse</span></a>
+      <nav class="filter-row" aria-label="Filter by game">
+        <button class="filter-button" type="button" data-game-filter="all" aria-pressed="true">All</button>
+        <button class="filter-button" type="button" data-game-filter="1" aria-pressed="false">FNAF 1</button>
+        <button class="filter-button" type="button" data-game-filter="2" aria-pressed="false">FNAF 2</button>
+        <button class="filter-button" type="button" data-game-filter="3" aria-pressed="false">FNAF 3</button>
+        <button class="filter-button" type="button" data-game-filter="4" aria-pressed="false">FNAF 4</button>
+      </nav>
+      <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="false">Enable sound</button>
+    </header>
+
+    <section class="archive-head" id="top">
+      <div>
+        <p class="kicker">The animatronic archive</p>
+        <h2>Every shift has a story.</h2>
+        <p>Browse the main animatronics of Five Nights at Freddy's 1–4 in release order. Each profile is a concise, static fan-reference summary, with the original character renders loaded from the community wiki when available.</p>
+      </div>
+      <div class="search-panel">
+        <label for="character-search">Find an animatronic</label>
+        <div class="search-line">
+          <input id="character-search" type="search" autocomplete="off" placeholder="Try “Mangle” or “Nightmare”">
+          <select class="type-filter" id="type-filter" aria-label="Filter by animatronic type">
+            <option value="all">All types</option>
+            <option value="classic">Classic</option>
+            <option value="toy">Toys</option>
+            <option value="withered">Withered</option>
+            <option value="phantom">Phantoms</option>
+            <option value="nightmare">Nightmares</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="search-results" id="search-results" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <div id="sections"></div>
+
+    <footer class="footer">
+      <strong>FNAF-Verse is an unofficial fan-made character archive.</strong>
+      <span>Five Nights at Freddy's and its characters belong to Scott Cawthon. Character information is presented as original short summaries inspired by community reference material. Use only assets you have permission to publish.</span>
+    </footer>
+  </main>
+
+  <script>
+    (function () {
+      var WIKI_ROOT = "https://freddy-fazbears-pizza.fandom.com/wiki/Special:FilePath/";
+      var gameInfo = {
+        1: {
+          title: "Five Nights at Freddy's",
+          year: "2014 · The original night shift",
+          copy: "A cramped pizzeria office, limited power, and a small cast whose familiar mascot faces become threatening after dark.",
+          glow: "rgba(201, 133, 75, .36)"
+        },
+        2: {
+          title: "Five Nights at Freddy's 2",
+          year: "1987 · New faces, old suits",
+          copy: "A larger roster mixes glossy Toy models with damaged predecessors, making the mask-and-flashlight routine a frantic balancing act.",
+          glow: "rgba(83, 157, 183, .32)"
+        },
+        3: {
+          title: "Five Nights at Freddy's 3",
+          year: "2023 · The attraction opens",
+          copy: "Thirty years later, one physical threat stalks Fazbear's Fright while phantom encounters disrupt the tools that keep you alive.",
+          glow: "rgba(113, 158, 84, .34)"
+        },
+        4: {
+          title: "Five Nights at Freddy's 4",
+          year: "1983 · The bedroom",
+          copy: "The series shifts into a nightmare bedroom, replacing cameras with sound, doors, closets, and silhouettes that demand patience.",
+          glow: "rgba(153, 71, 91, .34)"
+        }
+      };
+
+      var characters = [
+        { game: 1, name: "Freddy Fazbear", type: "classic", file: "Freddy_Fazbear.png", desc: "The brown bear mascot and lead singer of the original band. Freddy becomes more active as the week progresses, using darkness and distraction to close in.", lore: "Signature traits: top hat, bow tie, stage microphone." },
+        { game: 1, name: "Bonnie", type: "classic", file: "Bonnie.png", desc: "The purple rabbit guitarist is a relentless left-side threat. His blank stare and sudden appearances made him one of the original game's most memorable antagonists.", lore: "Signature traits: red bow tie, guitar, left hall route." },
+        { game: 1, name: "Chica", type: "classic", file: "Chica.png", desc: "The yellow chicken performer approaches from the right side of the office, often accompanied by the eerie sight of her cupcake.", lore: "Signature traits: bib, cupcake, kitchen audio cue." },
+        { game: 1, name: "Foxy", type: "classic", file: "Foxy.png", desc: "The pirate fox waits behind Pirate Cove's curtain. Ignoring his camera too long lets him sprint through the building, punishing poor monitoring.", lore: "Signature traits: hook, eyepatch, Pirate Cove sprint." },
+        { game: 1, name: "Golden Freddy", type: "other", file: "Golden_Freddy.png", desc: "A rare, ghostlike yellow bear manifestation whose appearance can abruptly overwhelm the office. He is one of the series' earliest major mysteries.", lore: "Signature traits: hallucination, empty costume, sudden apparition." },
+
+        { game: 2, name: "Toy Freddy", type: "toy", file: "Toy_Freddy.png", desc: "A polished bear model built for the newer restaurant. Despite the friendly plastic design, he becomes a direct threat through the central office approach.", lore: "Signature traits: plastic shell, black bow tie, office approach." },
+        { game: 2, name: "Toy Bonnie", type: "toy", file: "Toy_Bonnie.png", desc: "The sleek blue rabbit is fast, persistent, and recognizable by his bright eyes and red cheeks. The Freddy mask is his primary counter.", lore: "Signature traits: glossy finish, red cheeks, mask counter." },
+        { game: 2, name: "Toy Chica", type: "toy", file: "Toy_Chica.png", desc: "Toy Chica loses her beak before attacking, revealing a more unsettling expression beneath her cute outer design.", lore: "Signature traits: removable beak, pink cheeks, party outfit." },
+        { game: 2, name: "Mangle", type: "toy", file: "Mangle.png", desc: "A constantly dismantled and reassembled fox-like Toy model. Mangle's radio static is an important warning that it is already close.", lore: "Signature traits: exposed endoskeleton, ceiling movement, static." },
+        { game: 2, name: "Balloon Boy", type: "toy", file: "Balloon_Boy.png", desc: "Balloon Boy does not deliver a direct jumpscare, but he drains the player's flashlight, creating an opening for other threats.", lore: "Signature traits: balloons, laugh, flashlight sabotage." },
+        { game: 2, name: "The Puppet", type: "other", file: "The_Puppet.png", desc: "The Puppet is tied to the Prize Corner music box. Letting the tune run out is one of the most dangerous failures in the game.", lore: "Signature traits: striped limbs, music box, Prize Corner." },
+        { game: 2, name: "Withered Freddy", type: "withered", file: "Withered_Freddy.png", desc: "A damaged older bear suit repurposed for parts. His torn design exposes the aging machinery underneath the familiar mascot shell.", lore: "Signature traits: missing lower jaw, older model, mask counter." },
+        { game: 2, name: "Withered Bonnie", type: "withered", file: "Withered_Bonnie.png", desc: "A heavily damaged rabbit whose missing face and arm make his silhouette one of the most iconic in the series.", lore: "Signature traits: faceless head, exposed wiring, left vent." },
+        { game: 2, name: "Withered Chica", type: "withered", file: "Withered_Chica.png", desc: "A broken chicken suit with a wide-open mouth and dangling jaw. Her aggressive vent appearances require fast mask timing.", lore: "Signature traits: exposed jaw, torn bib, vent route." },
+        { game: 2, name: "Withered Foxy", type: "withered", file: "Withered_Foxy.png", desc: "The worn pirate fox is one of the few threats the Freddy mask cannot fool, so the flashlight must drive him back.", lore: "Signature traits: flashlight counter, hook, torn red fur." },
+        { game: 2, name: "Golden Freddy", type: "other", file: "Golden_Freddy.png", desc: "The yellow bear returns in a more aggressive form, appearing in the office and forcing a quick camera response.", lore: "Signature traits: office apparition, empty suit, camera counter." },
+        { game: 2, name: "JJ", type: "other", file: "JJ.png", desc: "A rare, blue counterpart to Balloon Boy. JJ usually appears as an unusual office easter egg rather than a standard attack cycle.", lore: "Signature traits: rare appearance, blue color, hidden easter egg." },
+        { game: 2, name: "RWQFSFASXC", type: "other", file: "RWQFSFASXC.png", desc: "Often called Shadow Bonnie, this shadowy rabbit is a rare paranormal encounter whose strange name reinforces the series' hidden-lore tone.", lore: "Signature traits: shadow silhouette, rare encounter, glitchlike presence." },
+        { game: 2, name: "Shadow Freddy", type: "other", file: "Shadow_Freddy.png", desc: "A shadowy version of Freddy that appears as an uncommon room sighting. Like other shadow characters, his role is deliberately ambiguous.", lore: "Signature traits: purple-black silhouette, rare sighting, mystery." },
+
+        { game: 3, name: "Springtrap", type: "other", file: "Springtrap.png", desc: "The only tangible hunter in Fazbear's Fright. Springtrap uses the building's vents and responds to audio lures, making positioning crucial.", lore: "Signature traits: decayed rabbit suit, vent routes, audio lure." },
+        { game: 3, name: "Phantom Freddy", type: "phantom", file: "Phantom_Freddy.png", desc: "A burned-looking phantom that crosses the office window. Staring at him disrupts the systems needed to control Springtrap.", lore: "Signature traits: window appearance, ventilation error, distraction." },
+        { game: 3, name: "Phantom Chica", type: "phantom", file: "Phantom_Chica.png", desc: "Phantom Chica appears on an arcade machine and punishes the player for prolonged attention with a system-disrupting scare.", lore: "Signature traits: arcade cameo, scorched design, camera hazard." },
+        { game: 3, name: "Phantom Foxy", type: "phantom", file: "Phantom_Foxy.png", desc: "A damaged phantom fox who emerges in the office. Looking away quickly is the best way to avoid the resulting systems failure.", lore: "Signature traits: office apparition, burn damage, visual discipline." },
+        { game: 3, name: "Phantom Mangle", type: "phantom", file: "Phantom_Mangle.png", desc: "Phantom Mangle appears on the camera feeds and creates a disorienting scare that leaves the surveillance equipment compromised.", lore: "Signature traits: camera apparition, static, broken systems." },
+        { game: 3, name: "Phantom Balloon Boy", type: "phantom", file: "Phantom_BB.png", desc: "This burnt, ghostlike version of Balloon Boy can appear near the office camera system and cause an error state when noticed.", lore: "Signature traits: camera lure, burnt face, maintenance pressure." },
+        { game: 3, name: "Phantom Puppet", type: "phantom", file: "Phantom_Puppet.png", desc: "The phantom form of the Puppet becomes a massive visual interruption, often giving Springtrap time to reposition.", lore: "Signature traits: large face, hallucination, system disruption." },
+
+        { game: 4, name: "Nightmare Freddy", type: "nightmare", file: "Nightmare_Freddy.png", desc: "A nightmare version of Freddy accompanied by Freddles. Letting the miniature creatures gather turns the bed into an immediate danger.", lore: "Signature traits: Freddles, bed threat, sharp teeth." },
+        { game: 4, name: "Nightmare Bonnie", type: "nightmare", file: "Nightmare_Bonnie.png", desc: "The nightmare rabbit stalks the left bedroom door. Careful listening is needed to know when to shut the door instead of using the flashlight.", lore: "Signature traits: left door, breathing cue, oversized claws." },
+        { game: 4, name: "Nightmare Chica", type: "nightmare", file: "Nightmare_Chica.png", desc: "Nightmare Chica hunts from the right door while her nightmare cupcake can threaten the bed. Both demand attention to sound and timing.", lore: "Signature traits: right door, nightmare cupcake, breathing cue." },
+        { game: 4, name: "Nightmare Foxy", type: "nightmare", file: "Nightmare_Foxy.png", desc: "Nightmare Foxy gradually takes over the closet. The player must use the light and door control before his progression becomes irreversible.", lore: "Signature traits: closet stages, hook, fast escalation." },
+        { game: 4, name: "Plushtrap", type: "nightmare", file: "Plushtrap.png", desc: "A tiny, unsettling springlock creature featured in the hallway challenge. Precise flashlight timing is needed to stop him at the right mark.", lore: "Signature traits: hallway minigame, flashlight timing, springlock form." },
+        { game: 4, name: "Nightmare Fredbear", type: "nightmare", file: "Nightmare_Fredbear.png", desc: "A towering nightmare bear that can attack from nearly every location in the bedroom. His behavior makes night five an intense sound-based test.", lore: "Signature traits: all routes, black hat, extreme audio pressure." },
+        { game: 4, name: "Nightmare", type: "nightmare", file: "Nightmare.png", desc: "A near-black manifestation that appears late in the game. Nightmare strips away visual certainty and leaves only small details to read.", lore: "Signature traits: dark palette, invisible-to-darkness, final challenge." }
+      ];
+
+      var landing = document.getElementById("landing");
+      var jumpScare = document.getElementById("jump-scare");
+      var posterImage = document.getElementById("poster-image");
+      var sectionsMount = document.getElementById("sections");
+      var search = document.getElementById("character-search");
+      var typeFilter = document.getElementById("type-filter");
+      var searchResults = document.getElementById("search-results");
+      var soundToggle = document.getElementById("sound-toggle");
+      var activeGameFilter = "all";
+      var cardObserver;
+      var audioContext;
+      var ambienceGain;
+      var ambienceNodes = [];
+      var soundOn = false;
+
+      function wikiAsset(file) {
+        return WIKI_ROOT + encodeURIComponent(file) + "?width=900";
+      }
+
+      function makeFallback(name, type) {
+        var art = document.createElement("div");
+        art.className = "fallback-art";
+        art.setAttribute("aria-label", name + " stylized fallback artwork");
+        art.textContent = name;
+        art.dataset.type = type;
+        return art;
+      }
+
+      function preparePortrait(image, name, type) {
+        image.addEventListener("error", function () {
+          var fallback = makeFallback(name, type);
+          image.replaceWith(fallback);
+        }, { once: true });
+      }
+
+      function addTag(row, text) {
+        var tag = document.createElement("span");
+        tag.className = "tag";
+        tag.textContent = text;
+        row.appendChild(tag);
+      }
+
+      function buildCard(character, index) {
+        var card = document.createElement("article");
+        card.className = "character-card";
+        card.id = "character-" + index;
+        card.dataset.game = character.game;
+        card.dataset.type = character.type;
+        card.dataset.name = character.name.toLowerCase();
+        card.style.setProperty("--accent-glow", gameInfo[character.game].glow);
+
+        var copy = document.createElement("div");
+        copy.className = "character-copy";
+        var eye = document.createElement("p");
+        eye.className = "eyebrow";
+        eye.textContent = "FNAF " + character.game + " · " + character.type;
+        var title = document.createElement("h3");
+        title.textContent = character.name;
+        var description = document.createElement("p");
+        description.className = "description";
+        description.textContent = character.desc;
+        var lore = document.createElement("p");
+        lore.className = "lore";
+        lore.textContent = character.lore;
+        var tags = document.createElement("div");
+        tags.className = "tag-row";
+        addTag(tags, "FNAF " + character.game);
+        addTag(tags, character.type);
+        copy.append(eye, title, description, lore, tags);
+
+        var stage = document.createElement("div");
+        stage.className = "portrait-stage";
+        var image = new Image();
+        image.className = "portrait";
+        image.alt = character.name + " character render";
+        image.loading = "lazy";
+        image.src = wikiAsset(character.file);
+        preparePortrait(image, character.name, character.type);
+        stage.appendChild(image);
+        card.append(copy, stage);
+        return card;
+      }
+
+      function buildSections() {
+        for (var game = 1; game <= 4; game += 1) {
+          var section = document.createElement("section");
+          section.className = "game-section";
+          section.id = "fnaf-" + game;
+          section.dataset.game = game;
+          var intro = document.createElement("div");
+          intro.className = "game-intro";
+          var introCopy = document.createElement("div");
+          var eyebrow = document.createElement("p");
+          eyebrow.className = "eyebrow";
+          eyebrow.textContent = "Archive section " + game;
+          var heading = document.createElement("h2");
+          heading.textContent = gameInfo[game].title;
+          var paragraph = document.createElement("p");
+          paragraph.textContent = gameInfo[game].copy;
+          introCopy.append(eyebrow, heading, paragraph);
+          var stamp = document.createElement("aside");
+          stamp.className = "game-stamp";
+          stamp.innerHTML = "<strong>" + gameInfo[game].year + "</strong><br>Ambient tone shifts as you enter this chapter.";
+          intro.append(introCopy, stamp);
+
+          var grid = document.createElement("div");
+          grid.className = "character-grid";
+          for (var i = 0; i < characters.length; i += 1) {
+            if (characters[i].game === game) grid.appendChild(buildCard(characters[i], i));
+          }
+          section.append(intro, grid);
+          sectionsMount.appendChild(section);
+        }
+      }
+
+      function setUpObservers() {
+        cardObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("in-view");
+              cardObserver.unobserve(entry.target);
+            }
+          });
+        }, { threshold: .14 });
+        document.querySelectorAll(".character-card").forEach(function (card) {
+          cardObserver.observe(card);
+        });
+
+        var gameObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              var game = entry.target.dataset.game;
+              document.body.dataset.game = game;
+              setAmbienceFor(game);
+            }
+          });
+        }, { threshold: .48 });
+        document.querySelectorAll(".game-section").forEach(function (section) {
+          gameObserver.observe(section);
+        });
+      }
+
+      function getMatches() {
+        var query = search.value.trim().toLowerCase();
+        return characters.filter(function (character) {
+          var matchesGame = activeGameFilter === "all" || String(character.game) === activeGameFilter;
+          var matchesType = typeFilter.value === "all" || character.type === typeFilter.value;
+          var haystack = (character.name + " " + character.type + " " + character.desc).toLowerCase();
+          return matchesGame && matchesType && (!query || haystack.indexOf(query) !== -1);
+        });
+      }
+
+      function updateVisibleCards() {
+        var matches = getMatches();
+        var allowed = new Set(matches.map(function (item) { return item.name + "-" + item.game; }));
+        document.querySelectorAll(".character-card").forEach(function (card) {
+          var character = characters.find(function (item) {
+            return item.name.toLowerCase() === card.dataset.name && String(item.game) === card.dataset.game;
+          });
+          card.hidden = !character || !allowed.has(character.name + "-" + character.game);
+        });
+        document.querySelectorAll(".game-section").forEach(function (section) {
+          var hasVisible = section.querySelectorAll(".character-card:not([hidden])").length > 0;
+          section.hidden = !hasVisible;
+        });
+      }
+
+      function selectCharacter(character) {
+        var index = characters.indexOf(character);
+        var card = document.getElementById("character-" + index);
+        if (!card) return;
+        activeGameFilter = "all";
+        typeFilter.value = "all";
+        search.value = "";
+        updateFilterButtons();
+        updateVisibleCards();
+        searchResults.classList.remove("open");
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+        card.classList.add("in-view");
+        window.setTimeout(function () { card.style.borderColor = "rgba(237,198,125,.8)"; }, 500);
+        window.setTimeout(function () { card.style.borderColor = ""; }, 1900);
+      }
+
+      function renderResults() {
+        var query = search.value.trim();
+        searchResults.replaceChildren();
+        if (!query) {
+          searchResults.classList.remove("open");
+          updateVisibleCards();
+          return;
+        }
+        var matches = getMatches().slice(0, 6);
+        matches.forEach(function (character) {
+          var button = document.createElement("button");
+          button.className = "search-result";
+          button.type = "button";
+          var left = document.createElement("span");
+          left.textContent = character.name;
+          var right = document.createElement("small");
+          right.textContent = "FNAF " + character.game + " · " + character.type;
+          button.append(left, right);
+          button.addEventListener("click", function () { selectCharacter(character); });
+          searchResults.appendChild(button);
+        });
+        if (!matches.length) {
+          var empty = document.createElement("div");
+          empty.className = "search-result";
+          empty.textContent = "No matching animatronic in this archive.";
+          searchResults.appendChild(empty);
+        }
+        searchResults.classList.add("open");
+        updateVisibleCards();
+      }
+
+      function spawnNotes() {
+        var box = search.getBoundingClientRect();
+        for (var i = 0; i < 3; i += 1) {
+          var note = document.createElement("span");
+          note.className = "note";
+          note.textContent = i === 1 ? "♪" : "♫";
+          note.style.left = (box.left + box.width * (.28 + i * .2)) + "px";
+          note.style.top = (box.top + 9) + "px";
+          note.style.setProperty("--drift", (i - 1) * 22 + "px");
+          document.body.appendChild(note);
+          window.setTimeout(function (item) { item.remove(); }, 950, note);
+        }
+      }
+
+      function updateFilterButtons() {
+        document.querySelectorAll("[data-game-filter]").forEach(function (button) {
+          button.setAttribute("aria-pressed", button.dataset.gameFilter === activeGameFilter ? "true" : "false");
+        });
+      }
+
+      function clearAmbience() {
+        ambienceNodes.forEach(function (node) {
+          try { node.stop(); } catch (error) {}
+        });
+        ambienceNodes = [];
+        if (ambienceGain) ambienceGain.gain.setTargetAtTime(.0001, audioContext.currentTime, .07);
+      }
+
+      function ensureAudio() {
+        if (!window.AudioContext && !window.webkitAudioContext) return false;
+        if (!audioContext) {
+          var AudioCtor = window.AudioContext || window.webkitAudioContext;
+          audioContext = new AudioCtor();
+          ambienceGain = audioContext.createGain();
+          ambienceGain.connect(audioContext.destination);
+        }
+        if (audioContext.state === "suspended") audioContext.resume();
+        return true;
+      }
+
+      function setAmbienceFor(game) {
+        if (!soundOn || !ensureAudio()) return;
+        clearAmbience();
+        var configs = {
+          1: { low: 49, high: 113, gain: .028, shape: "sine" },
+          2: { low: 58, high: 146, gain: .022, shape: "triangle" },
+          3: { low: 41, high: 91, gain: .031, shape: "sawtooth" },
+          4: { low: 36, high: 77, gain: .026, shape: "sine" }
+        };
+        var config = configs[game] || configs[1];
+        ambienceGain.gain.setTargetAtTime(config.gain, audioContext.currentTime, .16);
+        [config.low, config.high].forEach(function (frequency, index) {
+          var oscillator = audioContext.createOscillator();
+          var gain = audioContext.createGain();
+          oscillator.type = config.shape;
+          oscillator.frequency.value = frequency;
+          gain.gain.value = index === 0 ? .33 : .08;
+          oscillator.connect(gain).connect(ambienceGain);
+          oscillator.start();
+          ambienceNodes.push(oscillator);
+        });
+      }
+
+      function playJumpscareSound() {
+        if (!ensureAudio()) return;
+        var now = audioContext.currentTime;
+        var gain = audioContext.createGain();
+        gain.gain.setValueAtTime(.0001, now);
+        gain.gain.exponentialRampToValueAtTime(.19, now + .025);
+        gain.gain.exponentialRampToValueAtTime(.0001, now + .72);
+        gain.connect(audioContext.destination);
+        [93, 180, 580].forEach(function (frequency, index) {
+          var oscillator = audioContext.createOscillator();
+          oscillator.type = index === 2 ? "square" : "sawtooth";
+          oscillator.frequency.setValueAtTime(frequency * .55, now);
+          oscillator.frequency.exponentialRampToValueAtTime(frequency * 2.6, now + .22);
+          oscillator.connect(gain);
+          oscillator.start(now);
+          oscillator.stop(now + .75);
+        });
+      }
+
+      function beginArchive(withJumpscare) {
+        if (landing.classList.contains("exit")) return;
+        if (withJumpscare) {
+          jumpScare.classList.add("active");
+          jumpScare.setAttribute("aria-hidden", "false");
+          playJumpscareSound();
+        }
+        window.setTimeout(function () {
+          jumpScare.classList.remove("active");
+          jumpScare.setAttribute("aria-hidden", "true");
+          landing.classList.add("exit");
+          document.body.classList.add("entered");
+          soundOn = true;
+          soundToggle.textContent = "Sound on";
+          soundToggle.setAttribute("aria-pressed", "true");
+          setAmbienceFor(document.body.dataset.game);
+        }, withJumpscare ? 760 : 0);
+      }
+
+      document.getElementById("freddy-nose").addEventListener("click", function () { beginArchive(true); });
+      document.getElementById("skip-intro").addEventListener("click", function () { beginArchive(false); });
+      document.getElementById("hint-button").addEventListener("click", function () {
+        document.getElementById("freddy-nose").focus();
+        document.getElementById("freddy-nose").animate([
+          { transform: "translateX(-50%) scale(1)" },
+          { transform: "translateX(-50%) scale(1.35)" },
+          { transform: "translateX(-50%) scale(1)" }
+        ], { duration: 610, easing: "ease-out" });
+      });
+      soundToggle.addEventListener("click", function () {
+        soundOn = !soundOn;
+        soundToggle.textContent = soundOn ? "Sound on" : "Enable sound";
+        soundToggle.setAttribute("aria-pressed", String(soundOn));
+        if (soundOn) setAmbienceFor(document.body.dataset.game);
+        else clearAmbience();
+      });
+      search.addEventListener("input", function () {
+        spawnNotes();
+        renderResults();
+      });
+      search.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          var first = getMatches()[0];
+          if (first) selectCharacter(first);
+        }
+      });
+      typeFilter.addEventListener("change", function () {
+        renderResults();
+        updateVisibleCards();
+      });
+      document.querySelectorAll("[data-game-filter]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          activeGameFilter = button.dataset.gameFilter;
+          updateFilterButtons();
+          search.value = "";
+          searchResults.classList.remove("open");
+          updateVisibleCards();
+          if (activeGameFilter !== "all") {
+            var section = document.getElementById("fnaf-" + activeGameFilter);
+            if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+      });
+      document.addEventListener("click", function (event) {
+        if (!event.target.closest(".search-panel")) searchResults.classList.remove("open");
+      });
+
+      posterImage.src = wikiAsset("Freddy_Fazbear.png");
+      posterImage.addEventListener("error", function () {
+        posterImage.style.display = "none";
+      }, { once: true });
+      buildSections();
+      setUpObservers();
+      updateVisibleCards();
+    }());
+  </script>
+</body>
+</html>
