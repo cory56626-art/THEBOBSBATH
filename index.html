@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#08090c" />
+    <meta
+      name="description"
+      content="FNAF-Verse, a cinematic archive of the animatronics from Five Nights at Freddy's 1 through 4."
+    />
+    <title>FNAF-Verse | Bob's Bath Archive</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-game="landing" class="intro-active">
+    <div class="ambient-grain" aria-hidden="true"></div>
+
+    <section id="landing" class="landing-screen" aria-labelledby="welcome-title">
+      <div class="landing-topline">
+        <span class="archive-mark">BOB'S BATH / ARCHIVE 01</span>
+        <span class="status-light"><i></i> SYSTEM ONLINE</span>
+      </div>
+
+      <div class="office-scene" aria-label="A dark FNAF-inspired office with a poster on the back wall">
+        <div class="office-wall">
+          <div class="wall-slit wall-slit-one"></div>
+          <div class="wall-slit wall-slit-two"></div>
+          <div class="poster" aria-label="Freddy Fazbear's Pizza poster">
+            <div class="poster-tape"></div>
+            <p class="poster-small">Freddy Fazbear's</p>
+            <p class="poster-large">PIZZA</p>
+            <div class="poster-stage">
+              <div class="poster-freddy" aria-hidden="true">
+                <span class="poster-ear poster-ear-left"></span>
+                <span class="poster-ear poster-ear-right"></span>
+                <span class="poster-head">
+                  <span class="poster-eye poster-eye-left"></span>
+                  <span class="poster-eye poster-eye-right"></span>
+                  <span class="poster-muzzle"></span>
+                  <span class="poster-hat"></span>
+                </span>
+              </div>
+              <button id="freddyNose" class="freddy-nose" type="button" aria-label="Click Freddy's nose to enter the archive">
+                <span></span>
+              </button>
+            </div>
+            <p class="poster-footer">A magical place for kids and grown-ups</p>
+            <p class="poster-hint">click the nose</p>
+          </div>
+          <div class="office-monitor office-monitor-left"><span>12:00 AM</span></div>
+          <div class="office-monitor office-monitor-right"><span>CAM 01</span></div>
+          <div class="paper-note">DON'T<br />FORGET<br />THE DOOR</div>
+        </div>
+        <div class="desk">
+          <div class="desk-lamp"><span></span></div>
+          <div class="desk-fan"><i></i><i></i><i></i><b></b></div>
+          <div class="desk-plush"></div>
+          <div class="desk-edge"></div>
+        </div>
+        <div class="office-vignette" aria-hidden="true"></div>
+      </div>
+
+      <div class="landing-copy">
+        <p class="eyebrow">A STATIC CHARACTER ARCHIVE</p>
+        <h1 id="welcome-title">Welcome to the <em>FNAF-Verse!</em></h1>
+        <p class="landing-subtitle">The doors are locked. The cameras are live. Find the way in.</p>
+        <div class="landing-instruction"><span class="instruction-line"></span> Locate the nose on the poster <span class="instruction-line"></span></div>
+      </div>
+
+      <div class="landing-corner landing-corner-left">NIGHT SHIFT / 00:00</div>
+      <div class="landing-corner landing-corner-right">USE HEADPHONES IF YOU DARE</div>
+    </section>
+
+    <section id="jumpscare" class="jumpscare" aria-hidden="true">
+      <div class="jumpscare-flash"></div>
+      <div class="jumpscare-face" aria-label="A stylized Freddy jumpscare">
+        <div class="scare-ear scare-ear-left"></div>
+        <div class="scare-ear scare-ear-right"></div>
+        <div class="scare-head">
+          <div class="scare-eye scare-eye-left"></div>
+          <div class="scare-eye scare-eye-right"></div>
+          <div class="scare-snout"></div>
+          <div class="scare-teeth"></div>
+          <div class="scare-hat"></div>
+        </div>
+      </div>
+      <p class="jumpscare-label">ARCHIVE UNLOCKED</p>
+    </section>
+
+    <main id="mainContent" class="site-shell" aria-hidden="true">
+      <nav class="site-nav" aria-label="Archive controls">
+        <a class="brand-lockup" href="#archive-top" aria-label="Back to archive top">
+          <span class="brand-icon">✦</span>
+          <span>FNAF<span>-</span>VERSE</span>
+        </a>
+        <div class="nav-actions">
+          <label class="search-wrap" for="characterSearch">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input id="characterSearch" type="search" autocomplete="off" placeholder="Search the archive..." />
+            <span class="search-key">/</span>
+          </label>
+          <button id="ambienceToggle" class="ambience-toggle" type="button" aria-pressed="true">
+            <span class="speaker-icon" aria-hidden="true">◖</span>
+            <span class="ambience-label">Ambience on</span>
+          </button>
+        </div>
+        <div id="searchResults" class="search-results" role="listbox" aria-label="Character search results"></div>
+      </nav>
+
+      <header id="archive-top" class="archive-hero">
+        <div class="hero-grid"></div>
+        <div class="hero-kicker"><span class="pulse-dot"></span> STATIC DATABASE / 1987—1988</div>
+        <h2>Know the faces<br /><span>behind the doors.</span></h2>
+        <p>Four games. One archive. Every stare, scrape, and mechanical footstep catalogued in one place.</p>
+        <div class="hero-scroll"><span>SCROLL TO EXPLORE</span><i></i></div>
+        <div class="hero-stamp">NO LIVE WIKI FEED<br /><strong>LOCAL RECORDS ONLY</strong></div>
+      </header>
+
+      <section class="filter-dock" aria-label="Filter characters">
+        <div class="filter-heading"><span>FILTER ARCHIVE</span><small id="resultCount">0 records</small></div>
+        <div class="filter-row" id="gameFilters">
+          <button class="filter-button is-active" data-filter="all" type="button">All records</button>
+          <button class="filter-button" data-filter="fnaf1" type="button">FNAF 1</button>
+          <button class="filter-button" data-filter="fnaf2" type="button">FNAF 2</button>
+          <button class="filter-button" data-filter="fnaf3" type="button">FNAF 3</button>
+          <button class="filter-button" data-filter="fnaf4" type="button">FNAF 4</button>
+        </div>
+        <div class="filter-row filter-row-secondary" id="typeFilters">
+          <span class="filter-label">TYPE</span>
+          <button class="filter-button filter-button-sub" data-filter="classic" type="button">Classic</button>
+          <button class="filter-button filter-button-sub" data-filter="toy" type="button">Toy</button>
+          <button class="filter-button filter-button-sub" data-filter="withered" type="button">Withered</button>
+          <button class="filter-button filter-button-sub" data-filter="phantom" type="button">Phantom</button>
+          <button class="filter-button filter-button-sub" data-filter="nightmare" type="button">Nightmare</button>
+          <button class="filter-button filter-button-sub" data-filter="springtrap" type="button">Springtrap</button>
+        </div>
+      </section>
+
+      <div id="archiveSections" class="archive-sections"></div>
+
+      <footer class="site-footer">
+        <div><span class="brand-icon">✦</span> FNAF-VERSE / BOB'S BATH ARCHIVE</div>
+        <p>Original static interface with local records and browser-generated atmosphere.</p>
+        <a href="#archive-top">BACK TO TOP ↑</a>
+      </footer>
+    </main>
+
+    <noscript>
+      <div class="noscript-message">This archive needs JavaScript for the poster trigger, character search, filters, and audio controls.</div>
+    </noscript>
+
+    <script src="script.js" defer></script>
+  </body>
+</html>
