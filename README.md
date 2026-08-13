@@ -1,185 +1,141 @@
-# Bob's Bath — Ball Battle Simulator
+# Wobbly Battle Simulator
 
-A browser ball-battle simulator, the kind that fills TikTok and Shorts: give each
-ball a **weapon** and an **ability**, press start, and watch them fight until one
-is left. Every hit makes the winner's weapon bigger, so a match that opens with
-polite little taps ends with enormous blades and screen-filling explosions.
+A 3D physics battle simulator that runs in the browser — a homage to
+[Totally Accurate Battle Simulator](https://store.steampowered.com/app/508440/).
+Spend a budget placing armies of wobbling ragdolls on your half of the field,
+press start, and then lose all control while they charge, swing, miss, trip over
+each other and get launched into the air.
 
-Runs entirely client-side — vanilla JS, Canvas 2D, ES modules, **zero
-dependencies and zero asset files**. Every sprite, particle and sound is
-generated at runtime.
+Nothing about the fighting is animated. Every unit is an **active ragdoll**: a
+floppy skeleton that stands up only because spring "muscles" hold it there, and
+falls over the moment something hits it hard enough.
+
+**[▶ Play it](https://cory56626-art.github.io/THEBOBSBATH/)**
 
 ![status](https://img.shields.io/badge/status-playable-4ecdc4)
+![deps](https://img.shields.io/badge/build%20step-none-blue)
 
 ---
 
-## Quick start
+## What's in it
 
-It's a static site, so it just needs to be served over HTTP (ES modules don't
-load from `file://`):
-
-```bash
-python3 -m http.server 8000
-# then open http://localhost:8000
-```
-
-Any static server works — `npx http-server`, `php -S`, VS Code Live Server.
-
----
+- **70 units across 10 factions** — Tribal, Farmer, Medieval, Ancient, Viking,
+  Dynasty, Renaissance, Pirate, Spooky and Wild West, each with the seven-unit
+  shape the real game uses: a cheap body, a ranged option, a heavy, a boss.
+  Point costs follow the originals, from the 50-point Halfling to the
+  4000-point Da Vinci Tank.
+- **16 campaign battles**, each a fixed enemy army and a budget smaller than
+  what you are facing. They are counter puzzles: spread out against splash,
+  close fast on artillery, put something heavy in front of archers.
+- **Sandbox** with no budget and control of both sides.
+- **Abilities** that change how a fight goes — healing, inspiring auras,
+  lifesteal, summoning, poison, burning, thorns, lightning, and a lasso that
+  drags people off their feet.
+- Progress saves to `localStorage`.
 
 ## How a battle works
 
-Balls hold a **constant speed and never stop**, bouncing off the walls and off
-each other. They carry a light drift toward the nearest enemy — or toward a
-health drop when they're hurt — but it is deliberately weak: crank it up and
-every ball converges on the middle of the arena and hovers there, which looks
-nothing like the genre. When a weapon connects it
-deals damage **and levels up**: more reach, more damage, faster fire. That
-escalation is the whole shape of the genre. Early hits chip; late hits delete.
+1. Pick a faction, pick a unit, click on your half of the field to place it.
+   Drag to lay out a rank. Right-click removes.
+2. Watch the budget bar. In campaign you will always be outspent.
+3. Press **Start**, and stop being in charge.
+4. Hold **F** for slow motion, because the best moments go past too quickly.
 
-Damage also fills a **super meter**. When it tops out the ball automatically
-unleashes its ability's super. Last ball alive wins.
+## Controls
 
-### Sudden death
-
-Two healing balls can circle each other forever, which is fatal for a short
-video. From **30 seconds** onward:
-
-- all damage ramps up, to a maximum of **4×**
-- healing fades to **zero**
-- health drops stop spawning
-- **the walls close in**, down to 42% of the cage
-
-No match can outlive it. Measured across simulated battles at 2, 4 and 8
-fighters: **zero stalemates**, longest fight 62s, median 31–34s.
+| | |
+|---|---|
+| Click / drag | Place the selected unit |
+| Right-click | Remove a unit |
+| Right-drag | Orbit the camera |
+| Shift-drag | Pan |
+| WASD | Move across the field |
+| Scroll · Q / E | Zoom |
+| Space | Start battle |
+| Hold F · G | Slow motion / very slow motion |
+| T | Freeze time |
+| R | Reset |
+| 1–7 | Pick a unit from the current faction |
 
 ---
 
-## Weapons
+## How it works
 
-| Weapon | Behaviour |
-| --- | --- |
-| **Sword** | Long blade sweeping around the ball. Big reach, big growth. |
-| **Dagger** | Short and very fast. Weak per hit, escalates quickest. |
-| **Flail** | Chained head on a real pendulum constraint — swings unpredictably, hits hardest. |
-| **Orbital** | Shards circling the ball. Every third hit adds another shard. |
-| **Blaster** | Fires tracking bolts at the nearest enemy. |
-| **Shotgun** | Slow spread of pellets, plus recoil that shoves the shooter around. |
-| **Laser** | Charges with a visible targeting line, then burns a beam across the arena. |
-| **Spikes** | No weapon — the ball itself damages anything it touches. |
-| **Portal Gun** | Fires a portal where it's headed and dives through. The exit is rolled *at the moment of entry* and appears somewhere far away — nobody sees where it comes out until it comes out. Bursts out glowing hot; anything it touches takes the slam. |
+### The wobbler
 
-## Abilities
+Each unit is nine points — head, chest, hip, two hands, two knees, two feet —
+connected by distance constraints and integrated with Verlet. On its own that
+skeleton is a bag of sticks that collapses instantly.
 
-| Ability | Effect |
-| --- | --- |
-| **Vampire** | Heals for 45% of all damage dealt. |
-| **Shield** | Rotating barrier absorbs 70% of each hit, rebuilds between them. |
-| **Regen** | Steadily heals. Wins wars of attrition. |
-| **Toxic** | Hits apply stacking poison that keeps ticking. |
-| **Berserk** | Damage scales up as health drops — up to double. |
-| **Bomb** | Detonates on death, often taking the killer with it. |
-| **Ghost** | 24% chance to phase through an incoming hit. |
-| **Titan** | +60% health and mass, but noticeably slower. |
-| **Ricker** | Its super reads the situation and picks one of three (see below). |
-| **None** | No tricks, no downsides. |
+What makes it stand is a set of **muscles**: every step, spring forces pull each
+joint toward where it *should* be in the unit's local frame. A `balance` value
+from 0 to 1 scales how much authority those muscles have. Steep torso tilt and
+hard knocks drain it; it regenerates over time. So a unit that takes a
+ballista bolt goes limp, tumbles, and then wobbles back upright a second later
+under its own power — none of which is scripted.
 
-### Ricker's three supers
+Dying just switches the muscles off permanently and loosens the joints, which
+is why corpses fold into heaps instead of holding a pose.
 
-Ricker is the one ability whose super changes with the state of the fight. It
-checks the most urgent problem first:
+Weight resists knockback, exactly as in the original: a King at 12× barely
+flinches at the arrow that sends a Squire cartwheeling.
 
-1. **Cornered → Forcefield.** If an enemy has been inside contact range *and*
-   moving with it for over a second — the case where bouncing will never
-   separate them and every sweep of that enemy's weapon lands — it blasts
-   everyone off. Detection needs both proximity and matched velocity: two balls
-   punching through each other at speed are not trapped, they are just passing.
-2. **Getting worn down → Acid.** If damage taken in the last second and a half
-   passes 22% of max health, it throws up instead. The puddle burns anyone
-   standing in it for 8 seconds and its owner is immune.
-3. **Otherwise → Metal.** Goes chrome, spins up, and flies at **4x speed,
-   untouchable**, for 5 seconds — then eases back over 2.5s. Speed, spin, chrome
-   opacity and the invulnerability all ride the same ramp, so it winds down as
-   one motion rather than four things ending separately. The hard white rim
-   marks the window where nothing can touch it.
+### The renderer
 
----
+Nothing in the battle owns a mesh. There are four `InstancedMesh` primitives —
+sphere, cylinder, box, cone — and every frame the entire scene is re-emitted
+into them: limbs, heads, googly eyes, hats, weapons, arrows, explosions. The
+whole battle is roughly four draw calls, and the flat low-poly result is the
+look the game wanted anyway.
 
-## Recording
+Because units are drawn directly from their physics joints, whatever shape the
+solver has folded someone into is exactly what you see.
 
-**Record** captures the canvas with `MediaRecorder` at its native **1080×1920**
-and mixes in the synth audio, then downloads the file. No screen-recording
-software and no cropping — the output is already the right shape for TikTok,
-Reels and Shorts. MP4 where the browser supports it, WebM otherwise.
+### The AI
 
-The **on-screen hook** field draws a line like *"Who wins?"* across the top of
-the frame, which is the convention that makes these videos work.
+Deliberately thin. Find the nearest enemy, walk until the weapon reaches, swing.
+The entertainment does not come from clever tactics inside a unit; it comes from
+a hundred simple units colliding with a physics engine that does not respect
+anyone's plans.
 
----
-
-## Settings
-
-Ball speed, starting HP, aggression, and pickup rate are sliders. Toggles cover
-health/power drops, supers, HP-size mode (radius tracks remaining health),
-motion trails, damage numbers, and sound. Fighters can be added up to 8, removed
-down to 2, renamed, recoloured, and randomised.
-
----
-
-## Balance
-
-Weapons and abilities were tuned against a headless harness that runs the real
-`World` simulation with no canvas, thousands of matches at a time. The first
-pass was badly skewed — shotgun won **96%** of duels while sword won **9%** —
-and two structural bugs turned up that no amount of number-tweaking would have
-fixed:
-
-- **Shields absorbed 100% of every hit** and regenerated, so any ball whose
-  incoming damage was slower than its regen was literally unkillable. Capping
-  absorption at 70% guarantees damage always leaks through.
-- **Two balls accelerating toward each other at constant speed don't collide** —
-  they settle into a stable mutual orbit at radius `v²/a` (~210px), circling
-  just outside weapon reach indefinitely. Contact rate was 0.73 hits/sec in
-  duels versus 6.8 with eight balls, and 43% of duels never resolved. Steering
-  now bleeds off sideways velocity at range, turning that orbit into a closing
-  spiral.
-
-After tuning, all weapons land in a tight duel win-rate band, and every one of
-the nine wins matches at every roster size.
-
-The Portal Gun's look follows the show: a metal-grey body with a glowing green
-vial on top, firing an opaque green swirling vortex with lighter yellow-green
-"goo" flecks.
-
----
-
-## Project structure
+### Layout
 
 ```
-index.html          markup + setup panel
-css/styles.css      theme + responsive layout
-js/
-  config.js         tunables, arena sizing, sudden-death constants
-  utils.js          math helpers
-  world.js          simulation: physics, hit resolution, damage, win state
-  ball.js           fighter entity, health, rendering
-  weapons.js        the nine weapons
-  abilities.js      the ten abilities + status ticks
-  fx.js             particles, damage numbers, shake, kill feed
-  audio.js          WebAudio synth (pentatonic, so hits sound musical)
-  render.js         all canvas drawing
-  ui.js             roster editor + settings
-  recorder.js       canvas + audio video capture
-  main.js           entry point and fixed-timestep loop
+index.html          markup and the deployment panel
+css/styles.css
+js/physics.js       Verlet points, distance constraints, spatial hash
+js/wobbler.js       the active ragdoll — skeleton, muscles, balance, damage
+js/units.js         faction and unit tables
+js/battle.js        simulation: AI, weapons, projectiles, abilities
+js/campaign.js      the 16 battles
+js/render.js        three.js scene and the instanced primitive emitters
+js/ui.js            panel, camera rig, input, campaign flow
+js/audio.js         sound, synthesised at runtime — no audio files
+vendor/             three.js, vendored so the page has no external requests
 ```
 
-`window.__battle` is exposed as a test hook (`world`, `ui`, `recorder`,
-`SETTINGS`, `Sound`).
+## Running it locally
 
----
+Static site, no build step. It just needs to be served over HTTP, since ES
+modules do not load from `file://`:
 
-## Deploying to GitHub Pages
+```bash
+python3 -m http.server 8000
+# open http://localhost:8000
+```
 
-`.github/workflows/pages.yml` publishes the repo root on every push. Enable it
-once at **Settings → Pages → Build and deployment → GitHub Actions**, and the
-live URL appears after the first run.
+## Deployment
+
+Pushing to `main` publishes to GitHub Pages via
+`.github/workflows/pages.yml`. There is nothing to compile — the workflow
+uploads the repository as-is.
+
+## Credits
+
+Totally Accurate Battle Simulator is made by
+[Landfall Games](https://landfall.se/). This is an independent homage built
+from scratch, not affiliated with or endorsed by them, and shares no code or
+assets with the original.
+
+[three.js](https://threejs.org/) is vendored under `vendor/` (MIT, see
+`vendor/three-LICENSE.txt`). Everything else here is original.
