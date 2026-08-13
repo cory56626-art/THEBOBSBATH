@@ -455,7 +455,7 @@ export const WEAPONS = {
     kind: 'portal',
     create: () => ({
       cd: 1.6, rate: 2.8, dmg: 21, growDmg: 1.05, level: 0, cdTime: 0.42,
-      angle: 0, swirl: 0, charge: 0, inP: null, outP: null, life: 0,
+      angle: 0, swirl: 0, charge: 0, inP: null, outP: null, life: 0, outLife: 0,
     }),
 
     update(ball, world, dt) {
@@ -465,25 +465,32 @@ export const WEAPONS = {
       w.angle = Math.atan2(ball.vy, ball.vx);
       if (w.charge > 0) w.charge -= dt;
 
+      // The exit portal lingers for a moment after use, then fades.
+      if (w.outLife > 0) w.outLife -= dt;
+
       if (w.inP) {
         w.life -= dt;
-        if (w.life <= 0) { w.inP = null; w.outP = null; return; }
+        if (w.life <= 0) { w.inP = null; return; }
 
         const d = Math.hypot(ball.x - w.inP.x, ball.y - w.inP.y);
         if (d < w.inP.r * 0.85) {
-          // Through the portal. Momentum carries over, the way portals should.
-          const fromX = w.inP.x, fromY = w.inP.y;
-          ball.x = w.outP.x;
-          ball.y = w.outP.y;
-          ball.trail.length = 0; // otherwise the trail draws a line across the arena
+          // The exit is rolled HERE, on entry — not when the gun fires. Nobody
+          // gets to see where it comes out until it comes out.
+          const from = w.inP;
+          const exit = pickExit(from);
+
+          ball.x = exit.x;
+          ball.y = exit.y;
+          ball.trail.length = 0; // otherwise the trail streaks across the arena
           w.charge = 2.0;
           w.inP = null;
-          w.outP = null;
+          w.outP = exit;
+          w.outLife = 1.5;
 
-          world.fx.burst(fromX, fromY, PORTAL_GREEN, 22, 460, 8);
-          world.fx.ring(fromX, fromY, PORTAL_GREEN, 150, 12);
-          world.fx.burst(ball.x, ball.y, PORTAL_LIME, 30, 620, 9);
-          world.fx.ring(ball.x, ball.y, PORTAL_LIME, 190, 14);
+          world.fx.burst(from.x, from.y, PORTAL_GREEN, 22, 460, 8);
+          world.fx.ring(from.x, from.y, PORTAL_GREEN, 150, 12);
+          world.fx.burst(exit.x, exit.y, PORTAL_LIME, 30, 620, 9);
+          world.fx.ring(exit.x, exit.y, PORTAL_LIME, 190, 14);
           world.fx.addShake(9);
         }
         return;
@@ -492,7 +499,8 @@ export const WEAPONS = {
       w.cd -= dt;
       if (w.cd <= 0) {
         w.cd = Math.max(1.5, w.rate - w.level * 0.07);
-        placePortals(ball, w);
+        w.inP = makeEntry(ball);
+        w.life = 5.5;
         world.fx.ring(w.inP.x, w.inP.y, PORTAL_GREEN, 130, 10);
         world.onShoot();
       }
@@ -507,10 +515,11 @@ export const WEAPONS = {
 
     draw(ctx, ball) {
       const w = ball.weapon;
+      if (w.outP && w.outLife > 0) {
+        drawPortal(ctx, w.outP, w.swirl * -1.3, clamp(w.outLife / 0.6, 0, 1));
+      }
       if (w.inP) {
-        const fade = clamp(w.life / 1.2, 0, 1);
-        drawPortal(ctx, w.outP, w.swirl * -1.3, fade);
-        drawPortal(ctx, w.inP, w.swirl, fade);
+        drawPortal(ctx, w.inP, w.swirl, clamp(w.life / 1.2, 0, 1));
       }
 
       // Charged-up glow while the slam is live.
@@ -545,38 +554,44 @@ const PORTAL_LIME = '#d4f24a';
 const PORTAL_DEEP = '#2f5417';
 const PORTAL_R = 64;
 
-/** Entry portal lands ahead of the ball; exit lands far away from it. */
-function placePortals(ball, w) {
+/** Padded bounds the portals are allowed to sit inside. */
+function portalBounds() {
   const pad = PORTAL_R + 16;
-  const minX = ARENA.x + pad;
-  const maxX = ARENA.x + ARENA.w - pad;
-  const minY = ARENA.y + pad;
-  const maxY = ARENA.y + ARENA.h - pad;
+  return {
+    minX: ARENA.x + pad,
+    maxX: ARENA.x + ARENA.w - pad,
+    minY: ARENA.y + pad,
+    maxY: ARENA.y + ARENA.h - pad,
+  };
+}
 
+/** Entry portal lands ahead of the ball, along the way it is already going. */
+function makeEntry(ball) {
+  const b = portalBounds();
   const heading = Math.atan2(ball.vy, ball.vx);
-  const ix = clamp(ball.x + Math.cos(heading) * 250, minX, maxX);
-  const iy = clamp(ball.y + Math.sin(heading) * 250, minY, maxY);
+  return {
+    x: clamp(ball.x + Math.cos(heading) * 250, b.minX, b.maxX),
+    y: clamp(ball.y + Math.sin(heading) * 250, b.minY, b.maxY),
+    r: PORTAL_R,
+  };
+}
 
-  // "Somewhere random, but not near the portal it just made."
+/** Somewhere random, but never near the portal it just went into. */
+function pickExit(from) {
+  const b = portalBounds();
   const minDist = Math.min(ARENA.w, ARENA.h) * 0.5;
-  let ox = ix;
-  let oy = iy;
-  let found = false;
   for (let i = 0; i < 40; i++) {
-    const cx = rand(minX, maxX);
-    const cy = rand(minY, maxY);
-    if (Math.hypot(cx - ix, cy - iy) >= minDist) { ox = cx; oy = cy; found = true; break; }
+    const cx = rand(b.minX, b.maxX);
+    const cy = rand(b.minY, b.maxY);
+    if (Math.hypot(cx - from.x, cy - from.y) >= minDist) return { x: cx, y: cy, r: PORTAL_R };
   }
-  if (!found) {
-    // Arena too tight for the random pick (it shrinks during sudden death) —
-    // mirror through the centre, which is always the farthest point available.
-    ox = clamp(2 * (ARENA.x + ARENA.w / 2) - ix, minX, maxX);
-    oy = clamp(2 * (ARENA.y + ARENA.h / 2) - iy, minY, maxY);
-  }
-
-  w.inP = { x: ix, y: iy, r: PORTAL_R };
-  w.outP = { x: ox, y: oy, r: PORTAL_R };
-  w.life = 5.5;
+  // Arena too tight for the random pick (it shrinks during sudden death) —
+  // mirror through the centre, always the farthest point still available.
+  return {
+    x: clamp(2 * (ARENA.x + ARENA.w / 2) - from.x, b.minX, b.maxX),
+    y: clamp(2 * (ARENA.y + ARENA.h / 2) - from.y, b.minY, b.maxY),
+    r: PORTAL_R,
+  };
 }
 
 function drawPortal(ctx, p, swirl, alpha) {

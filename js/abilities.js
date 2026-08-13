@@ -12,6 +12,10 @@
 
 import { TAU, clamp, rand, chance, withAlpha } from './utils.js';
 
+// Ricker's metal mode: full power for RICKER_HOLD, then eases off over RICKER_FADE.
+const RICKER_HOLD = 5;
+const RICKER_FADE = 2.5;
+
 /** Default super for abilities that don't define one: a damaging shockwave. */
 function novaSuper(ball, world) {
   const radius = 320;
@@ -267,6 +271,91 @@ export const ABILITIES = {
     },
   },
 
+  ricker: {
+    label: 'Ricker',
+    blurb: 'Super goes chrome: 5 seconds spinning and flying at nearly triple speed, then winds down.',
+    color: '#dfe6f7',
+    // Wants to be in metal mode as often as possible, so it charges quicker.
+    superChargeMult: 1.1,
+
+    // 5 seconds at full tilt, then a 2.5s wind-down — RICKER_HOLD + RICKER_FADE.
+    fireSuper(ball, world) {
+      ball.ricker = RICKER_HOLD + RICKER_FADE;
+      ball.rickerSpin = 0;
+      world.fx.number(ball.x, ball.y - ball.r - 70, 'RICKED', '#dfe6f7', true);
+      world.fx.ring(ball.x, ball.y, '#dfe6f7', 360, 22);
+      world.fx.burst(ball.x, ball.y, '#dfe6f7', 36, 620, 8);
+      world.fx.addFlash('#dfe6f7', 0.3);
+      world.fx.addShake(15);
+    },
+
+    update(ball, world, dt) {
+      if (ball.ricker <= 0) return;
+      ball.ricker -= dt;
+
+      // Ramp holds at 1 for the first 5s, then eases to 0 over the last 2.5s,
+      // so it slows and de-chromes gradually rather than snapping back.
+      const k = clamp(ball.ricker / RICKER_FADE, 0, 1);
+      ball.rickerSpin += dt * (6 + 26 * k);
+      ball.speedMult = 1 + 1.8 * k;
+      if (ball.weapon.spin) ball.weapon.angle += ball.weapon.spin * dt * 5 * k;
+
+      if (chance(dt * 30 * k)) {
+        world.fx.burst(
+          ball.x + rand(-ball.r, ball.r), ball.y + rand(-ball.r, ball.r),
+          '#dfe6f7', 1, 140, 4
+        );
+      }
+      if (ball.ricker <= 0) {
+        ball.ricker = 0;
+        ball.speedMult = 1;
+      }
+    },
+
+    damageMult(ball) {
+      if (ball.ricker <= 0) return 1;
+      return 1 + 0.3 * clamp(ball.ricker / RICKER_FADE, 0, 1);
+    },
+
+    /** Chrome banding, rotating with the spin so it reads as spinning metal. */
+    bodyOverlay(ctx, ball) {
+      if (ball.ricker <= 0) return;
+      const k = clamp(ball.ricker / RICKER_FADE, 0, 1);
+      const r = ball.r;
+      const a = ball.rickerSpin || 0;
+
+      ctx.save();
+      ctx.globalAlpha = k;
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, r, 0, TAU);
+      ctx.clip();
+
+      const g = ctx.createLinearGradient(
+        ball.x - Math.cos(a) * r, ball.y - Math.sin(a) * r,
+        ball.x + Math.cos(a) * r, ball.y + Math.sin(a) * r
+      );
+      g.addColorStop(0.0, '#f6f9ff');
+      g.addColorStop(0.18, '#8a97b3');
+      g.addColorStop(0.36, '#ffffff');
+      g.addColorStop(0.54, '#69748e');
+      g.addColorStop(0.72, '#e8eeff');
+      g.addColorStop(0.88, '#7c88a3');
+      g.addColorStop(1.0, '#f2f6ff');
+      ctx.fillStyle = g;
+      ctx.fillRect(ball.x - r, ball.y - r, r * 2, r * 2);
+      ctx.restore();
+    },
+
+    aura(ctx, ball) {
+      if (ball.ricker <= 0) return;
+      const k = clamp(ball.ricker / RICKER_FADE, 0, 1);
+      ctx.strokeStyle = withAlpha('#dfe6f7', 0.5 * k);
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.r + 12 + 16 * k, 0, TAU);
+      ctx.stroke();
+    },
+  },
   titan: {
     label: 'Titan',
     blurb: '+60% health and mass, but noticeably slower.',

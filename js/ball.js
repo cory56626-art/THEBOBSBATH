@@ -41,6 +41,7 @@ export class Ball {
     this.ghostInvuln = 0;
     this.ghostFlash = 0;
     this.berserkFrenzy = 0;
+    this.ricker = 0;
 
     this.weapon = WEAPONS[this.weaponKey].create(this);
     // Per-target hit cooldowns. Without these a resting blade would deal damage
@@ -78,7 +79,9 @@ export class Ball {
 
   addSuperCharge(amount) {
     if (!SETTINGS.supers) return;
-    this.superCharge = clamp(this.superCharge + amount, 0, SUPER_CHARGE_MAX);
+    const ab = this.ability;
+    const mult = ab && ab.superChargeMult ? ab.superChargeMult : 1;
+    this.superCharge = clamp(this.superCharge + amount * mult, 0, SUPER_CHARGE_MAX);
   }
 
   get superReady() { return SETTINGS.supers && this.superCharge >= SUPER_CHARGE_MAX; }
@@ -140,6 +143,10 @@ export class Ball {
     ctx.beginPath();
     ctx.arc(this.x, this.y, r, 0, TAU);
     ctx.fill();
+
+    // Abilities may repaint the ball itself (Ricker's chrome, for one). Drawn
+    // over the body but under the rim so the silhouette stays intact.
+    if (ab && ab.bodyOverlay) ab.bodyOverlay(ctx, this);
 
     // Rim.
     ctx.strokeStyle = 'rgba(255,255,255,0.55)';

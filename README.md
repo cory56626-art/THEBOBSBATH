@@ -67,7 +67,7 @@ fighters: **zero stalemates**, longest fight 62s, median 31–34s.
 | **Shotgun** | Slow spread of pellets, plus recoil that shoves the shooter around. |
 | **Laser** | Charges with a visible targeting line, then burns a beam across the arena. |
 | **Spikes** | No weapon — the ball itself damages anything it touches. |
-| **Portal Gun** | Fires a portal where it's headed, dives through, and bursts out somewhere far away — glowing hot, and anything it touches on the way out takes the slam. |
+| **Portal Gun** | Fires a portal where it's headed and dives through. The exit is rolled *at the moment of entry* and appears somewhere far away — nobody sees where it comes out until it comes out. Bursts out glowing hot; anything it touches takes the slam. |
 
 ## Abilities
 
@@ -81,6 +81,7 @@ fighters: **zero stalemates**, longest fight 62s, median 31–34s.
 | **Bomb** | Detonates on death, often taking the killer with it. |
 | **Ghost** | 24% chance to phase through an incoming hit. |
 | **Titan** | +60% health and mass, but noticeably slower. |
+| **Ricker** | Super goes chrome — 5 seconds spinning and flying at 2.8x speed, then a smooth 2.5s wind-down back to normal. |
 | **None** | No tricks, no downsides. |
 
 ---
@@ -144,7 +145,7 @@ js/
   world.js          simulation: physics, hit resolution, damage, win state
   ball.js           fighter entity, health, rendering
   weapons.js        the nine weapons
-  abilities.js      the nine abilities + status ticks
+  abilities.js      the ten abilities + status ticks
   fx.js             particles, damage numbers, shake, kill feed
   audio.js          WebAudio synth (pentatonic, so hits sound musical)
   render.js         all canvas drawing
