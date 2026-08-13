@@ -2,7 +2,7 @@ name: Deploy Bob's Bath to GitHub Pages
 
 on:
   push:
-    branches: [main, claude/kai-k48bx7]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
