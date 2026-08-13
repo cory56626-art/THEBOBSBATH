@@ -158,54 +158,42 @@ export class Ball {
     ctx.restore();
   }
 
-  /** Name plate + health bar + super meter, drawn above the ball. */
+  /** Compact plate: just a name and one bar. Four stacked readouts per ball
+   *  (name, bar, HP number, super meter) turned the arena into noise. */
   drawPlate(ctx) {
     const r = this.r;
-    const w = 132;
-    const h = 15;
+    const w = 104;
+    const h = 10;
     const x = this.x - w / 2;
-    const y = this.y - r - 62;
+    const y = this.y - r - 34;
 
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
-    ctx.font = '800 30px ui-rounded, "Segoe UI", system-ui, sans-serif';
-    ctx.lineWidth = 6;
+    ctx.font = '800 26px ui-rounded, "Segoe UI", system-ui, sans-serif';
+    ctx.lineWidth = 5;
     ctx.strokeStyle = 'rgba(6,10,24,0.85)';
-    ctx.strokeText(this.name, this.x, y - 10);
+    ctx.strokeText(this.name, this.x, y - 8);
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(this.name, this.x, y - 10);
+    ctx.fillText(this.name, this.x, y - 8);
 
-    // Health bar.
-    ctx.fillStyle = 'rgba(6,10,24,0.75)';
+    ctx.fillStyle = 'rgba(6,10,24,0.7)';
     ctx.fillRect(x - 2, y - 2, w + 4, h + 4);
-    ctx.fillStyle = 'rgba(255,255,255,0.14)';
+    ctx.fillStyle = 'rgba(255,255,255,0.16)';
     ctx.fillRect(x, y, w, h);
     const frac = this.hpFrac;
     ctx.fillStyle = frac > 0.5 ? '#7ee08a' : frac > 0.22 ? '#ffd166' : '#ff5b6e';
     ctx.fillRect(x, y, w * frac, h);
 
-    // Shield overlay sits on the same bar.
+    // Shield rides the same bar as a thin blue cap.
     if (this.shieldMax > 0 && this.shield > 0) {
-      ctx.fillStyle = withAlpha('#5aa9ff', 0.85);
-      ctx.fillRect(x, y, w * clamp(this.shield / this.shieldMax, 0, 1), 5);
+      ctx.fillStyle = withAlpha('#5aa9ff', 0.9);
+      ctx.fillRect(x, y, w * clamp(this.shield / this.shieldMax, 0, 1), 4);
     }
-
-    ctx.font = '800 22px ui-rounded, "Segoe UI", system-ui, sans-serif';
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = 'rgba(6,10,24,0.85)';
-    ctx.strokeText(String(Math.max(0, Math.ceil(this.hp))), this.x, y + h + 22);
-    ctx.fillStyle = '#e8ecff';
-    ctx.fillText(String(Math.max(0, Math.ceil(this.hp))), this.x, y + h + 22);
-
-    // Super meter.
-    if (SETTINGS.supers && this.superCharge > 0) {
-      const sy = y + h + 6;
-      const sfrac = this.superCharge / 100;
-      ctx.fillStyle = 'rgba(6,10,24,0.6)';
-      ctx.fillRect(x + 26, sy, w - 52, 6);
-      ctx.fillStyle = this.superReady ? '#ffd166' : withAlpha('#ffd166', 0.6);
-      ctx.fillRect(x + 26, sy, (w - 52) * sfrac, 6);
+    // Super meter is a hairline under the bar, only once it is actually charging.
+    if (SETTINGS.supers && this.superCharge > 8) {
+      ctx.fillStyle = this.superReady ? '#ffd166' : withAlpha('#ffd166', 0.55);
+      ctx.fillRect(x, y + h + 3, w * (this.superCharge / 100), 3);
     }
     ctx.restore();
   }

@@ -29,8 +29,11 @@ Any static server works — `npx http-server`, `php -S`, VS Code Live Server.
 
 ## How a battle works
 
-Balls hold a **constant speed and never stop**. They steer toward the nearest
-enemy — or toward a health drop when they're hurt. When a weapon connects it
+Balls hold a **constant speed and never stop**, bouncing off the walls and off
+each other. They carry a light drift toward the nearest enemy — or toward a
+health drop when they're hurt — but it is deliberately weak: crank it up and
+every ball converges on the middle of the arena and hovers there, which looks
+nothing like the genre. When a weapon connects it
 deals damage **and levels up**: more reach, more damage, faster fire. That
 escalation is the whole shape of the genre. Early hits chip; late hits delete.
 
@@ -47,8 +50,8 @@ video. From **30 seconds** onward:
 - health drops stop spawning
 - **the walls close in**, down to 42% of the cage
 
-No match can outlive it. Measured across 150 simulated battles at 2, 4 and 8
-fighters: **zero stalemates**, longest fight 69s, median 11–19s.
+No match can outlive it. Measured across simulated battles at 2, 4 and 8
+fighters: **zero stalemates**, longest fight 62s, median 31–34s.
 
 ---
 
@@ -64,6 +67,7 @@ fighters: **zero stalemates**, longest fight 69s, median 11–19s.
 | **Shotgun** | Slow spread of pellets, plus recoil that shoves the shooter around. |
 | **Laser** | Charges with a visible targeting line, then burns a beam across the arena. |
 | **Spikes** | No weapon — the ball itself damages anything it touches. |
+| **Portal Gun** | Fires a portal where it's headed, dives through, and bursts out somewhere far away — glowing hot, and anything it touches on the way out takes the slam. |
 
 ## Abilities
 
@@ -120,7 +124,12 @@ fixed:
   now bleeds off sideways velocity at range, turning that orbit into a closing
   spiral.
 
-After tuning, all eight weapons land in a **28–41%** duel win-rate band.
+After tuning, all weapons land in a tight duel win-rate band, and every one of
+the nine wins matches at every roster size.
+
+The Portal Gun's look follows the show: a metal-grey body with a glowing green
+vial on top, firing an opaque green swirling vortex with lighter yellow-green
+"goo" flecks.
 
 ---
 
@@ -134,7 +143,7 @@ js/
   utils.js          math helpers
   world.js          simulation: physics, hit resolution, damage, win state
   ball.js           fighter entity, health, rendering
-  weapons.js        the eight weapons
+  weapons.js        the nine weapons
   abilities.js      the nine abilities + status ticks
   fx.js             particles, damage numbers, shake, kill feed
   audio.js          WebAudio synth (pentatonic, so hits sound musical)

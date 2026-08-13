@@ -68,7 +68,7 @@ export class FX {
       life: big ? 1.2 : 0.85,
       maxLife: big ? 1.2 : 0.85,
       vy: big ? -110 : -85,
-      size: big ? 62 : 40,
+      size: big ? 58 : 33,
     });
   }
 

@@ -12,6 +12,7 @@
 //   draw(ctx, ball)               -> render
 
 import { TAU, rand, clamp, withAlpha, setLength } from './utils.js';
+import { ARENA } from './config.js';
 
 const METAL = '#e9f0ff';
 
@@ -419,7 +420,7 @@ export const WEAPONS = {
     label: 'Spikes',
     blurb: 'No weapon — the ball itself is the weapon. Body-slam damage.',
     kind: 'contact',
-    create: () => ({ level: 0, dmg: 9.5, growDmg: 0.45, spin: 1.4, angle: 0, cdTime: 0.46, contact: true }),
+    create: () => ({ level: 0, dmg: 16, growDmg: 0.72, spin: 1.4, angle: 0, cdTime: 0.4, contact: true }),
     update(ball, world, dt) {
       ball.weapon.angle += ball.weapon.spin * dt;
     },
@@ -447,6 +448,83 @@ export const WEAPONS = {
       ctx.restore();
     },
   },
+
+  portal: {
+    label: 'Portal Gun',
+    blurb: 'Fires a portal where it is headed, dives through, and bursts out somewhere far away — glowing hot.',
+    kind: 'portal',
+    create: () => ({
+      cd: 1.6, rate: 2.8, dmg: 21, growDmg: 1.05, level: 0, cdTime: 0.42,
+      angle: 0, swirl: 0, charge: 0, inP: null, outP: null, life: 0,
+    }),
+
+    update(ball, world, dt) {
+      const w = ball.weapon;
+      w.swirl += dt * 2.6;
+      // The gun aims where the ball is going, not at an enemy.
+      w.angle = Math.atan2(ball.vy, ball.vx);
+      if (w.charge > 0) w.charge -= dt;
+
+      if (w.inP) {
+        w.life -= dt;
+        if (w.life <= 0) { w.inP = null; w.outP = null; return; }
+
+        const d = Math.hypot(ball.x - w.inP.x, ball.y - w.inP.y);
+        if (d < w.inP.r * 0.85) {
+          // Through the portal. Momentum carries over, the way portals should.
+          const fromX = w.inP.x, fromY = w.inP.y;
+          ball.x = w.outP.x;
+          ball.y = w.outP.y;
+          ball.trail.length = 0; // otherwise the trail draws a line across the arena
+          w.charge = 2.0;
+          w.inP = null;
+          w.outP = null;
+
+          world.fx.burst(fromX, fromY, PORTAL_GREEN, 22, 460, 8);
+          world.fx.ring(fromX, fromY, PORTAL_GREEN, 150, 12);
+          world.fx.burst(ball.x, ball.y, PORTAL_LIME, 30, 620, 9);
+          world.fx.ring(ball.x, ball.y, PORTAL_LIME, 190, 14);
+          world.fx.addShake(9);
+        }
+        return;
+      }
+
+      w.cd -= dt;
+      if (w.cd <= 0) {
+        w.cd = Math.max(1.5, w.rate - w.level * 0.07);
+        placePortals(ball, w);
+        world.fx.ring(w.inP.x, w.inP.y, PORTAL_GREEN, 130, 10);
+        world.onShoot();
+      }
+    },
+
+    hitboxes(ball) {
+      // Only dangerous on the way out — the exit slam is the damage.
+      const w = ball.weapon;
+      if (w.charge <= 0) return [];
+      return [{ x: ball.x, y: ball.y, r: ball.r + 18 }];
+    },
+
+    draw(ctx, ball) {
+      const w = ball.weapon;
+      if (w.inP) {
+        const fade = clamp(w.life / 1.2, 0, 1);
+        drawPortal(ctx, w.outP, w.swirl * -1.3, fade);
+        drawPortal(ctx, w.inP, w.swirl, fade);
+      }
+
+      // Charged-up glow while the slam is live.
+      if (w.charge > 0) {
+        const a = clamp(w.charge / 2.0, 0, 1);
+        ctx.fillStyle = withAlpha(PORTAL_LIME, 0.35 * a);
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.r + 22 * a, 0, TAU);
+        ctx.fill();
+      }
+
+      drawPortalGun(ctx, ball, w);
+    },
+  },
 };
 
 export const WEAPON_KEYS = Object.keys(WEAPONS);
@@ -455,4 +533,124 @@ export const WEAPON_KEYS = Object.keys(WEAPONS);
 export function weaponDamage(ball) {
   const w = ball.weapon;
   return w.dmg + w.level * (w.growDmg || 0);
+}
+
+// --------------------------------------------------------------- portal gun
+
+// Rick's portal gun: a metal-grey body with a glowing green vial on top, firing
+// an opaque green swirling vortex. Colours follow the show's acid-green palette
+// with the lighter yellow-green "goo" highlights.
+const PORTAL_GREEN = '#97ce4c';
+const PORTAL_LIME = '#d4f24a';
+const PORTAL_DEEP = '#2f5417';
+const PORTAL_R = 64;
+
+/** Entry portal lands ahead of the ball; exit lands far away from it. */
+function placePortals(ball, w) {
+  const pad = PORTAL_R + 16;
+  const minX = ARENA.x + pad;
+  const maxX = ARENA.x + ARENA.w - pad;
+  const minY = ARENA.y + pad;
+  const maxY = ARENA.y + ARENA.h - pad;
+
+  const heading = Math.atan2(ball.vy, ball.vx);
+  const ix = clamp(ball.x + Math.cos(heading) * 250, minX, maxX);
+  const iy = clamp(ball.y + Math.sin(heading) * 250, minY, maxY);
+
+  // "Somewhere random, but not near the portal it just made."
+  const minDist = Math.min(ARENA.w, ARENA.h) * 0.5;
+  let ox = ix;
+  let oy = iy;
+  let found = false;
+  for (let i = 0; i < 40; i++) {
+    const cx = rand(minX, maxX);
+    const cy = rand(minY, maxY);
+    if (Math.hypot(cx - ix, cy - iy) >= minDist) { ox = cx; oy = cy; found = true; break; }
+  }
+  if (!found) {
+    // Arena too tight for the random pick (it shrinks during sudden death) —
+    // mirror through the centre, which is always the farthest point available.
+    ox = clamp(2 * (ARENA.x + ARENA.w / 2) - ix, minX, maxX);
+    oy = clamp(2 * (ARENA.y + ARENA.h / 2) - iy, minY, maxY);
+  }
+
+  w.inP = { x: ix, y: iy, r: PORTAL_R };
+  w.outP = { x: ox, y: oy, r: PORTAL_R };
+  w.life = 5.5;
+}
+
+function drawPortal(ctx, p, swirl, alpha) {
+  const { x, y, r } = p;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  ctx.fillStyle = withAlpha(PORTAL_GREEN, 0.22);
+  ctx.beginPath();
+  ctx.arc(x, y, r * 1.3, 0, TAU);
+  ctx.fill();
+
+  ctx.fillStyle = PORTAL_DEEP;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, TAU);
+  ctx.fill();
+
+  // Swirling energy: nested arcs turning at different rates.
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 5; i++) {
+    const rr = r * (0.88 - i * 0.16);
+    const a0 = swirl * (1 + i * 0.42) + i * 1.7;
+    ctx.strokeStyle = i % 2 ? PORTAL_LIME : PORTAL_GREEN;
+    ctx.lineWidth = r * 0.15;
+    ctx.beginPath();
+    ctx.arc(x, y, rr, a0, a0 + 2.3 - i * 0.18);
+    ctx.stroke();
+  }
+
+  // Bubbling goo flecks.
+  for (let i = 0; i < 6; i++) {
+    const a = swirl * 1.6 + (i / 6) * TAU;
+    const rr = r * (0.3 + 0.45 * ((i * 37) % 10) / 10);
+    ctx.fillStyle = withAlpha(PORTAL_LIME, 0.8);
+    ctx.beginPath();
+    ctx.arc(x + Math.cos(a) * rr, y + Math.sin(a) * rr, r * 0.07, 0, TAU);
+    ctx.fill();
+  }
+
+  ctx.strokeStyle = PORTAL_LIME;
+  ctx.lineWidth = r * 0.12;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, TAU);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawPortalGun(ctx, ball, w) {
+  const [ax, ay] = rim(ball, w.angle, -8);
+  const c = Math.cos(w.angle);
+  const s = Math.sin(w.angle);
+  const bx = ax + c * 40;
+  const by = ay + s * 40;
+
+  ctx.save();
+  ctx.lineCap = 'butt';
+  // Metal-grey body.
+  ctx.strokeStyle = '#8d97ad';
+  ctx.lineWidth = 20;
+  ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
+  ctx.strokeStyle = '#59627a';
+  ctx.lineWidth = 9;
+  ctx.beginPath(); ctx.moveTo(ax + c * 14, ay + s * 14); ctx.lineTo(bx, by); ctx.stroke();
+
+  // Glowing vial on top of the gun.
+  const vx = ax + c * 8 - s * 15;
+  const vy = ay + s * 8 + c * 15;
+  ctx.fillStyle = withAlpha(PORTAL_GREEN, 0.55);
+  ctx.beginPath(); ctx.arc(vx, vy, 15, 0, TAU); ctx.fill();
+  ctx.fillStyle = PORTAL_LIME;
+  ctx.beginPath(); ctx.arc(vx, vy, 8, 0, TAU); ctx.fill();
+
+  // Muzzle glow.
+  ctx.fillStyle = withAlpha(PORTAL_LIME, w.inP ? 0.35 : 0.9);
+  ctx.beginPath(); ctx.arc(bx, by, 7, 0, TAU); ctx.fill();
+  ctx.restore();
 }

@@ -67,16 +67,6 @@ function drawBackdrop(ctx) {
   g.addColorStop(1, '#080c1c');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
-
-  // Faint grid so the background isn't a flat void on a phone screen.
-  ctx.strokeStyle = 'rgba(120,150,255,0.045)';
-  ctx.lineWidth = 2;
-  for (let x = 0; x < W; x += 72) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
-  }
-  for (let y = 0; y < H; y += 72) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-  }
 }
 
 function drawArena(ctx) {

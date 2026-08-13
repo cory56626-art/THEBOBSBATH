@@ -522,7 +522,7 @@ export class World {
         opts.crit
       );
     }
-    this.fx.spray(target.x, target.y, angle, target.color, opts.crit ? 14 : 8, 380);
+    this.fx.spray(target.x, target.y, angle, target.color, opts.crit ? 12 : 5, 360);
     this.fx.addShake(clamp(amt * 0.35, 1.5, 12));
     Sound.hit(clamp(amt / 12, 0.5, 1.6));
 

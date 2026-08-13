@@ -30,7 +30,7 @@ let baseScale = 1;
  */
 export function sizeArena(fighterCount) {
   const t = Math.max(0, Math.min(1, (fighterCount - 2) / 4));
-  baseScale = 0.66 + (1 - 0.66) * t;
+  baseScale = 0.82 + (1 - 0.82) * t;
   applyArenaShrink(1);
 }
 
@@ -69,7 +69,11 @@ export const SETTINGS = {
   maxHp: 150,
   hpSizeMode: true,      // ball radius tracks remaining HP
   baseRadius: 46,
-  aggression: 0.68,      // 0 = pure random bouncing, 1 = beelines at the nearest enemy
+  // 0 = pure bouncing, 1 = beelines at the nearest enemy. Kept low on purpose:
+  // high values made every ball converge on the middle and hover there, which
+  // looks nothing like the genre. This is a gentle drift on top of real
+  // wall-bouncing motion, not a magnet.
+  aggression: 0.18,
   pickups: true,
   pickupInterval: 6,     // seconds between health/power drops
   supers: true,

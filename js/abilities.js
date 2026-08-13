@@ -46,7 +46,12 @@ export const ABILITIES = {
     onDealDamage(ball, target, amt, world) {
       const healed = amt * 0.45;
       ball.heal(healed);
-      world.fx.number(ball.x, ball.y - ball.r - 30, `+${Math.round(healed)}`, '#7ee08a');
+      // Batched: a "+N" on every single hit was permanent screen clutter.
+      ball.lifestealAccum = (ball.lifestealAccum || 0) + healed;
+      if (ball.lifestealAccum >= 20) {
+        world.fx.number(ball.x, ball.y - ball.r - 30, `+${Math.round(ball.lifestealAccum)}`, '#7ee08a');
+        ball.lifestealAccum = 0;
+      }
     },
     fireSuper(ball, world) {
       // Drains every living enemy at once.
@@ -94,10 +99,8 @@ export const ABILITIES = {
       // its regen — that was the stalemate.
       const absorbed = Math.min(ball.shield, amt * 0.7);
       ball.shield -= absorbed;
+      // The ring flash already reads as "that was blocked" — no text needed.
       world.fx.ring(ball.x, ball.y, '#5aa9ff', ball.r + 46, 9);
-      if (absorbed > 0) {
-        world.fx.number(ball.x, ball.y - ball.r - 54, `${Math.round(absorbed)} blocked`, '#5aa9ff');
-      }
       return amt - absorbed;
     },
     fireSuper(ball, world) {
