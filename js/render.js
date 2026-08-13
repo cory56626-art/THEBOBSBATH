@@ -24,6 +24,7 @@ export function render(ctx, world, hookText) {
   ctx.clip();
 
   for (const b of world.balls) if (b.alive) b.drawTrail(ctx);
+  world.drawHazards(ctx);
   world.drawPickups(ctx);
   world.fx.drawWorld(ctx);
 

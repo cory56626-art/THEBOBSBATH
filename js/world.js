@@ -18,6 +18,7 @@ export class World {
     this.balls = [];
     this.projectiles = [];
     this.pickups = [];
+    this.hazards = [];   // lingering ground effects, e.g. Ricker's acid
     this.fx = new FX();
     this.state = 'idle';       // idle | running | over
     this.winner = null;
@@ -32,6 +33,7 @@ export class World {
     this.balls = [];
     this.projectiles = [];
     this.pickups = [];
+    this.hazards = [];
     this.fx.clear();
     this.time = 0;
     this.pickupTimer = 3;
@@ -163,6 +165,7 @@ export class World {
     this.resolveWeaponHits();
     this.updateProjectiles(dt);
     this.updatePickups(dt);
+    this.updateHazards(dt);
     this.fx.update(dt);
     this.checkWin();
   }
@@ -485,6 +488,89 @@ export class World {
     }
   }
 
+  // ----------------------------------------------------------------- hazards
+
+  /** Ground effects that damage anyone standing in them except their owner. */
+  updateHazards(dt) {
+    for (let i = this.hazards.length - 1; i >= 0; i--) {
+      const h = this.hazards[i];
+      h.life -= dt;
+      if (h.life <= 0) { this.hazards.splice(i, 1); continue; }
+
+      // Damage in discrete ticks rather than every frame, so the floating
+      // numbers stay readable instead of becoming a solid smear.
+      h.tick -= dt;
+      if (h.tick > 0) continue;
+      h.tick = 0.4;
+
+      const owner = this.balls.find((b) => b.id === h.ownerId) || null;
+      for (const b of this.living) {
+        if (b.id === h.ownerId) continue; // immune to their own mess
+        if (Math.hypot(b.x - h.x, b.y - h.y) > h.r + b.r * 0.5) continue;
+        this.damage(b, h.dps * 0.4, owner);
+        this.fx.burst(b.x, b.y, h.color, 3, 130, 4);
+      }
+    }
+  }
+
+  drawHazards(ctx) {
+    for (const h of this.hazards) {
+      const fade = clamp(h.life / 1.5, 0, 1);
+      ctx.save();
+      ctx.globalAlpha = 0.72 * fade;
+
+      // Irregular puddle: a handful of overlapping blobs fixed at spawn time,
+      // so the shape sits still instead of boiling every frame.
+      ctx.fillStyle = h.color;
+      for (const b of h.blobs) {
+        ctx.beginPath();
+        ctx.arc(h.x + b.dx, h.y + b.dy, b.r, 0, TAU);
+        ctx.fill();
+      }
+      // Brighter core.
+      ctx.globalAlpha = 0.5 * fade;
+      ctx.fillStyle = h.color2;
+      for (const b of h.blobs) {
+        ctx.beginPath();
+        ctx.arc(h.x + b.dx, h.y + b.dy, b.r * 0.55, 0, TAU);
+        ctx.fill();
+      }
+      // Bubbles.
+      ctx.globalAlpha = 0.85 * fade;
+      ctx.fillStyle = h.color2;
+      for (const bb of h.bubbles) {
+        const t = (this.time * bb.speed + bb.phase) % 1;
+        ctx.beginPath();
+        ctx.arc(h.x + bb.dx, h.y + bb.dy - t * 8, bb.r * (1 - t * 0.5), 0, TAU);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+
+  /** Spawn an acid puddle. Used by Ricker's vomit super. */
+  spawnAcid(ball, { radius = 130, dps = 26, life = 8 } = {}) {
+    const blobs = [];
+    const n = 6;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * TAU + rand(-0.3, 0.3);
+      const d = rand(0, radius * 0.42);
+      blobs.push({ dx: Math.cos(a) * d, dy: Math.sin(a) * d, r: rand(radius * 0.45, radius * 0.7) });
+    }
+    const bubbles = [];
+    for (let i = 0; i < 7; i++) {
+      const a = rand(0, TAU);
+      const d = rand(0, radius * 0.7);
+      bubbles.push({ dx: Math.cos(a) * d, dy: Math.sin(a) * d, r: rand(4, 9), speed: rand(0.4, 0.9), phase: Math.random() });
+    }
+    this.hazards.push({
+      type: 'acid', x: ball.x, y: ball.y, r: radius, ownerId: ball.id,
+      life, maxLife: life, dps, tick: 0,
+      color: '#6f9b1e', color2: '#c6f24a',
+      blobs, bubbles,
+    });
+  }
+
   // ------------------------------------------------------------------ damage
 
   damage(target, amount, source, opts = {}) {
@@ -563,7 +649,8 @@ export class World {
     ball.superCharge = 0;
     ball.superReadyAnnounced = false;
     Sound.superFire();
-    this.fx.number(ball.x, ball.y - ball.r - 90, 'SUPER', '#ffd166', true);
+    // No generic "SUPER" banner — each ability prints its own name, and two big
+    // words landing on the same spot just rendered as a smear.
     const ab = ABILITIES[ball.abilityKey];
     if (ab && ab.fireSuper) ab.fireSuper(ball, this);
   }

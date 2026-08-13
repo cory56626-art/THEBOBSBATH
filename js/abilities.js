@@ -15,10 +15,63 @@ import { TAU, clamp, rand, chance, withAlpha } from './utils.js';
 // Ricker's metal mode: full power for RICKER_HOLD, then eases off over RICKER_FADE.
 const RICKER_HOLD = 5;
 const RICKER_FADE = 2.5;
+// Cornered detection: an enemy this close, moving this similarly, for this long.
+const PIN_MARGIN = 26;
+const PIN_REL_SPEED = 240;
+const PIN_TIME = 1.0;
+// Acid triggers once recent damage taken passes this share of max health.
+const ACID_HEAT_FRAC = 0.22;
+
+/** Default super: chrome, spinning, 4x speed, untouchable for 5s. */
+function rickerMetal(ball, world) {
+  ball.ricker = RICKER_HOLD + RICKER_FADE;
+  ball.rickerSpin = 0;
+  world.fx.number(ball.x, ball.y - ball.r - 70, 'RICKED', '#dfe6f7', true);
+  world.fx.ring(ball.x, ball.y, '#dfe6f7', 360, 22);
+  world.fx.burst(ball.x, ball.y, '#dfe6f7', 36, 620, 8);
+  world.fx.addFlash('#dfe6f7', 0.3);
+  world.fx.addShake(15);
+}
+
+/** Under heavy fire: throws up. The puddle burns everyone but its owner. */
+function rickerAcid(ball, world) {
+  ball.rickerHeat = 0;
+  world.spawnAcid(ball, { radius: 142, dps: 30, life: 8 });
+  world.fx.number(ball.x, ball.y - ball.r - 70, 'BLEEUGH', '#c6f24a', true);
+  world.fx.burst(ball.x, ball.y, '#c6f24a', 40, 520, 9);
+  world.fx.ring(ball.x, ball.y, '#6f9b1e', 230, 16);
+  world.fx.addShake(10);
+}
+
+/** Cornered: forcefield, blasting everyone off it hard enough to break contact. */
+function rickerForcefield(ball, world) {
+  ball.rickerPinned = 0;
+  const radius = 340;
+  world.fx.ring(ball.x, ball.y, '#8fd8ff', radius, 26);
+  world.fx.ring(ball.x, ball.y, '#ffffff', radius * 0.65, 14);
+  world.fx.burst(ball.x, ball.y, '#8fd8ff', 44, 760, 9);
+  world.fx.number(ball.x, ball.y - ball.r - 70, 'GET OFF', '#8fd8ff', true);
+  world.fx.addFlash('#8fd8ff', 0.4);
+  world.fx.addShake(22);
+
+  for (const other of world.balls) {
+    if (other === ball || !other.alive) continue;
+    const d = Math.hypot(other.x - ball.x, other.y - ball.y);
+    if (d >= radius) continue;
+    const falloff = 1 - d / radius;
+    world.damage(other, 18 * falloff + 6, ball, { crit: true });
+    const nx = (other.x - ball.x) / (d || 1);
+    const ny = (other.y - ball.y) / (d || 1);
+    // Deliberately violent: a gentle nudge would leave them stuck together.
+    other.vx += nx * (900 + 800 * falloff);
+    other.vy += ny * (900 + 800 * falloff);
+  }
+}
 
 /** Default super for abilities that don't define one: a damaging shockwave. */
-function novaSuper(ball, world) {
+function novaSuper(ball, world, label = null) {
   const radius = 320;
+  if (label) world.fx.number(ball.x, ball.y - ball.r - 70, label, '#ffd166', true);
   world.fx.ring(ball.x, ball.y, ball.color, radius, 22);
   world.fx.burst(ball.x, ball.y, ball.color, 46, 700, 9);
   world.fx.addShake(16);
@@ -40,7 +93,7 @@ export const ABILITIES = {
   none: {
     label: 'None',
     blurb: 'A pure fighter. No tricks, no downsides.',
-    fireSuper: novaSuper,
+    fireSuper: (ball, world) => novaSuper(ball, world, 'NOVA'),
   },
 
   vampire: {
@@ -59,6 +112,7 @@ export const ABILITIES = {
     },
     fireSuper(ball, world) {
       // Drains every living enemy at once.
+      world.fx.number(ball.x, ball.y - ball.r - 70, 'DRAIN', '#ff5b6e', true);
       world.fx.ring(ball.x, ball.y, '#ff5b6e', 420, 20);
       world.fx.addFlash('#ff5b6e', 0.4);
       let total = 0;
@@ -273,31 +327,44 @@ export const ABILITIES = {
 
   ricker: {
     label: 'Ricker',
-    blurb: 'Super goes chrome: 5 seconds spinning and flying at nearly triple speed, then winds down.',
+    blurb: 'Reads the fight: chrome rampage normally, acid vomit under heavy fire, forcefield when it is cornered.',
     color: '#dfe6f7',
-    // Wants to be in metal mode as often as possible, so it charges quicker.
-    superChargeMult: 1.1,
+    // Charges slower than everyone else: five untouchable seconds at 4x speed
+    // is a lot of super, so it has to come around less often to stay fair.
+    superChargeMult: 1.0,
 
-    // 5 seconds at full tilt, then a 2.5s wind-down — RICKER_HOLD + RICKER_FADE.
+    /** Three supers in one. Being unable to escape is the most urgent problem,
+     *  then being ground down, and otherwise it just goes chrome. */
     fireSuper(ball, world) {
-      ball.ricker = RICKER_HOLD + RICKER_FADE;
-      ball.rickerSpin = 0;
-      world.fx.number(ball.x, ball.y - ball.r - 70, 'RICKED', '#dfe6f7', true);
-      world.fx.ring(ball.x, ball.y, '#dfe6f7', 360, 22);
-      world.fx.burst(ball.x, ball.y, '#dfe6f7', 36, 620, 8);
-      world.fx.addFlash('#dfe6f7', 0.3);
-      world.fx.addShake(15);
+      if ((ball.rickerPinned || 0) >= PIN_TIME) return rickerForcefield(ball, world);
+      if ((ball.rickerHeat || 0) >= ball.maxHp * ACID_HEAT_FRAC) return rickerAcid(ball, world);
+      return rickerMetal(ball, world);
     },
 
     update(ball, world, dt) {
+      // "Getting hit a lot": damage taken recently, decaying on a ~1.5s half-life.
+      ball.rickerHeat = Math.max(0, (ball.rickerHeat || 0) * Math.pow(0.63, dt));
+
+      // "Legitimately can't escape": an enemy inside contact range that is also
+      // moving with it, so bouncing will not separate them and every sweep of
+      // that enemy's weapon connects. Distance alone is not enough — two balls
+      // passing through each other at speed are not trapped.
+      let pinned = false;
+      for (const other of world.balls) {
+        if (other === ball || !other.alive) continue;
+        if (Math.hypot(other.x - ball.x, other.y - ball.y) > ball.r + other.r + PIN_MARGIN) continue;
+        if (Math.hypot(other.vx - ball.vx, other.vy - ball.vy) < PIN_REL_SPEED) { pinned = true; break; }
+      }
+      ball.rickerPinned = pinned ? (ball.rickerPinned || 0) + dt : 0;
+
       if (ball.ricker <= 0) return;
       ball.ricker -= dt;
 
-      // Ramp holds at 1 for the first 5s, then eases to 0 over the last 2.5s,
-      // so it slows and de-chromes gradually rather than snapping back.
+      // Holds at 1 for the first 5s, then eases to 0 across the last 2.5s, so
+      // speed, spin, chrome and damage all wind down as one motion.
       const k = clamp(ball.ricker / RICKER_FADE, 0, 1);
-      ball.rickerSpin += dt * (6 + 26 * k);
-      ball.speedMult = 1 + 1.8 * k;
+      ball.rickerSpin += dt * (6 + 30 * k);
+      ball.speedMult = 1 + 3 * k; // 4x at full tilt
       if (ball.weapon.spin) ball.weapon.angle += ball.weapon.spin * dt * 5 * k;
 
       if (chance(dt * 30 * k)) {
@@ -312,9 +379,15 @@ export const ABILITIES = {
       }
     },
 
-    damageMult(ball) {
-      if (ball.ricker <= 0) return 1;
-      return 1 + 0.3 * clamp(ball.ricker / RICKER_FADE, 0, 1);
+    onTakeDamage(ball, amt, source, world) {
+      // Invincible for the chrome phase only. Once it starts winding down the
+      // chrome fades and so does the protection.
+      if (ball.ricker > RICKER_FADE) {
+        world.fx.burst(ball.x, ball.y, '#ffffff', 4, 260, 4);
+        return 0;
+      }
+      ball.rickerHeat = (ball.rickerHeat || 0) + amt;
+      return amt;
     },
 
     /** Chrome banding, rotating with the spin so it reads as spinning metal. */
@@ -344,6 +417,18 @@ export const ABILITIES = {
       ctx.fillStyle = g;
       ctx.fillRect(ball.x - r, ball.y - r, r * 2, r * 2);
       ctx.restore();
+
+      // Hard white rim while it is actually invulnerable, so the window when
+      // nothing can touch it is obvious on screen.
+      if (ball.ricker > RICKER_FADE) {
+        ctx.save();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, r - 2, 0, TAU);
+        ctx.stroke();
+        ctx.restore();
+      }
     },
 
     aura(ctx, ball) {
@@ -356,6 +441,7 @@ export const ABILITIES = {
       ctx.stroke();
     },
   },
+
   titan: {
     label: 'Titan',
     blurb: '+60% health and mass, but noticeably slower.',

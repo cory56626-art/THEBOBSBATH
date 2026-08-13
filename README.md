@@ -81,8 +81,27 @@ fighters: **zero stalemates**, longest fight 62s, median 31–34s.
 | **Bomb** | Detonates on death, often taking the killer with it. |
 | **Ghost** | 24% chance to phase through an incoming hit. |
 | **Titan** | +60% health and mass, but noticeably slower. |
-| **Ricker** | Super goes chrome — 5 seconds spinning and flying at 2.8x speed, then a smooth 2.5s wind-down back to normal. |
+| **Ricker** | Its super reads the situation and picks one of three (see below). |
 | **None** | No tricks, no downsides. |
+
+### Ricker's three supers
+
+Ricker is the one ability whose super changes with the state of the fight. It
+checks the most urgent problem first:
+
+1. **Cornered → Forcefield.** If an enemy has been inside contact range *and*
+   moving with it for over a second — the case where bouncing will never
+   separate them and every sweep of that enemy's weapon lands — it blasts
+   everyone off. Detection needs both proximity and matched velocity: two balls
+   punching through each other at speed are not trapped, they are just passing.
+2. **Getting worn down → Acid.** If damage taken in the last second and a half
+   passes 22% of max health, it throws up instead. The puddle burns anyone
+   standing in it for 8 seconds and its owner is immune.
+3. **Otherwise → Metal.** Goes chrome, spins up, and flies at **4x speed,
+   untouchable**, for 5 seconds — then eases back over 2.5s. Speed, spin, chrome
+   opacity and the invulnerability all ride the same ramp, so it winds down as
+   one motion rather than four things ending separately. The hard white rim
+   marks the window where nothing can touch it.
 
 ---
 
