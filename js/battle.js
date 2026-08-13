@@ -14,7 +14,6 @@ import { UNIT_BY_ID } from './units.js';
 
 export const HALF_W = 60;
 export const HALF_D = 26;
-export const DEPLOY_LINE = 0;
 /** How many bodies stay on the field before the oldest are cleared away. */
 const MAX_CORPSES = 60;
 

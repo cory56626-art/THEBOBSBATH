@@ -51,12 +51,6 @@ export class Point {
   get vx() { return this.x - this.px; }
   get vy() { return this.y - this.py; }
   get vz() { return this.z - this.pz; }
-
-  setVel(vx, vy, vz) {
-    this.px = this.x - vx;
-    this.py = this.y - vy;
-    this.pz = this.z - vz;
-  }
 }
 
 export class Stick {

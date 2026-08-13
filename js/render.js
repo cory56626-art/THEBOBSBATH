@@ -99,7 +99,6 @@ export class Renderer {
 
     this.raycaster = new THREE.Raycaster();
     this.ndc = new THREE.Vector2();
-    this.shadows = true;
   }
 
   buildLights() {
@@ -264,17 +263,6 @@ export class Renderer {
 
     this.prims = [this.sph, this.cyl, this.box, this.cone, this.fxSph, this.fxCyl];
     for (const p of this.prims) this.scene.add(p.mesh);
-  }
-
-  setShadows(on) {
-    this.shadows = on;
-    this.renderer.shadowMap.enabled = on;
-    this.sun.castShadow = on;
-    for (const p of this.prims) p.mesh.castShadow = on && p !== this.fxSph && p !== this.fxCyl;
-    this.ground.receiveShadow = on;
-    // Force the materials to recompile against the new shadow state.
-    for (const p of this.prims) p.mesh.material.needsUpdate = true;
-    this.ground.material.needsUpdate = true;
   }
 
   resize(w, h, dpr) {
