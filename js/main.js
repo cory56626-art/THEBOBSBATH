@@ -1,7 +1,7 @@
-import { Game } from './ui.js';
+import { App } from './ui.js';
 
-const game = new Game();
-game.run();
+const app = new App();
+app.run();
 
-// Handy for poking at the simulation from the console.
-window.game = game;
+// Handy for poking at the match from the console.
+window.tug = app;

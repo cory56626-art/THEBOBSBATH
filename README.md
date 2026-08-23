@@ -1,141 +1,105 @@
-# Wobbly Battle Simulator
+# Tug Tussle
 
-A 3D physics battle simulator that runs in the browser — a homage to
-[Totally Accurate Battle Simulator](https://store.steampowered.com/app/508440/).
-Spend a budget placing armies of wobbling ragdolls on your half of the field,
-press start, and then lose all control while they charge, swing, miss, trip over
-each other and get launched into the air.
+A 3D tug-of-war clicker that runs entirely in the browser. Tap faster than your
+rival, drag the golden knot past their chalk line, and watch their whole team
+faceplant into the mud.
 
-Nothing about the fighting is animated. Every unit is an **active ragdoll**: a
-floppy skeleton that stands up only because spring "muscles" hold it there, and
-falls over the moment something hits it hard enough.
+**▶ Play: https://cory56626-art.github.io/thebobsbath/**
 
-**[▶ Play it](https://cory56626-art.github.io/THEBOBSBATH/)**
-
-![status](https://img.shields.io/badge/status-playable-4ecdc4)
-![deps](https://img.shields.io/badge/build%20step-none-blue)
+No build step, no bundler, no CDN — open `index.html` on any static host and it
+runs.
 
 ---
 
-## What's in it
-
-- **70 units across 10 factions** — Tribal, Farmer, Medieval, Ancient, Viking,
-  Dynasty, Renaissance, Pirate, Spooky and Wild West, each with the seven-unit
-  shape the real game uses: a cheap body, a ranged option, a heavy, a boss.
-  Point costs follow the originals, from the 50-point Halfling to the
-  4000-point Da Vinci Tank.
-- **16 campaign battles**, each a fixed enemy army and a budget smaller than
-  what you are facing. They are counter puzzles: spread out against splash,
-  close fast on artillery, put something heavy in front of archers.
-- **Sandbox** with no budget and control of both sides.
-- **Abilities** that change how a fight goes — healing, inspiring auras,
-  lifesteal, summoning, poison, burning, thorns, lightning, and a lasso that
-  drags people off their feet.
-- Progress saves to `localStorage`.
-
-## How a battle works
-
-1. Pick a faction, pick a unit, click on your half of the field to place it.
-   Drag to lay out a rank. Right-click removes.
-2. Watch the budget bar. In campaign you will always be outspent.
-3. Press **Start**, and stop being in charge.
-4. Hold **F** for slow motion, because the best moments go past too quickly.
-
-## Controls
+## How to play
 
 | | |
 |---|---|
-| Click / drag | Place the selected unit |
-| Right-click | Remove a unit |
-| Right-drag | Orbit the camera |
-| Shift-drag | Pan |
-| WASD | Move across the field |
-| Scroll · Q / E | Zoom |
-| Space | Start battle |
-| Hold F · G | Slow motion / very slow motion |
-| T | Freeze time |
-| R | Reset |
-| 1–7 | Pick a unit from the current faction |
+| **Tap anywhere** (or <kbd>Space</kbd>) | Every tap is one yank on the rope. Each finger counts, so two-thumb it. |
+| **Clicks per second** | Your CPS *is* your pulling power. Out-click the rival and the rope comes your way. |
+| **SURGE** | Tapping charges the bar at the bottom. Fire it for 2.8 seconds of 2.4× power — save it for when you're losing ground. <kbd>Shift</kbd> also fires it. |
+| **The chalk lines** | Drag the knot past your rival's line to win. Stall past 22 seconds and both lines start creeping inward, so nothing goes on forever. |
+| **The ladder** | Beat a rival to unlock the next. Progress is saved in your browser. |
 
----
+Dragging a lead gets progressively harder the closer the knot gets to the line,
+so a comeback is always live — right up until someone lands in the mud.
 
-## How it works
+## The rivals
 
-### The wobbler
+| # | Rival | CPS | Personality |
+|---|---|---|---|
+| 1 | Rusty Bolt 🤖 | 3.0 | Fumbles the rope constantly |
+| 2 | Bouncy 🐇 | 4.1 | Twitchy little bursts |
+| 3 | Coach Kelp 🦑 | 4.9 | Digs in hard when behind |
+| 4 | Twin Pips 👯 | 5.6 | Short, sharp double-pulls |
+| 5 | Ironclaw 🦀 | 6.3 | Metronomic. Never tires |
+| 6 | Turbo Tina 🐆 | 7.1 | Sprints, coasts, sprints |
+| 7 | Major Meltdown 🌋 | 8.0 | Gets faster the more he's losing |
+| 8 | THE KRAKEN 🐙 | 9.1 | Relentless |
 
-Each unit is nine points — head, chest, hip, two hands, two knees, two feet —
-connected by distance constraints and integrated with Verlet. On its own that
-skeleton is a bag of sticks that collapses instantly.
-
-What makes it stand is a set of **muscles**: every step, spring forces pull each
-joint toward where it *should* be in the unit's local frame. A `balance` value
-from 0 to 1 scales how much authority those muscles have. Steep torso tilt and
-hard knocks drain it; it regenerates over time. So a unit that takes a
-ballista bolt goes limp, tumbles, and then wobbles back upright a second later
-under its own power — none of which is scripted.
-
-Dying just switches the muscles off permanently and loosens the joints, which
-is why corpses fold into heaps instead of holding a pose.
-
-Weight resists knockback, exactly as in the original: a King at 12× barely
-flinches at the arrow that sends a Squire cartwheeling.
-
-### The renderer
-
-Nothing in the battle owns a mesh. There are four `InstancedMesh` primitives —
-sphere, cylinder, box, cone — and every frame the entire scene is re-emitted
-into them: limbs, heads, googly eyes, hats, weapons, arrows, explosions. The
-whole battle is roughly four draw calls, and the flat low-poly result is the
-look the game wanted anyway.
-
-Because units are drawn directly from their physics joints, whatever shape the
-solver has folded someone into is exactly what you see.
-
-### The AI
-
-Deliberately thin. Find the nearest enemy, walk until the weapon reaches, swing.
-The entertainment does not come from clever tactics inside a unit; it comes from
-a hundred simple units colliding with a physics engine that does not respect
-anyone's plans.
-
-### Layout
-
-```
-index.html          markup and the deployment panel
-css/styles.css
-js/physics.js       Verlet points, distance constraints, spatial hash
-js/wobbler.js       the active ragdoll — skeleton, muscles, balance, damage
-js/units.js         faction and unit tables
-js/battle.js        simulation: AI, weapons, projectiles, abilities
-js/campaign.js      the 16 battles
-js/render.js        three.js scene and the instanced primitive emitters
-js/ui.js            panel, camera rig, input, campaign flow
-js/audio.js         sound, synthesised at runtime — no audio files
-vendor/             three.js, vendored so the page has no external requests
-```
+Rival CPS is their honest tap rate, measured the same way yours is — both sides
+of the rope run through the identical tap→pull pipeline. Roughly: ~5 CPS clears
+the first three, ~6.5 gets you to Ironclaw, and the Kraken wants ~8 plus good
+surge timing.
 
 ## Running it locally
 
-Static site, no build step. It just needs to be served over HTTP, since ES
-modules do not load from `file://`:
+Any static file server will do — ES modules need HTTP, not `file://`:
 
-```bash
-python3 -m http.server 8000
-# open http://localhost:8000
+```sh
+npx http-server -p 8080 -c-1 .
+# then open http://localhost:8080
 ```
 
-## Deployment
+## How it's put together
 
-Pushing to `main` publishes to GitHub Pages via
-`.github/workflows/pages.yml`. There is nothing to compile — the workflow
-uploads the repository as-is.
+Plain ES modules, no framework, no build. [three.js](https://threejs.org) r169
+is vendored in `vendor/` (MIT, licence included). Every texture — the pitch, the
+sky gradient, the dust sprites — is painted into a `<canvas>` at load time, and
+every sound is synthesised with the Web Audio API, so there are no binary assets
+in the repo at all.
+
+```
+index.html          markup: canvas, HUD, and the four screens
+css/styles.css      the chunky mobile-game chrome
+js/config.js        every gameplay tunable in one place
+js/main.js          entry point
+js/ui.js            screens, input, HUD, floating text
+js/game.js          the match: tug simulation and state machine
+js/scene.js         arena, lighting, crowd, camera framing
+js/character.js     the puller rig and its animation states
+js/rope.js          Catmull-Rom rope threaded through every pair of hands
+js/fx.js            dust, sweat, mud and confetti
+js/bots.js          the rival ladder and its AI
+js/audio.js         synthesised sound kit
+js/store.js         progress in localStorage
+```
+
+### The pull maths
+
+A tap adds a fixed amount to your pull, which then decays exponentially
+(`halfLife` in `config.js`). Steady tapping at *C* clicks per second settles at a
+steady pull proportional to *C*, so the rope genuinely tracks the CPS gap rather
+than raw tap count. The difference between the two sides drives the rope's
+velocity, damped so it feels like rope and not like a slider.
+
+Everything worth tuning — pull decay, rope speed, the lead-resistance curve,
+surge numbers, sudden-death timing — lives at the top of `js/config.js`.
+
+### Camera
+
+The pitch is a long horizontal line, which is awkward on a phone. The camera
+swings further off-axis and higher as the viewport narrows, so on a portrait
+screen the rope runs diagonally and uses both dimensions instead of shrinking to
+fit the short one.
+
+## Deploying
+
+`.github/workflows/pages.yml` publishes the repository root to GitHub Pages on
+every push to `main`. There's no build step — the workflow uploads the files
+as-is.
 
 ## Credits
 
-Totally Accurate Battle Simulator is made by
-[Landfall Games](https://landfall.se/). This is an independent homage built
-from scratch, not affiliated with or endorsed by them, and shares no code or
-assets with the original.
-
-[three.js](https://threejs.org/) is vendored under `vendor/` (MIT, see
-`vendor/three-LICENSE.txt`). Everything else here is original.
+Built on [three.js](https://threejs.org) r169, vendored in `vendor/` under its
+MIT licence (`vendor/three-LICENSE.txt`). Everything else here is original.

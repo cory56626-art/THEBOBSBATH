@@ -2,101 +2,135 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#101726" />
-<title>Wobbly Battle Simulator</title>
-<meta name="description" content="A 3D physics battle simulator in the browser: spend a budget on active-ragdoll armies, press start, and watch them fall over. 70 units across 10 factions, 16 campaign battles, and a sandbox." />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#4bb8f0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Tug Tussle — 3D Tug of War</title>
+<meta name="description" content="A 3D tug-of-war clicker. Tap faster than the bot to drag their whole team into the mud. Eight rivals, real clicks-per-second, big rope, bigger noise." />
 <link rel="stylesheet" href="css/styles.css" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23101726'/%3E%3Ccircle cx='11' cy='13' r='5' fill='%233f7fd8'/%3E%3Ccircle cx='21' cy='13' r='5' fill='%23dc4b4b'/%3E%3Ccircle cx='12' cy='13' r='1.8' fill='%23fff'/%3E%3Ccircle cx='20' cy='13' r='1.8' fill='%23fff'/%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234bb8f0'/%3E%3Cpath d='M4 17h24' stroke='%23c98a4b' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='17' r='4' fill='%23ffd24a'/%3E%3C/svg%3E" />
 </head>
 <body>
 
-<canvas id="stage" aria-label="Battlefield"></canvas>
+<canvas id="stage" aria-label="Tug of war arena"></canvas>
+<div id="vignette" aria-hidden="true"></div>
+<div id="pops" aria-hidden="true"></div>
 
-<header id="topbar">
-  <div class="brand">
-    <span class="logo" aria-hidden="true"></span>
-    <h1>Wobbly Battle Simulator</h1>
-  </div>
+<button id="muteBtn" class="chip mute" type="button" title="Sound on/off" aria-label="Sound on or off">🔊</button>
 
-  <div class="budget" title="Points spent of your budget">
-    <div class="budget-nums"><b id="spent">0</b> / <span id="budget">0</span></div>
-    <div class="budget-bar"><i id="budgetFill"></i></div>
-  </div>
-
-  <div class="counts">
-    <span class="cnt blue" title="Blue units alive">● <b id="blueCount">0</b></span>
-    <span class="cnt red" title="Red units alive">● <b id="redCount">0</b></span>
-  </div>
-
-  <div class="actions">
-    <div class="seg" role="group" aria-label="Simulation speed">
-      <button data-speed="0.25" title="Slow motion">¼×</button>
-      <button data-speed="1" class="on" title="Normal speed">1×</button>
-      <button data-speed="2" title="Double speed">2×</button>
+<!-- ══════════════ IN-MATCH HUD ══════════════ -->
+<div id="hud" class="layer" hidden>
+  <div class="hud-top">
+    <div class="tugbar">
+      <span class="tb-face blue" id="tbYouFace">🙂</span>
+      <div class="tb-track">
+        <i class="tb-goal left"></i>
+        <i class="tb-goal right"></i>
+        <i class="tb-mid"></i>
+        <i class="tb-fill" id="tbFill"></i>
+        <b class="tb-knot" id="tbKnot"></b>
+      </div>
+      <span class="tb-face red" id="tbBotFace">🤖</span>
     </div>
-    <button id="soundBtn" class="icon" title="Toggle sound">🔊</button>
-    <button id="clearBtn" class="ghost" title="Remove all your units">Clear</button>
-    <button id="startBtn" class="primary">Start battle</button>
-  </div>
-</header>
-
-<aside id="panel">
-  <div class="seg wide" role="group" aria-label="Mode">
-    <button data-mode="campaign" class="on">Campaign</button>
-    <button data-mode="sandbox">Sandbox</button>
-  </div>
-
-  <section id="campaignBox">
-    <h2>Battles</h2>
-    <div id="levelList" class="levels"></div>
-    <p id="levelHint" class="hint"></p>
-  </section>
-
-  <section id="teamBox" hidden>
-    <h2>Placing for</h2>
-    <div class="seg wide" role="group" aria-label="Team to place">
-      <button data-team="0" class="on team-blue">Blue</button>
-      <button data-team="1" class="team-red">Red</button>
-    </div>
-  </section>
-
-  <section>
-    <h2>Factions</h2>
-    <div id="factionTabs" class="ftabs"></div>
-    <div id="unitGrid" class="units"></div>
-  </section>
-
-  <section class="help">
-    <h2>Controls</h2>
-    <dl>
-      <dt>Click / drag</dt><dd>Place the selected unit</dd>
-      <dt>Right-click</dt><dd>Remove a unit</dd>
-      <dt>Right-drag</dt><dd>Orbit the camera</dd>
-      <dt>Shift-drag</dt><dd>Pan the camera</dd>
-      <dt>WASD</dt><dd>Move across the field</dd>
-      <dt>Scroll · Q / E</dt><dd>Zoom</dd>
-      <dt>Space</dt><dd>Start battle</dd>
-      <dt>Hold F · G</dt><dd>Slow motion</dd>
-      <dt>T</dt><dd>Freeze time</dd>
-      <dt>R</dt><dd>Reset the battle</dd>
-      <dt>1 – 7</dt><dd>Pick a unit from the faction</dd>
-    </dl>
-  </section>
-</aside>
-
-<button id="panelToggle" title="Show or hide the army panel" aria-label="Toggle panel">☰</button>
-
-<div id="result" hidden>
-  <div class="card">
-    <h2 id="resultTitle">Victory</h2>
-    <p id="resultSub"></p>
-    <div class="row">
-      <button id="retryBtn" class="ghost">Try again</button>
-      <button id="nextBtn" class="primary">Next battle</button>
+    <div class="cpsrow">
+      <div class="cps you">
+        <small>YOU</small>
+        <b id="cpsYou">0.0</b>
+        <em>cps</em>
+      </div>
+      <div class="clock"><span id="matchTimer">0.0</span><i>sec</i></div>
+      <div class="cps them">
+        <small id="hudBotName">BOT</small>
+        <b id="cpsBot">0.0</b>
+        <em>cps</em>
+      </div>
     </div>
   </div>
+
+  <div class="hud-bottom">
+    <div class="taphint" id="tapHint">TAP ANYWHERE — FAST!</div>
+    <button id="surgeBtn" class="surge" type="button" disabled>
+      <i class="s-fill" id="surgeFill"></i>
+      <span class="s-text"><b>SURGE</b><small id="surgeSub">charging…</small></span>
+    </button>
+  </div>
+
+  <button id="quitBtn" class="chip quit" type="button" title="Give up">✕</button>
 </div>
+
+<!-- ══════════════ TITLE ══════════════ -->
+<section id="titleScreen" class="screen show">
+  <div class="scrim"></div>
+  <div class="title-wrap">
+    <h1 class="logo">
+      <span class="l1">TUG</span>
+      <span class="l2">TUSSLE</span>
+    </h1>
+    <p class="tag">Out-click the bot. Drag them into the mud.</p>
+    <button id="playBtn" class="btn big gold" type="button">PLAY</button>
+    <div class="title-stats">
+      <div class="tstat"><b id="statBest">0.0</b><small>best cps</small></div>
+      <div class="tstat"><b id="statWins">0</b><small>wins</small></div>
+      <div class="tstat"><b id="statBelt">—</b><small>rank</small></div>
+    </div>
+    <button id="howBtn" class="btn ghost sm" type="button">How to play</button>
+  </div>
+</section>
+
+<!-- ══════════════ HOW TO PLAY ══════════════ -->
+<section id="howScreen" class="screen">
+  <div class="scrim"></div>
+  <div class="card how">
+    <h2>How to play</h2>
+    <ul class="howlist">
+      <li><span class="hi">👆</span><div><b>Tap anywhere</b> (or press <kbd>Space</kbd>) as fast as you can. Every tap yanks the rope.</div></li>
+      <li><span class="hi">📈</span><div>Your <b>clicks per second</b> is your pulling power. Higher CPS than the bot = the rope comes your way.</div></li>
+      <li><span class="hi">⚡</span><div>Tapping charges <b>SURGE</b>. Fire it for a few seconds of doubled power — time it when you're behind.</div></li>
+      <li><span class="hi">🏁</span><div>Drag the golden knot past the bot's chalk line to win. Stall too long and the lines close in.</div></li>
+      <li><span class="hi">🤖</span><div>Beat a rival to unlock the next one. They get faster. Much faster.</div></li>
+    </ul>
+    <button id="howClose" class="btn blue" type="button">Got it</button>
+  </div>
+</section>
+
+<!-- ══════════════ RIVAL SELECT ══════════════ -->
+<section id="selectScreen" class="screen">
+  <div class="scrim"></div>
+  <div class="select-wrap">
+    <h2 class="shead">Pick your rival</h2>
+    <div id="botRail" class="rail"></div>
+    <div class="select-actions">
+      <button id="backBtn" class="btn ghost sm" type="button">Back</button>
+      <button id="fightBtn" class="btn big red" type="button">CHALLENGE</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ COUNTDOWN ══════════════ -->
+<div id="countdown" class="layer" hidden><b id="cdText">3</b></div>
+
+<!-- ══════════════ RESULT ══════════════ -->
+<section id="resultScreen" class="screen">
+  <div class="scrim"></div>
+  <div class="card result" id="resultCard">
+    <div class="medal" id="resultMedal">🏆</div>
+    <h2 id="resultTitle">YOU WIN!</h2>
+    <p id="resultSub">You dragged Rusty into the mud.</p>
+    <div class="stats">
+      <div class="stat"><b id="rAvg">0.0</b><small>avg cps</small></div>
+      <div class="stat"><b id="rPeak">0.0</b><small>peak cps</small></div>
+      <div class="stat"><b id="rTaps">0</b><small>taps</small></div>
+      <div class="stat"><b id="rTime">0.0s</b><small>time</small></div>
+    </div>
+    <p class="unlocked" id="rUnlock" hidden></p>
+    <div class="row">
+      <button id="againBtn" class="btn ghost" type="button">Rematch</button>
+      <button id="nextBtn" class="btn gold" type="button">Next rival</button>
+    </div>
+  </div>
+</section>
 
 <script type="module" src="js/main.js"></script>
 </body>
