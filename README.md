@@ -4,7 +4,7 @@ A 3D tug-of-war clicker that runs entirely in the browser. Tap faster than your
 rival, drag the golden knot past their chalk line, and watch their whole team
 faceplant into the mud.
 
-**▶ Play: https://cory56626-art.github.io/thebobsbath/**
+**▶ Play: https://cory56626-art.github.io/THEBOBSBATH/**
 
 No build step, no bundler, no CDN — open `index.html` on any static host and it
 runs.
