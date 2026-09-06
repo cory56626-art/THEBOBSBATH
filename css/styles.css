@@ -171,6 +171,11 @@ input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 
 .stage-stat { right: 12px; top: 12px; font-family: var(--mono); }
 
 /* ─────────── cards ─────────── */
+.group-label {
+  font-size: 9px; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--accent-2); font-weight: 700; margin-top: 4px; opacity: .8;
+}
+.group-label:first-child { margin-top: 0; }
 .cards { display: flex; flex-direction: column; gap: 6px; }
 .card {
   display: flex; align-items: center; gap: 8px; padding: 6px 8px;

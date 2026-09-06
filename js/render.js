@@ -97,6 +97,63 @@ function drawWater(ctx, rect, trial, toY) {
   ctx.stroke();
 }
 
+/** Solids: tree branches, trunks and boulders. */
+function drawBlocks(ctx, rect, blocks, toX, toY, zoom) {
+  for (const b of blocks) {
+    const x = toX(b.x0), y = toY(b.y0);
+    const w = (b.x1 - b.x0) * zoom, h = (b.y1 - b.y0) * zoom;
+    if (x + w < rect.x - 8 || x > rect.x + rect.w + 8) continue;
+    if (y + h < rect.y - 8 || y > rect.y + rect.h + 8) continue;
+
+    if (b.style === 'branch' || b.style === 'trunk') {
+      // Branch blocks run deep so the stair is solid underneath. Only the top
+      // lip is drawn as wood; the mass below is foliage, or the tree reads as
+      // a plank fence.
+      const lip = Math.max(2, 16 * zoom);
+      ctx.fillStyle = b.style === 'trunk' ? '#3a2817' : '#1e3320';
+      ctx.fillRect(x, y, w, h);
+      if (b.style === 'branch') {
+        // Leaf tufts sized from the branch width, not its depth.
+        const lr = w * 0.34;
+        ctx.fillStyle = 'rgba(84, 140, 78, 0.55)';
+        ctx.beginPath();
+        ctx.ellipse(x + w * 0.3, y - lr * 0.35, lr, lr * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(108, 168, 92, 0.45)';
+        ctx.beginPath();
+        ctx.ellipse(x + w * 0.74, y - lr * 0.55, lr * 0.72, lr * 0.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      const g = ctx.createLinearGradient(0, y, 0, y + lip);
+      g.addColorStop(0, '#8a6338');
+      g.addColorStop(1, '#4a331c');
+      ctx.fillStyle = g;
+      ctx.fillRect(x, y, w, lip);
+      ctx.strokeStyle = 'rgba(206,168,110,0.6)';
+      ctx.lineWidth = Math.max(1, 1.4 * zoom);
+      ctx.beginPath(); ctx.moveTo(x, y + 0.5); ctx.lineTo(x + w, y + 0.5); ctx.stroke();
+      // Bark grain down the trunk.
+      if (b.style === 'trunk' && w > 8) {
+        ctx.strokeStyle = 'rgba(20,12,6,0.45)';
+        ctx.lineWidth = 1;
+        for (let i = 1; i <= 5; i++) {
+          const gx = x + (w * i) / 6;
+          ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx, y + h); ctx.stroke();
+        }
+      }
+    } else {
+      const g = ctx.createLinearGradient(0, y, 0, y + h);
+      g.addColorStop(0, '#6b6f78');
+      g.addColorStop(1, '#33363d');
+      ctx.fillStyle = g;
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = 'rgba(180,190,200,0.4)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    }
+  }
+}
+
 /** The line to beat: where the best creature so far got to. */
 function drawRecord(ctx, rect, trial, record, toX, toY, cam) {
   if (record == null || !Number.isFinite(record)) return;
@@ -216,7 +273,9 @@ export function drawArena(ctx, rect, sim, cam, opts = {}) {
   ctx.rect(rect.x, rect.y, rect.w, rect.h);
   ctx.clip();
 
-  const focusY = trial.id === 'vault' ? Math.min(sim.com.y, sim.start.y - sim.peak * 0.6) : sim.com.y;
+  const focusY = trial.id === 'vault'
+    ? Math.min(sim.com.y, sim.start.y - sim.peak * 0.6)
+    : sim.com.y;
   const zoom = clamp(Math.min(rect.h / 300, rect.w / 420), 0.16, 1.5);
   cam.follow(sim.com.x + 30, focusY - 20, zoom, opts.snap);
 
@@ -227,6 +286,7 @@ export function drawArena(ctx, rect, sim, cam, opts = {}) {
   drawSky(ctx, rect, trial);
   drawMarkers(ctx, rect, cam, trial, toX, toY);
   drawTerrain(ctx, rect, cam, trial, toX, toY);
+  if (sim.world.blocks.length) drawBlocks(ctx, rect, sim.world.blocks, toX, toY, cam.zoom);
   if (trial.water) drawWater(ctx, rect, trial, toY);
   if (opts.record) drawRecord(ctx, rect, trial, opts.record, toX, toY, cam);
   if (opts.ghost) drawCreature(ctx, opts.ghost.world, toX, toY, cam.zoom, { ghost: true });

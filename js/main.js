@@ -5,7 +5,7 @@ import { $, $$, el, clamp, fmt } from './util.js';
 import { Designer } from './designer.js';
 import { Lab, SPEEDS } from './lab.js';
 import { Archive } from './archive.js';
-import { PRESETS, randomBody } from './presets.js';
+import { PRESETS, GROUPS, randomBody } from './presets.js';
 import { TRIAL_LIST, trialOf } from './trials.js';
 import { drawBody } from './render.js';
 import { Population } from './evolution.js';
@@ -113,21 +113,26 @@ function thumb(body) {
 function renderPresets() {
   const list = $('#presetList');
   list.textContent = '';
-  for (const p of PRESETS) {
-    const card = el('button', { class: 'card', type: 'button', title: p.hint }, [
-      thumb(p.body),
-      el('div', { class: 'card-body' }, [
-        el('div', { class: 'card-title', text: p.name }),
-        el('div', { class: 'card-sub', text: `${p.body.nodes.length} nodes · ${p.body.links.length} links` }),
-      ]),
-    ]);
-    card.addEventListener('click', () => {
-      designer.setBody(p.body);
-      $('#nameInput').value = p.name;
-      ui.creatureId = null;
-      $('#designHint').textContent = p.hint;
-    });
-    list.append(card);
+  for (const group of GROUPS) {
+    const members = PRESETS.filter((p) => p.group === group);
+    if (!members.length) continue;
+    list.append(el('div', { class: 'group-label', text: group }));
+    for (const p of members) {
+      const card = el('button', { class: 'card', type: 'button', title: p.hint }, [
+        thumb(p.body),
+        el('div', { class: 'card-body' }, [
+          el('div', { class: 'card-title', text: p.name }),
+          el('div', { class: 'card-sub', text: p.best ? `best at ${p.best}` : `${p.body.nodes.length} nodes` }),
+        ]),
+      ]);
+      card.addEventListener('click', () => {
+        designer.setBody(p.body);
+        $('#nameInput').value = p.name;
+        ui.creatureId = null;
+        $('#designHint').textContent = p.hint;
+      });
+      list.append(card);
+    }
   }
 }
 

@@ -18,7 +18,7 @@ canvas; open `index.html` on any static host and it runs.
 
 | | |
 |---|---|
-| **1 · Design** | Place nodes, connect them with muscles or rigid bones, tune grip / size / mass, and name your species. Or start from one of eight blueprints — Worm, Biped, Quadruped, Blob, Eel, Pogo, Crab, Tadpole — or hit **Surprise me**. |
+| **1 · Design** | Place nodes, connect them with muscles or rigid bones, tune grip / size / mass, and name your species. Or start from fifteen blueprints — eight abstract shapes and seven animals — or hit **Surprise me**. |
 | **2 · Evolve** | A population of your creature spawns, each with a randomly wired nervous system. They all flail. The ones that flail *slightly* less badly get to breed. Repeat. |
 | **3 · Archive** | Race any two recorded generations against each other in the same trial. Generation 1 against generation 400 is the whole point of the project in one screen. |
 
@@ -44,16 +44,54 @@ With **Body drift** turned up, the shape mutates too: limbs grow, thicken, and
 fall off across generations, and the brain is resized to fit whatever body it
 wakes up in.
 
-## The six trials
+## The blueprints
+
+**Shapes** — Tadpole, Worm, Blob, Pogo, Crab, Biped, Quadruped, Eel.
+
+**Animals**, drawn as real side-on anatomy with sticky paws and slippery backs:
+
+| Animal | What makes it different |
+|---|---|
+| **Kangaroo** | One enormous hind leg, a long foot and a counterweight tail. Everything about it wants to hop. |
+| **Cheetah** | A spine built out of muscle rather than bone, so the whole back flexes into the stride. |
+| **Human** | Tall, narrow and permanently falling forward. Two legs is a hard way to live. |
+| **Chimp** | Arms longer than its legs, knuckles on the floor. |
+| **Monkey** | Light bones and a tail half its own length. |
+| **Gorilla** | Enormous chest, short legs, arms like pistons. Slow to start, hard to stop. |
+| **Shark** | No legs, no grip, one forked tail. Helpless on land, unbeatable in water. |
+
+## The nine trials
 
 | | Trial | What selection rewards |
 |---|---|---|
-| ⟶ | **Salt Flats** | Distance travelled right on flat ground. The purest test of a gait. |
+| ⟶ | **Salt Flats** | Distance carried right on flat ground. The purest test of a gait. |
 | ∿ | **Rolling Dunes** | Same race over sine hills. Punishes one-trick gaits. |
-| ◺ | **The Ascent** | Altitude gained on a slope that never ends. Grip is everything. |
+| ⬡ | **Boulder Field** | Flat ground buried under rubble. You cannot run through it, only over. |
+| ⩗ | **The Chasm** | Ground, then nothing, then ground again. Crawlers stall at the first edge. |
+| ◺ | **The Ascent** | Altitude on a slope that never ends. Grip is everything. |
+| 🌲 | **The Canopy** | A great tree. Branch to branch, all the way up. Getting up is the whole job. |
 | ↑ | **High Vault** | Peak height of the centre of mass. One good launch is all that counts. |
 | ≈ | **The Abyss** | Distance swum. Buoyant, viscous, no floor worth touching. |
-| ⇶ | **Standing Gale** | Height held while the wind shoves you around. Balance, not speed. |
+| ⇶ | **Standing Gale** | Share of its own height held while the wind shoves it around. |
+
+Boulders, branches and tree trunks are solid boxes the physics resolves against
+properly, so a creature can stand on a branch, wedge under a rock, or fall off
+either.
+
+## How scoring works
+
+Fitness is deliberately hard to cheat:
+
+- **Travel** is measured from the position a creature *holds* over the last 15%
+  of its life, never the instant it stopped — a dive across the line does not
+  beat a gait that carried the body there and kept it there.
+- **Posture** is measured against the creature's own standing height, so a tall
+  body cannot win a balance trial just by being tall.
+- **The climb** scores altitude held plus how long it was held. Distance credit
+  gets spent sprinting along the ground underneath the tree and peak-height
+  credit gets spent hopping on the spot, so neither is offered.
+- **A body that tears itself apart** scores just below standing still, rather
+  than as the huge outlier that used to drag every generation average down.
 
 Swimming works because limbs get **anisotropic drag** — a segment slicing
 edge-on barely resists while the same segment swept broadside pushes hard.
@@ -102,11 +140,11 @@ python3 -m http.server 8000
 ```
 index.html          three screens: design, evolve, archive
 css/styles.css
-js/physics.js       Verlet point masses, distance constraints, terrain, fluid
+js/physics.js       Verlet point masses, constraints, terrain, solid blocks, fluid
 js/brain.js         recurrent neural network + mutation and crossover
 js/genome.js        body + brain, morphological mutation, breeding
 js/simulation.js    one creature, one trial, one lifetime
-js/trials.js        the six worlds and what each one rewards
+js/trials.js        the nine worlds and what each one rewards
 js/evolution.js     the genetic algorithm
 js/render.js        all canvas drawing
 js/designer.js      the creature editor

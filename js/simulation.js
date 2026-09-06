@@ -20,6 +20,7 @@ export class Sim {
       damping: trial.damping ?? 0.999,
       terrain: trial.terrain,
       water: trial.water ?? null,
+      blocks: trial.blocks ?? [],
       iterations: 6,
     });
 
@@ -33,8 +34,21 @@ export class Sim {
     this.com = { x: this._com.x, y: this._com.y };
     this.peak = 0;
     this.heightSum = 0;
+    // Height only counts while something is actually touching down. Otherwise
+    // "hold yourself up" is won by bouncing: a creature airborne most of the
+    // trial posts a higher average than one calmly standing.
+    this.standSum = 0;
     this.effort = 0;
     this.steps = 0;
+    // Standing height: the body's own scale, so posture scores mean the same
+    // thing for a mouse and for a gorilla.
+    this.standH = Math.max(12, this.trial.terrain(this.start.x) - this.start.y);
+    // Scores read the position a creature HOLDS at the end of its life, not the
+    // instant it happened to stop. Otherwise a dive across the line beats a
+    // gait that actually carried the body there.
+    this.holdFrom = Math.floor(trial.duration * 0.85);
+    this.holdX = 0; this.holdY = 0; this.holdN = 0;
+    this.hold = { x: this.start.x, y: this.start.y };
     this.done = false;
     this.dead = false;
     this.fitness = 0;
@@ -48,6 +62,7 @@ export class Sim {
     let cx = 0, low = -Infinity;
     for (const n of body.nodes) cx += n.x;
     cx /= body.nodes.length;
+    cx -= this.trial.spawnX ?? 0;
     for (const n of body.nodes) low = Math.max(low, n.y + n.r);
     const dy = gy - low - 2;
     for (const n of body.nodes) {
@@ -110,7 +125,20 @@ export class Sim {
       this.com.x = this._com.x; this.com.y = this._com.y;
       const localGround = w.terrain(this.com.x);
       this.peak = Math.max(this.peak, this.start.y - this.com.y);
-      this.heightSum += clamp(localGround - this.com.y, 0, 400);
+      const h = clamp(localGround - this.com.y, 0, 600);
+      this.heightSum += h;
+      let supported = false;
+      for (let i = 0; i < w.parts.length; i++) {
+        if (w.parts[i].grip > 0.35) { supported = true; break; }
+      }
+      if (supported) this.standSum += h;
+      if (this.steps >= this.holdFrom) {
+        this.holdX += this.com.x; this.holdY += this.com.y; this.holdN++;
+        this.hold.x = this.holdX / this.holdN;
+        this.hold.y = this.holdY / this.holdN;
+      } else {
+        this.hold.x = this.com.x; this.hold.y = this.com.y;
+      }
       if (this.steps % 8 === 0) {
         this.trail.push(this.com.x, this.com.y);
         if (this.trail.length > 160) this.trail.splice(0, 2);
@@ -124,8 +152,24 @@ export class Sim {
 
   finish() {
     this.done = true;
-    const raw = this.dead ? -5 : this.trial.score(this);
-    this.fitness = Number.isFinite(raw) ? raw : -5;
+    // A body that tears itself apart scores just below standing still — bad,
+    // but not the huge outlier that used to drag every generation average down.
+    const raw = this.dead ? -1 : this.trial.score(this);
+    this.fitness = Number.isFinite(raw) ? raw : -1;
+  }
+
+  /** Mean supported height, as a fraction of the starting posture. */
+  get posture() {
+    return this.standSum / Math.max(1, this.steps) / this.standH;
+  }
+
+  /**
+   * Average altitude gained over the whole life, in world units. Unlike a peak,
+   * this cannot be won with one lucky hop — you have to get up early and stay
+   * up — which makes it a much better-shaped gradient for a climb.
+   */
+  get lift() {
+    return this.standSum / Math.max(1, this.steps) - this.standH;
   }
 
   get progress() { return Math.min(1, this.steps / this.trial.duration); }

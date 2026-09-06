@@ -30,6 +30,15 @@ export class Muscle {
   }
 }
 
+/** An axis-aligned solid: a branch, a boulder, a wall. */
+export class Block {
+  constructor(x0, y0, x1, y1, opts = {}) {
+    this.x0 = x0; this.y0 = y0; this.x1 = x1; this.y1 = y1;
+    this.friction = opts.friction ?? 0.95;
+    this.style = opts.style ?? 'rock';
+  }
+}
+
 export class World {
   constructor(cfg = {}) {
     this.parts = [];
@@ -39,6 +48,7 @@ export class World {
     this.iterations = cfg.iterations ?? 6;
     this.terrain = cfg.terrain ?? (() => 0);
     this.water = cfg.water ?? null; // { level, drag, buoyancy, normal }
+    this.blocks = cfg.blocks ?? [];
     this.restitution = cfg.restitution ?? 0.02;
     this.wind = 0;
     this.steps = 0;
@@ -150,7 +160,46 @@ export class World {
       } else {
         p.grip *= 0.8;
       }
+      for (let i = 0; i < this.blocks.length; i++) this.collideBlock(p, this.blocks[i]);
     }
+  }
+
+  /**
+   * Circle against an axis-aligned box. Push out along the shortest way to the
+   * surface, bounce along the normal, and rub off speed along the tangent —
+   * which is what lets a gripping foot hold a branch instead of sliding off it.
+   */
+  collideBlock(p, b) {
+    if (p.x + p.r < b.x0 || p.x - p.r > b.x1 || p.y + p.r < b.y0 || p.y - p.r > b.y1) return;
+    const cx = clamp(p.x, b.x0, b.x1);
+    const cy = clamp(p.y, b.y0, b.y1);
+    let dx = p.x - cx, dy = p.y - cy;
+    const d2 = dx * dx + dy * dy;
+    let nx, ny, pen;
+    if (d2 > 1e-9) {
+      if (d2 > p.r * p.r) return;
+      const d = Math.sqrt(d2);
+      nx = dx / d; ny = dy / d; pen = p.r - d;
+    } else {
+      // Centre is buried inside the box: leave by the nearest face.
+      const left = p.x - b.x0, right = b.x1 - p.x, up = p.y - b.y0, down = b.y1 - p.y;
+      const m = Math.min(left, right, up, down);
+      if (m === left) { nx = -1; ny = 0; pen = left + p.r; }
+      else if (m === right) { nx = 1; ny = 0; pen = right + p.r; }
+      else if (m === up) { nx = 0; ny = -1; pen = up + p.r; }
+      else { nx = 0; ny = 1; pen = down + p.r; }
+    }
+    const vx = p.x - p.px, vy = p.y - p.py;
+    p.x += nx * pen;
+    p.y += ny * pen;
+    const vn = vx * nx + vy * ny;
+    const tx = -ny, ty = nx;
+    const mu = clamp(p.friction * b.friction, 0, 1);
+    const vt = (vx * tx + vy * ty) * (1 - mu * 0.92);
+    const rn = vn < 0 ? -vn * this.restitution : vn;
+    p.px = p.x - (nx * rn + tx * vt);
+    p.py = p.y - (ny * rn + ty * vt);
+    p.grip = Math.min(1, p.grip + 0.5);
   }
 
   /** Center of mass. Reuses one object to stay allocation-free in hot loops. */
