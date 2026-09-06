@@ -1,105 +1,118 @@
-# Tug Tussle
+# PRIMORDIA
 
-A 3D tug-of-war clicker that runs entirely in the browser. Tap faster than your
-rival, drag the golden knot past their chalk line, and watch their whole team
-faceplant into the mud.
+**A creature evolution sandbox that runs entirely in your browser.**
+
+Design a creature out of nodes and muscles, give it a name, then watch a whole
+population of them learn to use the body you drew. Nothing about walking,
+hopping or swimming is programmed — every gait is discovered by a genetic
+algorithm, generation after generation, in front of you.
 
 **▶ Play: https://cory56626-art.github.io/THEBOBSBATH/**
 
-No build step, no bundler, no CDN — open `index.html` on any static host and it
-runs.
+No build step, no bundler, no dependencies. It is plain ES modules and a 2D
+canvas; open `index.html` on any static host and it runs.
 
 ---
 
-## How to play
+## The loop
 
 | | |
 |---|---|
-| **Tap anywhere** (or <kbd>Space</kbd>) | Every tap is one yank on the rope. Each finger counts, so two-thumb it. |
-| **Clicks per second** | Your CPS *is* your pulling power. Out-click the rival and the rope comes your way. |
-| **SURGE** | Tapping charges the bar at the bottom. Fire it for 2.8 seconds of 2.4× power — save it for when you're losing ground. <kbd>Shift</kbd> also fires it. |
-| **The chalk lines** | Drag the knot past your rival's line to win. Stall past 22 seconds and both lines start creeping inward, so nothing goes on forever. |
-| **The ladder** | Beat a rival to unlock the next. Progress is saved in your browser. |
+| **1 · Design** | Place nodes, connect them with muscles or rigid bones, tune grip / size / mass, and name your species. Or start from one of eight blueprints — Worm, Biped, Quadruped, Blob, Eel, Pogo, Crab, Tadpole — or hit **Surprise me**. |
+| **2 · Evolve** | A population of your creature spawns, each with a randomly wired nervous system. They all flail. The ones that flail *slightly* less badly get to breed. Repeat. |
+| **3 · Archive** | Race any two recorded generations against each other in the same trial. Generation 1 against generation 400 is the whole point of the project in one screen. |
 
-Dragging a lead gets progressively harder the closer the knot gets to the line,
-so a comeback is always live — right up until someone lands in the mud.
+## What is actually being evolved
 
-## The rivals
+Each creature carries a **genome**: a body and a brain.
 
-| # | Rival | CPS | Personality |
-|---|---|---|---|
-| 1 | Rusty Bolt 🤖 | 3.0 | Fumbles the rope constantly |
-| 2 | Bouncy 🐇 | 4.1 | Twitchy little bursts |
-| 3 | Coach Kelp 🦑 | 4.9 | Digs in hard when behind |
-| 4 | Twin Pips 👯 | 5.6 | Short, sharp double-pulls |
-| 5 | Ironclaw 🦀 | 6.3 | Metronomic. Never tires |
-| 6 | Turbo Tina 🐆 | 7.1 | Sprints, coasts, sprints |
-| 7 | Major Meltdown 🌋 | 8.0 | Gets faster the more he's losing |
-| 8 | THE KRAKEN 🐙 | 9.1 | Relentless |
+- **The body** is a soft-body mesh — point masses connected by distance
+  constraints, integrated with Verlet. Muscles are constraints whose rest
+  length is driven by the brain; bones are constraints that never move.
+- **The brain** is a small recurrent neural network. It reads the height,
+  velocity and ground contact of every node plus a phase clock, and outputs a
+  contraction signal per muscle at 20 Hz while physics runs at 60 Hz. The
+  recurrence matters: a gait is a memory of where you are in the stride.
 
-Rival CPS is their honest tap rate, measured the same way yours is — both sides
-of the rope run through the identical tap→pull pipeline. Roughly: ~5 CPS clears
-the first three, ~6.5 gets you to Ironclaw, and the Kraken wants ~8 plus good
-surge timing.
+Each generation, everyone lives out the trial. They are ranked, the top two are
+kept untouched, and the rest of the next generation is bred by tournament
+selection, uniform crossover and Gaussian mutation. When a lineage stops
+improving, mutation ramps up in cycles and the occasional stranger is dropped
+into the gene pool — stagnation is met with turbulence, then calm.
+
+With **Body drift** turned up, the shape mutates too: limbs grow, thicken, and
+fall off across generations, and the brain is resized to fit whatever body it
+wakes up in.
+
+## The six trials
+
+| | Trial | What selection rewards |
+|---|---|---|
+| ⟶ | **Salt Flats** | Distance travelled right on flat ground. The purest test of a gait. |
+| ∿ | **Rolling Dunes** | Same race over sine hills. Punishes one-trick gaits. |
+| ◺ | **The Ascent** | Altitude gained on a slope that never ends. Grip is everything. |
+| ↑ | **High Vault** | Peak height of the centre of mass. One good launch is all that counts. |
+| ≈ | **The Abyss** | Distance swum. Buoyant, viscous, no floor worth touching. |
+| ⇶ | **Standing Gale** | Height held while the wind shoves you around. Balance, not speed. |
+
+Swimming works because limbs get **anisotropic drag** — a segment slicing
+edge-on barely resists while the same segment swept broadside pushes hard.
+With plain isotropic drag any repeating stroke would simply undo itself and the
+creature would go nowhere, which is the scallop theorem doing its job.
+
+Switching trials mid-run keeps the brains and changes the world, so you can
+drop a sprinter into the ocean and watch it work the problem out.
+
+## Watching it
+
+- **Arenas at once** — 1 to 36 creatures simulated side by side. The first two
+  arenas are always last generation's champions, so at one arena you are
+  watching the reigning best.
+- **Speed** — ½× to 8×.
+- **Turbo** — drops rendering entirely and grinds hundreds of generations in
+  seconds, then hands you back the champion to watch.
+- The gold flag is the record to beat, ground posts are one metre apart, muscles
+  glow hot as they contract and cold as they stretch, and node colour is grip:
+  orange grips, blue slides.
+
+## Controls
+
+<kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> switch screens, <kbd>Space</kbd> pauses
+and resumes a run. In the designer, scroll to zoom and drag the background to
+pan.
+
+## Saving
+
+Creatures, champions and the run in progress are saved to your browser's local
+storage — reload the page and you pick up where you left off. **Export** writes
+a creature or a whole run (bodies, brains, history) to a JSON file you can share
+or import later.
 
 ## Running it locally
 
-Any static file server will do — ES modules need HTTP, not `file://`:
+Any static server will do, since ES modules will not load over `file://`:
 
 ```sh
-npx http-server -p 8080 -c-1 .
-# then open http://localhost:8080
+python3 -m http.server 8000
+# then open http://localhost:8000
 ```
 
-## How it's put together
-
-Plain ES modules, no framework, no build. [three.js](https://threejs.org) r169
-is vendored in `vendor/` (MIT, licence included). Every texture — the pitch, the
-sky gradient, the dust sprites — is painted into a `<canvas>` at load time, and
-every sound is synthesised with the Web Audio API, so there are no binary assets
-in the repo at all.
+## Layout
 
 ```
-index.html          markup: canvas, HUD, and the four screens
-css/styles.css      the chunky mobile-game chrome
-js/config.js        every gameplay tunable in one place
-js/main.js          entry point
-js/ui.js            screens, input, HUD, floating text
-js/game.js          the match: tug simulation and state machine
-js/scene.js         arena, lighting, crowd, camera framing
-js/character.js     the puller rig and its animation states
-js/rope.js          Catmull-Rom rope threaded through every pair of hands
-js/fx.js            dust, sweat, mud and confetti
-js/bots.js          the rival ladder and its AI
-js/audio.js         synthesised sound kit
-js/store.js         progress in localStorage
+index.html          three screens: design, evolve, archive
+css/styles.css
+js/physics.js       Verlet point masses, distance constraints, terrain, fluid
+js/brain.js         recurrent neural network + mutation and crossover
+js/genome.js        body + brain, morphological mutation, breeding
+js/simulation.js    one creature, one trial, one lifetime
+js/trials.js        the six worlds and what each one rewards
+js/evolution.js     the genetic algorithm
+js/render.js        all canvas drawing
+js/designer.js      the creature editor
+js/lab.js           arena scheduling under a frame budget
+js/archive.js       the time machine
+js/presets.js       starter bodies
+js/storage.js       local storage, import and export
+js/main.js          wiring
 ```
-
-### The pull maths
-
-A tap adds a fixed amount to your pull, which then decays exponentially
-(`halfLife` in `config.js`). Steady tapping at *C* clicks per second settles at a
-steady pull proportional to *C*, so the rope genuinely tracks the CPS gap rather
-than raw tap count. The difference between the two sides drives the rope's
-velocity, damped so it feels like rope and not like a slider.
-
-Everything worth tuning — pull decay, rope speed, the lead-resistance curve,
-surge numbers, sudden-death timing — lives at the top of `js/config.js`.
-
-### Camera
-
-The pitch is a long horizontal line, which is awkward on a phone. The camera
-swings further off-axis and higher as the viewport narrows, so on a portrait
-screen the rope runs diagonally and uses both dimensions instead of shrinking to
-fit the short one.
-
-## Deploying
-
-`.github/workflows/pages.yml` publishes the repository root to GitHub Pages on
-every push to `main`. There's no build step — the workflow uploads the files
-as-is.
-
-## Credits
-
-Built on [three.js](https://threejs.org) r169, vendored in `vendor/` under its
-MIT licence (`vendor/three-LICENSE.txt`). Everything else here is original.
