@@ -80,11 +80,12 @@ export function startFallbackGame() {
   }
 
   document.body.classList.add('fallback-2d');
+  document.title = 'Last Stand 2D';
   canvas.setAttribute('aria-label', '2D zombie tower defense battlefield');
   document.querySelector('#gameTitle em').textContent = '2D';
-  document.querySelector('.brand-kicker').innerHTML = '<span></span> Compatibility protocol';
-  document.querySelector('.menu-tip').textContent = 'Tap a tower, then tap a build pad. The 3D version still runs on WebGL devices.';
-  document.querySelector('.mission-id strong').textContent = 'SECTOR 07 · 2D';
+  document.querySelector('.brand-kicker').innerHTML = '<span></span> Nightfall protocol';
+  document.querySelector('.menu-tip').textContent = 'Select a tower, then tap a build pad. Hold every sector.';
+  document.querySelector('.mission-id strong').textContent = 'DISTRICT 07 · 2D';
 
   const dom = {
     canvas,
@@ -241,7 +242,7 @@ export function startFallbackGame() {
     selectTowerType('ranger', false);
     setWaveReady();
     updateUI();
-    showToast('2D mode active · Select a tower, then tap a build pad.');
+    showToast('Defense online · Select a tower, then tap a build pad.');
   }
 
   function returnToMenu() {
@@ -345,6 +346,7 @@ export function startFallbackGame() {
       slowUntil: 0,
       slowFactor: 1,
       gait: Math.random() * Math.PI * 2,
+      laneOffset: (Math.random() * 2 - 1) * 13,
     });
   }
 
@@ -381,8 +383,8 @@ export function startFallbackGame() {
         continue;
       }
       const point = samplePath(enemy.pathDistance);
-      enemy.x = point.x;
-      enemy.y = point.y;
+      enemy.x = point.x - Math.sin(point.angle) * enemy.laneOffset;
+      enemy.y = point.y + Math.cos(point.angle) * enemy.laneOffset;
       enemy.angle = point.angle;
       enemy.gait += dt * enemy.stats.speed * 0.09;
     }
