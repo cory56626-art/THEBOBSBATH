@@ -1,258 +1,172 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#0a1014" />
-<title>PRIMORDIA — Creature Evolution Sandbox</title>
-<meta name="description" content="Design a creature, name it, and watch a population of them evolve to use their own bodies. Neural controllers, soft-body physics, nine trials including a climbable tree, fifteen blueprints, up to 36 arenas at once. Runs entirely in your browser." />
-<link rel="stylesheet" href="css/styles.css" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230d1620'/%3E%3Ccircle cx='10' cy='21' r='4.5' fill='%23ff9a5c'/%3E%3Ccircle cx='22' cy='21' r='4.5' fill='%23ff9a5c'/%3E%3Ccircle cx='16' cy='9' r='4' fill='%237ef0c0'/%3E%3Cpath d='M10 21 22 21M10 21 16 9M22 21 16 9' stroke='%235ad0e8' stroke-width='2.2'/%3E%3C/svg%3E" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#070a0d" />
+  <meta name="description" content="Last Stand 3D — defend the city from zombie waves in a browser-based tower defense game." />
+  <title>Last Stand 3D</title>
+  <link rel="stylesheet" href="css/game.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body>
+  <main id="app">
+    <canvas id="gameCanvas" aria-label="3D zombie tower defense battlefield"></canvas>
 
-<header class="topbar">
-  <div class="brand">
-    <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true">
-      <circle cx="10" cy="21" r="4.5" fill="#ff9a5c"/><circle cx="22" cy="21" r="4.5" fill="#ff9a5c"/>
-      <circle cx="16" cy="9" r="4" fill="#7ef0c0"/>
-      <path d="M10 21 22 21M10 21 16 9M22 21 16 9" stroke="#5ad0e8" stroke-width="2.2" fill="none"/>
-    </svg>
-    <span class="brand-name">PRIMORDIA</span>
-    <span class="brand-sub">creature evolution sandbox</span>
-  </div>
-  <nav class="tabs" role="tablist">
-    <button class="tab is-active" data-screen="design" role="tab">Design</button>
-    <button class="tab" data-screen="evolve" role="tab">Evolve</button>
-    <button class="tab" data-screen="archive" role="tab">Archive</button>
-  </nav>
-  <button class="ghost-btn" id="helpBtn" title="How this works">?</button>
-</header>
+    <section id="loadingScreen" class="overlay loading-screen" aria-live="polite">
+      <div class="loading-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+      <p>Preparing the battlefield…</p>
+    </section>
 
-<main>
+    <section id="menuScreen" class="overlay menu-screen hidden" aria-labelledby="gameTitle">
+      <div class="menu-atmosphere" aria-hidden="true"></div>
+      <div class="menu-shell">
+        <header class="brand-lockup">
+          <div class="brand-kicker"><span></span> Outbreak protocol</div>
+          <h1 id="gameTitle">LAST<br /><strong>STAND</strong> <em>3D</em></h1>
+          <p>Build your defense. Hold the road. Survive every wave.</p>
+        </header>
 
-<!-- ═══════════════════ DESIGN LAB ═══════════════════ -->
-<section class="screen is-active" id="screen-design">
-  <aside class="panel panel-left">
-    <div class="field">
-      <label for="nameInput">Species name</label>
-      <input id="nameInput" type="text" maxlength="24" placeholder="Name your creature" value="Wobbler" />
-    </div>
+        <div class="mode-picker" role="group" aria-label="Choose a game mode">
+          <button class="mode-card casual" data-mode="casual">
+            <span class="mode-number">01</span>
+            <span class="mode-copy">
+              <strong>Casual</strong>
+              <small>12 waves · 30 base health</small>
+              <span class="mode-difficulty"><i></i><i></i><i></i><i></i><i></i></span>
+              <b>More cash · Slower zombies</b>
+            </span>
+            <span class="mode-arrow">→</span>
+          </button>
 
-    <div class="group">
-      <h3>Tool</h3>
-      <div class="toolbar" id="tools">
-        <button class="tool is-active" data-tool="node" title="Click empty space to place a node">● Node</button>
-        <button class="tool" data-tool="link" title="Click two nodes to connect them">╱ Link</button>
-        <button class="tool" data-tool="move" title="Drag nodes around">✥ Move</button>
-        <button class="tool" data-tool="erase" title="Click a node or link to remove it">✕ Erase</button>
+          <button class="mode-card intermediate" data-mode="intermediate">
+            <span class="mode-number">02</span>
+            <span class="mode-copy">
+              <strong>Intermediate</strong>
+              <small>16 waves · 20 base health</small>
+              <span class="mode-difficulty"><i></i><i></i><i></i><i></i><i></i></span>
+              <b>Balanced outbreak</b>
+            </span>
+            <span class="mode-arrow">→</span>
+          </button>
+
+          <button class="mode-card hard" data-mode="hard">
+            <span class="mode-number">03</span>
+            <span class="mode-copy">
+              <strong>Hard</strong>
+              <small>20 waves · 12 base health</small>
+              <span class="mode-difficulty"><i></i><i></i><i></i><i></i><i></i></span>
+              <b>Stronger hordes · Less cash</b>
+            </span>
+            <span class="mode-arrow">→</span>
+          </button>
+        </div>
+
+        <div class="menu-tip"><kbd>Drag</kbd> rotate · <kbd>Pinch</kbd> zoom · <kbd>Tap</kbd> build</div>
       </div>
-      <label class="check"><input type="checkbox" id="symmetry" /> Mirror new nodes across the centre</label>
-      <label class="check"><input type="checkbox" id="linkKind" /> New links are rigid <b>bones</b></label>
-    </div>
+    </section>
 
-    <div class="group" id="nodeProps">
-      <h3>Node <span class="dim" id="nodeSel">defaults</span></h3>
-      <label class="slider">Grip <output id="gripOut">0.60</output>
-        <input type="range" id="grip" min="0.02" max="1" step="0.01" value="0.6" />
-      </label>
-      <label class="slider">Size <output id="sizeOut">10</output>
-        <input type="range" id="size" min="5" max="22" step="0.5" value="10" />
-      </label>
-      <label class="slider">Mass <output id="massOut">1.0</output>
-        <input type="range" id="mass" min="0.35" max="4" step="0.05" value="1" />
-      </label>
-      <p class="hint">High grip = rubber foot. Low grip = wet stone. Heavy nodes make good counterweights.</p>
-    </div>
+    <section id="hud" class="hud hidden" aria-label="Game controls">
+      <header class="topbar">
+        <button id="menuBtn" class="icon-btn" aria-label="Return to mode selection">☰</button>
+        <div class="mission-id">
+          <span id="modeLabel">CASUAL</span>
+          <strong>SECTOR 07</strong>
+        </div>
+        <div class="stat-group">
+          <div class="stat cash-stat"><span>$</span><strong id="cashValue">700</strong></div>
+          <div class="stat base-stat"><span>♥</span><strong id="livesValue">30</strong></div>
+          <div class="stat wave-stat"><small>WAVE</small><strong><span id="waveValue">0</span>/<span id="waveTotal">12</span></strong></div>
+        </div>
+        <div class="top-actions">
+          <button id="speedBtn" class="text-btn" aria-label="Change game speed">1×</button>
+          <button id="pauseBtn" class="icon-btn" aria-label="Pause game">Ⅱ</button>
+        </div>
+      </header>
 
-    <div class="group" id="linkProps" hidden>
-      <h3>Link <span class="dim" id="linkSel"></span></h3>
-      <label class="slider">Muscle power <output id="ampOut">0.34</output>
-        <input type="range" id="amp" min="0.05" max="0.6" step="0.01" value="0.34" />
-      </label>
-      <button class="btn small" id="toggleKind">Turn into a bone</button>
-    </div>
-
-    <div class="group">
-      <h3>Body</h3>
-      <div class="btn-row">
-        <button class="btn small" id="twitchBtn" title="Fire the muscles at random to see how the body moves">Twitch test</button>
-        <button class="btn small" id="randomBtn">Surprise me</button>
-        <button class="btn small" id="clearBtn">Clear</button>
+      <div class="objective-card" id="objectiveCard">
+        <span class="objective-icon">◆</span>
+        <div><small>OBJECTIVE</small><strong id="objectiveText">Prepare your defenses</strong></div>
       </div>
-    </div>
 
-    <div class="btn-row grow-row">
-      <button class="btn" id="saveBtn">Save</button>
-      <button class="btn primary" id="toEvolveBtn">Evolve this →</button>
-    </div>
-  </aside>
-
-  <div class="stage">
-    <canvas id="designCanvas"></canvas>
-    <div class="stage-hint" id="designHint">Click to place nodes. Switch to <b>Link</b> and click two nodes to join them with a muscle.</div>
-    <div class="stage-stat" id="designStat"></div>
-  </div>
-
-  <aside class="panel panel-right">
-    <div class="group">
-      <h3>Blueprints</h3>
-      <div class="cards" id="presetList"></div>
-    </div>
-    <div class="group">
-      <h3>Your creatures</h3>
-      <div class="cards" id="libraryList"></div>
-      <div class="btn-row">
-        <button class="btn small" id="exportBtn">Export</button>
-        <button class="btn small" id="importBtn">Import</button>
+      <div class="wave-card" id="waveCard">
+        <div>
+          <small id="waveStateLabel">READY</small>
+          <strong id="waveStateText">Wave 1</strong>
+        </div>
+        <button id="startWaveBtn" class="primary-btn">START WAVE <span>→</span></button>
       </div>
-    </div>
-  </aside>
-</section>
 
-<!-- ═══════════════════ EVOLUTION ═══════════════════ -->
-<section class="screen" id="screen-evolve">
-  <div class="control-bar">
-    <div class="ctl ctl-name">
-      <span class="dim">Species</span>
-      <strong id="runName">—</strong>
-    </div>
-    <label class="ctl">
-      <span>Trial</span>
-      <select id="trialSel"></select>
-    </label>
-    <label class="ctl">
-      <span>Population <output id="popOut">24</output></span>
-      <input type="range" id="popSize" min="6" max="80" step="2" value="24" />
-    </label>
-    <label class="ctl">
-      <span>Arenas at once <output id="arenaOut">6</output></span>
-      <input type="range" id="arenaCount" min="1" max="36" step="1" value="6" />
-    </label>
-    <label class="ctl">
-      <span>Speed <output id="speedOut">2×</output></span>
-      <input type="range" id="speed" min="0" max="4" step="1" value="2" />
-    </label>
-    <label class="ctl">
-      <span>Mutation <output id="mutOut">0.14</output></span>
-      <input type="range" id="mutRate" min="0.02" max="0.6" step="0.01" value="0.14" />
-    </label>
-    <label class="ctl">
-      <span>Body drift <output id="morphOut">off</output></span>
-      <input type="range" id="morph" min="0" max="1" step="0.1" value="0" />
-    </label>
-    <div class="ctl ctl-actions">
-      <button class="btn primary" id="playBtn">▶ Start</button>
-      <button class="btn" id="skipBtn" title="Finish this generation instantly">⏭ Gen</button>
-      <button class="btn" id="turboBtn" title="Run generations with no rendering until you stop">⚡ Turbo</button>
-      <button class="btn" id="resetBtn">↺ Reset</button>
-    </div>
-  </div>
+      <div class="camera-controls" aria-label="Camera controls">
+        <button id="rotateLeftBtn" aria-label="Rotate camera left">↶</button>
+        <button id="homeCameraBtn" aria-label="Reset camera">⌂</button>
+        <button id="rotateRightBtn" aria-label="Rotate camera right">↷</button>
+      </div>
 
-  <div class="evolve-body">
-    <div class="arena-wrap">
-      <canvas id="arenaCanvas"></canvas>
-      <div class="turbo-overlay" id="turboOverlay" hidden>
-        <div class="turbo-inner">
-          <div class="turbo-title">TURBO — simulating without rendering</div>
-          <div class="turbo-gen" id="turboGen">gen 1</div>
-          <div class="turbo-best" id="turboBest">best —</div>
-          <button class="btn primary" id="turboStop">Stop and watch</button>
+      <aside id="towerPanel" class="tower-panel hidden" aria-live="polite">
+        <button id="closeTowerPanel" class="panel-close" aria-label="Close tower panel">×</button>
+        <div class="tower-panel-heading">
+          <span id="towerIcon" class="tower-icon">R</span>
+          <div><small id="towerLevel">LEVEL 1</small><strong id="towerName">Ranger</strong></div>
+        </div>
+        <div class="tower-stats">
+          <div><span>Damage</span><strong id="towerDamage">12</strong></div>
+          <div><span>Range</span><strong id="towerRange">9.5</strong></div>
+          <div><span>Rate</span><strong id="towerRate">0.48s</strong></div>
+        </div>
+        <button id="upgradeBtn" class="upgrade-btn"><span>UPGRADE</span><strong id="upgradeCost">$190</strong></button>
+        <button id="sellBtn" class="sell-btn">SELL <strong id="sellValue">+$150</strong></button>
+      </aside>
+
+      <nav class="build-dock" aria-label="Build towers">
+        <div class="dock-label"><span>BUILD</span><small>Select a tower, then tap a pad</small></div>
+        <button class="tower-card selected" data-tower="ranger">
+          <span class="tower-preview ranger-preview" aria-hidden="true"><i></i></span>
+          <span class="tower-info"><strong>Ranger</strong><small>Fast · Long range</small></span>
+          <b>$250</b><kbd>1</kbd>
+        </button>
+        <button class="tower-card" data-tower="cannon">
+          <span class="tower-preview cannon-preview" aria-hidden="true"><i></i></span>
+          <span class="tower-info"><strong>Cannon</strong><small>Heavy · Splash</small></span>
+          <b>$450</b><kbd>2</kbd>
+        </button>
+        <button class="tower-card" data-tower="frost">
+          <span class="tower-preview frost-preview" aria-hidden="true"><i></i></span>
+          <span class="tower-info"><strong>Cryo</strong><small>Slows the horde</small></span>
+          <b>$350</b><kbd>3</kbd>
+        </button>
+      </nav>
+    </section>
+
+    <section id="endScreen" class="overlay end-screen hidden" aria-live="assertive">
+      <div class="end-card">
+        <span id="endKicker" class="end-kicker">SECTOR SECURED</span>
+        <h2 id="endTitle">YOU SURVIVED</h2>
+        <p id="endSummary">The final wave has been stopped.</p>
+        <div class="end-stats">
+          <div><small>WAVES</small><strong id="endWaves">12</strong></div>
+          <div><small>ZOMBIES STOPPED</small><strong id="endKills">0</strong></div>
+          <div><small>CASH LEFT</small><strong id="endCash">$0</strong></div>
+        </div>
+        <div class="end-actions">
+          <button id="replayBtn" class="primary-btn">PLAY AGAIN</button>
+          <button id="modesBtn" class="secondary-btn">CHOOSE MODE</button>
         </div>
       </div>
-      <div class="empty-note" id="arenaEmpty">
-        <p>Nothing running yet.</p>
-        <p class="dim">Design a creature, then press <b>Start</b>. Every arena is one creature living out one attempt at the trial.</p>
-      </div>
-    </div>
+    </section>
 
-    <aside class="panel panel-stats">
-      <div class="statgrid">
-        <div class="stat"><span>Generation</span><b id="statGen">—</b></div>
-        <div class="stat"><span>Best ever</span><b id="statBest">—</b></div>
-        <div class="stat"><span>Gen best</span><b id="statGenBest">—</b></div>
-        <div class="stat"><span>Gen average</span><b id="statAvg">—</b></div>
-        <div class="stat"><span>Lifetimes</span><b id="statEval">0</b></div>
-        <div class="stat"><span>Stagnant</span><b id="statStag">0</b></div>
-      </div>
-      <div class="group">
-        <h3>Fitness over time</h3>
-        <canvas id="chartCanvas"></canvas>
-        <div class="legend"><i class="k-best"></i> best <i class="k-avg"></i> average</div>
-      </div>
-      <div class="group grow">
-        <h3>This generation</h3>
-        <ol class="leaderboard" id="leaderboard"></ol>
-      </div>
-      <div class="group">
-        <div class="btn-row">
-          <button class="btn small" id="saveChampBtn">Save champion</button>
-          <button class="btn small" id="exportRunBtn">Export run</button>
-        </div>
-      </div>
-    </aside>
-  </div>
-</section>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="damageFlash" class="damage-flash" aria-hidden="true"></div>
+  </main>
 
-<!-- ═══════════════════ ARCHIVE / TIME MACHINE ═══════════════════ -->
-<section class="screen" id="screen-archive">
-  <div class="control-bar">
-    <div class="ctl ctl-name"><span class="dim">Time machine</span><strong id="archName">—</strong></div>
-    <label class="ctl wide">
-      <span>Left lane — generation <output id="genAOut">1</output></span>
-      <input type="range" id="genA" min="0" max="0" step="1" value="0" />
-    </label>
-    <label class="ctl wide">
-      <span>Right lane — generation <output id="genBOut">1</output></span>
-      <input type="range" id="genB" min="0" max="0" step="1" value="0" />
-    </label>
-    <div class="ctl ctl-actions">
-      <button class="btn primary" id="replayBtn">▶ Race them</button>
-      <button class="btn" id="latestBtn">Latest vs first</button>
-    </div>
-  </div>
-  <div class="evolve-body">
-    <div class="arena-wrap"><canvas id="replayCanvas"></canvas>
-      <div class="empty-note" id="archiveEmpty">
-        <p>No history yet.</p>
-        <p class="dim">Run a few generations on the <b>Evolve</b> tab, then come back to race an early ancestor against its descendant.</p>
-      </div>
-    </div>
-    <aside class="panel panel-stats">
-      <div class="group grow">
-        <h3>Hall of fame</h3>
-        <ol class="leaderboard hall" id="hallList"></ol>
-      </div>
-      <div class="group">
-        <h3>Champion lineage</h3>
-        <canvas id="lineageCanvas"></canvas>
-        <p class="hint" id="lineageNote">Each step is a generation where the record was broken.</p>
-      </div>
-    </aside>
-  </div>
-</section>
-
-</main>
-
-<div class="toast" id="toast" hidden></div>
-
-<dialog id="helpDialog">
-  <h2>How PRIMORDIA works</h2>
-  <ol class="help-list">
-    <li><b>Design</b> a body out of nodes and muscles, and give it a name. Nodes have grip, size and mass; links are either springy <i>muscles</i> or rigid <i>bones</i>.</li>
-    <li><b>Evolve</b> spawns a whole population of that body. Each one gets a small recurrent neural network — a nervous system — wired at random, so generation 1 is pure flailing.</li>
-    <li>Every creature lives out the trial. The best are kept, bred together, and mutated. Repeat. Walking, hopping and swimming are not programmed anywhere — they are discovered.</li>
-    <li>Use <b>Arenas at once</b> to choose how many run side by side, <b>Speed</b> to fast-forward, and <b>Turbo</b> to grind generations with rendering off.</li>
-    <li>Turn on <b>Body drift</b> to let the shape mutate too — limbs grow, shrink and fall off across generations.</li>
-    <li>Trials reward different things: distance is scored from the ground a creature <i>holds</i> at the end rather than where it happened to stop, and <b>The Canopy</b> scores only altitude, so nothing is won by sprinting along underneath the tree.</li>
-    <li><b>Archive</b> is a time machine: race generation 1 against generation 200 in the same arena and watch what changed.</li>
-  </ol>
-  <h3>Reading the arena</h3>
-  <p>Muscles glow <span class="sw-hot">hot</span> as they contract and <span class="sw-cold">cold</span> as they stretch. Node colour is grip: <span class="sw-grip">orange grips</span>, <span class="sw-slick">blue slides</span>. A gold flag marks the record to beat, and posts along the ground are one metre apart.</p>
-  <p class="dim">Everything runs locally in your browser. Your creatures are saved to this device only.</p>
-  <form method="dialog"><button class="btn primary">Got it</button></form>
-</dialog>
-
-<script type="module" src="js/main.js"></script>
+  <noscript>This game needs JavaScript enabled.</noscript>
+  <script type="module" src="js/game.js"></script>
 </body>
 </html>
