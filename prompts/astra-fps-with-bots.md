@@ -1,7 +1,8 @@
 # Prompt: build a first-person shooter with bots
 
 Paste everything below the line into Astra (GPT). It ends with a mandatory
-critic loop: max 5 rounds, must score above 8 to pass.
+critic loop run as a separate sub-agent: max 5 rounds, must score above 8 to
+pass.
 
 ---
 
@@ -194,51 +195,87 @@ Stop and confirm the build runs at each stage before moving on.
 
 ## THE CRITIC LOOP — mandatory, do not skip
 
-When you believe the build is finished, **you do not ship it.** You run a critic
-pass first.
+When you believe the build is finished, **you do not ship it.** You hand it to a
+critic.
 
-The critic is a separate reviewer with no stake in the work. It did not write the
-code. It does not care how long the build took or how hard it was. It opens the
-game, plays it, watches it move, reads the code, and rates it.
+### Run the critic as a separate sub-agent
 
-**Critic conduct — all of these are binding:**
+Not a section of your own reply. Not a persona you switch into mid-thought. A
+genuinely separate agent, spawned in its own fresh context, that has never seen
+your plan, your reasoning, or how much work this was. Reviewing your own output
+inside the same context is worthless — you end up grading your intentions
+instead of the build.
 
-1. **Honest, not kind.** No hype, no encouragement, no "great work so far." It
-   is not there to make the builder feel good.
+Each round:
+
+1. **Spawn a fresh critic sub-agent.** A new one every round. Never reuse the
+   previous round's critic — a returning critic starts defending its old scores
+   instead of looking again.
+2. **Give it exactly this:** the build (running game, screenshots or captured
+   frames, and the source), the sections of this brief it is checking against,
+   the conduct rules below, and — from round 2 onward — the previous round's
+   score table and open-defect list. Nothing else.
+3. **Give it nothing about you.** No plan, no "what I was going for," no note
+   about what was hard, no request to be constructive or encouraging. It reviews
+   the artifact, not the effort.
+4. **Take its report as given.** You do not edit it, soften it, argue with it,
+   or ask it to reconsider. If you think it's wrong, the fix is your appeal and
+   the next round is where you make it.
+
+If you have no sub-agent tooling, do the equivalent by hand: open a clean
+session containing only the build, the spec and the conduct rules, critique
+there, and state in your final answer that this is how it was run.
+
+### Critic conduct — binding, pass these to the sub-agent verbatim
+
+1. **Honest, not kind.** No hype, no encouragement, no "great work so far." You
+   are not there to make the builder feel good.
 2. **No reflex high scores.** A 9.7 handed out on sight is itself a failed
-   critique. Start from the assumption that this is a 5 and let evidence move it.
+   critique. Start from the assumption that this is a 5 and let evidence move it
+   in either direction.
 3. **Evidence or it doesn't count.** Every score cites specific observations:
-   "the reload snaps back to idle on the first frame and the mag never leaves
-   the model" — not "animations feel a bit off."
-4. **At least 3 concrete defects per round**, even in a build it likes. If it
-   genuinely can't find three, it must say exactly what it checked to conclude
-   that.
-5. **It rates what exists, not what was promised.** Unimplemented earns zero, not
-   partial credit.
-6. **No score may rise between rounds** unless the critic names the specific fix
-   that earned it.
-7. **It never inflates a score to end the loop.**
+   "the reload snaps back to idle on the first frame and the magazine never
+   leaves the model" — not "animations feel a bit off."
+4. **At least 3 concrete defects per round**, even in a build you like. If you
+   genuinely cannot find three, say exactly what you checked to conclude that.
+5. **Rate what exists, not what was promised.** Unimplemented earns zero, not
+   partial credit. Do not score a feature from reading the code if it doesn't
+   run.
+6. **No score may rise between rounds** unless you name the specific fix that
+   earned it.
+7. **Never inflate a score to end the loop.**
 
-**Categories, scored 0–10 to one decimal:**
+### Scoring
+
+Three categories, 0–10, to one decimal:
 
 - **Looks** — lighting, materials, silhouettes, readability, HUD, level
   composition. Does a screenshot look like a game, or like a programmer's test
   level?
-- **Accuracy** — does it match this brief, and does it behave correctly? Bots not
+- **Accuracy** — does it match the brief, and does it behave correctly? Bots not
   cheating, hit detection honest, no damage through walls, stable physics, no
   frame-rate dependence, every menu item live.
 - **Animation & feel** — weapon animation, bot locomotion, hit reactions, deaths,
   recoil, camera, input latency, interpolation.
 
 **Overall = the lowest of the three, not the average.** A pretty menu must not
-hide broken AI.
+carry broken AI past the gate.
 
-**Pass rule:** **above 8.0 passes and ships. 8.0 or below fails and must be
-redone** — not patched over. The critic names what has to be rebuilt, and the
-builder rebuilds it.
+**Pass rule: above 8.0 passes and ships. 8.0 or below fails and must be redone** —
+rebuilt, not patched over. The critic names what has to be rebuilt.
 
-**Round limit: 5.** One round = build/fix → critique → verdict. The builder does
-not argue with the critic; it fixes.
+### The critic's report format
+
+- Verdict: PASS or FAIL, and the overall score.
+- The three scores, each with at least two specific observations backing it.
+- A ranked defect list: what is wrong, where, and how it showed itself.
+- If FAIL: exactly what must be rebuilt before the next round.
+- No praise section. No summary of strengths. It isn't part of the job.
+
+### Round limit: 5
+
+One round = build/fix → spawn critic → verdict. The builder does not argue; it
+fixes and resubmits to a fresh critic.
 
 If round 5 closes at 8.0 or below, **stop and say so plainly.** Report the final
 scores, list exactly what is still broken and why it wasn't solved, and do not
