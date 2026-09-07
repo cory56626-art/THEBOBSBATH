@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { startFallbackGame } from './fallback.js';
+import { startFallbackGame } from './fallback.js?v=visual-2';
 
 const MODES = {
   casual: {
