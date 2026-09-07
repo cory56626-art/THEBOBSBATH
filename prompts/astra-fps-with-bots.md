@@ -1,7 +1,8 @@
 # Prompt: build a first-person shooter with bots
 
 Paste everything below the line into Astra (GPT). It ends with a mandatory
-critic loop run as a separate sub-agent: it keeps going until it scores above 8.
+critic loop run as a separate sub-agent: 5 rounds max, above 8 passes, and
+whatever round 5 leaves ships regardless.
 
 ---
 
@@ -271,23 +272,21 @@ rebuilt, not patched over. The critic names what has to be rebuilt.
 - If FAIL: exactly what must be rebuilt before the next round.
 - No praise section. No summary of strengths. It isn't part of the job.
 
-### Rounds
+### Rounds — five, hard cap
 
 One round = build/fix → spawn a fresh critic → verdict. The builder does not
 argue; it fixes and resubmits to a new critic.
 
-Budget five rounds. **Five is a budget, not an exit.** A failing score never ends
-the run — if round 5 closes at 8.0 or below, you keep going: round 6, round 7,
-as many as it takes. The loop ends one way only, on an overall above 8.0 from a
-critic that was given nothing to soften it.
+Above 8.0 and the loop ends early: it ships. 8.0 or below and the round failed —
+rebuild what the critic named and go again.
 
-Two things that are never a way out:
+**After round 5, you ship whatever you have, whatever it scored.** There is no
+round 6. A 6.4 ships as a 6.4: deliver the build with the final score table and
+the list of what is still broken attached to it, and don't dress the number up.
 
-- **Inflating a score to finish.** A critic that raises a number without naming
-  the fix that earned it has failed its own conduct rules, and the round doesn't
-  count.
-- **Declaring it good enough.** "Close enough at 7.8" is a fail. Rebuild what the
-  critic named and go again.
+That is exactly why the critic can't be flattered. The score doesn't gate
+delivery, so there is nothing to buy with a fake 9 — the only thing it costs you
+is knowing what's actually wrong with your game.
 
 Log every round:
 
