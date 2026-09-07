@@ -1,8 +1,7 @@
 # Prompt: build a first-person shooter with bots
 
 Paste everything below the line into Astra (GPT). It ends with a mandatory
-critic loop run as a separate sub-agent: max 5 rounds, must score above 8 to
-pass.
+critic loop run as a separate sub-agent: it keeps going until it scores above 8.
 
 ---
 
@@ -272,27 +271,25 @@ rebuilt, not patched over. The critic names what has to be rebuilt.
 - If FAIL: exactly what must be rebuilt before the next round.
 - No praise section. No summary of strengths. It isn't part of the job.
 
-### Round limit: 5
+### Rounds
 
-One round = build/fix → spawn critic → verdict. The builder does not argue; it
-fixes and resubmits to a fresh critic.
+One round = build/fix → spawn a fresh critic → verdict. The builder does not
+argue; it fixes and resubmits to a new critic.
 
-If round 5 closes at 8.0 or below, **stop and say so plainly.** Report the final
-scores, list exactly what is still broken and why it wasn't solved, and do not
-claim success. An honest "6.4 — bots still stall in doorways and the reload
-animation is unfinished" is worth more than a fabricated 9.
+Budget five rounds. **Five is a budget, not an exit.** A failing score never ends
+the run — if round 5 closes at 8.0 or below, you keep going: round 6, round 7,
+as many as it takes. The loop ends one way only, on an overall above 8.0 from a
+critic that was given nothing to soften it.
+
+Two things that are never a way out:
+
+- **Inflating a score to finish.** A critic that raises a number without naming
+  the fix that earned it has failed its own conduct rules, and the round doesn't
+  count.
+- **Declaring it good enough.** "Close enough at 7.8" is a fail. Rebuild what the
+  critic named and go again.
 
 Log every round:
 
 | Round | Looks | Accuracy | Animation | Overall | What changed | Verdict |
 |---|---|---|---|---|---|---|
-
-## OUTPUT RULES
-
-- Open with a plan of 10 lines or fewer. Then build.
-- Deliver complete files with their paths. No ellipses, no "rest unchanged."
-- If you hit an output limit, stop at a clean module boundary and continue in the
-  next message.
-- State your assumptions rather than asking questions — unless the answer would
-  change the architecture.
-- Finish with the critic table and the honest verdict.
