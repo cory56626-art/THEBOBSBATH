@@ -494,6 +494,36 @@ kbd {
 .damage-flash.hit { animation: damageHit .45s ease-out; }
 @keyframes damageHit { 0% { opacity: .85; } 100% { opacity: 0; } }
 
+.fallback-hit-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.fallback-hit-layer.active .fallback-pad-hit { pointer-events: auto; }
+
+.fallback-pad-hit {
+  position: absolute;
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  opacity: 0;
+  background: transparent;
+}
+
+.fallback-pad-hit:focus-visible {
+  opacity: 1;
+  outline: 3px solid var(--acid);
+  outline-offset: 3px;
+  background: rgba(184,244,61,.1);
+}
+
+.fallback-pad-hit.selected:focus-visible { outline-color: #fff; }
+.fallback-2d .camera-controls { display: none; }
+.fallback-2d #gameCanvas { cursor: crosshair; }
+
 @media (max-width: 760px) {
   .menu-screen { background: linear-gradient(180deg, rgba(4,7,8,.82), rgba(4,7,8,.97) 48%); }
   .menu-atmosphere { right: -20vw; top: 0; width: 95vw; height: 45vh; opacity: .55; }

@@ -32,7 +32,9 @@ Walkers, Runners, Brutes, Armored zombies, and a final Titan.
 ## Tech
 
 The game is a static site built with HTML, CSS, JavaScript, and Three.js. There
-is no build step. GitHub Actions publishes the `main` branch to GitHub Pages.
+is no build step. If WebGL is unavailable, the game automatically switches to a
+fully playable Canvas 2D version with the same modes, towers, enemies, waves,
+upgrades, and economy. GitHub Actions publishes the `main` branch to GitHub Pages.
 
 ## Local development
 

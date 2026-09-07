@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { startFallbackGame } from './fallback.js';
 
 const MODES = {
   casual: {
@@ -164,8 +165,8 @@ function init() {
   try {
     renderer = new THREE.WebGLRenderer({ canvas: dom.canvas, antialias: true, powerPreference: 'high-performance' });
   } catch (error) {
-    dom.loading.innerHTML = '<p>WebGL could not start on this device.<br>Please try a newer browser.</p>';
-    throw error;
+    startFallbackGame();
+    return;
   }
 
   renderer.setSize(window.innerWidth, window.innerHeight);
