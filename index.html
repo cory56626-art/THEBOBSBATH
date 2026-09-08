@@ -3,170 +3,175 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <meta name="theme-color" content="#070a0d" />
-  <meta name="description" content="Last Stand 3D — defend the city from zombie waves in a browser-based tower defense game." />
-  <title>Last Stand 3D</title>
-  <link rel="stylesheet" href="css/game.css?v=visual-2" />
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
-      }
-    }
-  </script>
+  <meta name="theme-color" content="#111218" />
+  <meta name="description" content="BOB Paint — a fast, touch-friendly drawing studio that runs in your browser." />
+  <title>BOB Paint</title>
+  <link rel="stylesheet" href="css/paint.css?v=1" />
 </head>
 <body>
-  <main id="app">
-    <canvas id="gameCanvas" aria-label="3D zombie tower defense battlefield"></canvas>
+  <main class="app-shell" id="app">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="BOB Paint home">
+        <span class="brand-mark" aria-hidden="true">
+          <i></i><i></i><i></i>
+        </span>
+        <span>BOB <strong>Paint</strong></span>
+      </a>
 
-    <section id="loadingScreen" class="overlay loading-screen" aria-live="polite">
-      <div class="loading-mark" aria-hidden="true"><span></span><span></span><span></span></div>
-      <p>Preparing the battlefield…</p>
-    </section>
-
-    <section id="menuScreen" class="overlay menu-screen hidden" aria-labelledby="gameTitle">
-      <div class="menu-atmosphere" aria-hidden="true"></div>
-      <div class="menu-shell">
-        <header class="brand-lockup">
-          <div class="brand-kicker"><span></span> Outbreak protocol</div>
-          <h1 id="gameTitle">LAST<br /><strong>STAND</strong> <em>3D</em></h1>
-          <p>Build your defense. Hold the road. Survive every wave.</p>
-        </header>
-
-        <div class="mode-picker" role="group" aria-label="Choose a game mode">
-          <button class="mode-card casual" data-mode="casual">
-            <span class="mode-number">01</span>
-            <span class="mode-copy">
-              <strong>Casual</strong>
-              <small>12 waves · 30 base health</small>
-              <span class="mode-difficulty"><i></i><i></i><i></i><i></i><i></i></span>
-              <b>More cash · Slower zombies</b>
-            </span>
-            <span class="mode-arrow">→</span>
-          </button>
-
-          <button class="mode-card intermediate" data-mode="intermediate">
-            <span class="mode-number">02</span>
-            <span class="mode-copy">
-              <strong>Intermediate</strong>
-              <small>16 waves · 20 base health</small>
-              <span class="mode-difficulty"><i></i><i></i><i></i><i></i><i></i></span>
-              <b>Balanced outbreak</b>
-            </span>
-            <span class="mode-arrow">→</span>
-          </button>
-
-          <button class="mode-card hard" data-mode="hard">
-            <span class="mode-number">03</span>
-            <span class="mode-copy">
-              <strong>Hard</strong>
-              <small>20 waves · 12 base health</small>
-              <span class="mode-difficulty"><i></i><i></i><i></i><i></i><i></i></span>
-              <b>Stronger hordes · Less cash</b>
-            </span>
-            <span class="mode-arrow">→</span>
-          </button>
-        </div>
-
-        <div class="menu-tip"><kbd>Drag</kbd> rotate · <kbd>Pinch</kbd> zoom · <kbd>Tap</kbd> build</div>
-      </div>
-    </section>
-
-    <section id="hud" class="hud hidden" aria-label="Game controls">
-      <header class="topbar">
-        <button id="menuBtn" class="icon-btn" aria-label="Return to mode selection">☰</button>
-        <div class="mission-id">
-          <span id="modeLabel">CASUAL</span>
-          <strong>SECTOR 07</strong>
-        </div>
-        <div class="stat-group">
-          <div class="stat cash-stat"><span>$</span><strong id="cashValue">700</strong></div>
-          <div class="stat base-stat"><span>♥</span><strong id="livesValue">30</strong></div>
-          <div class="stat wave-stat"><small>WAVE</small><strong><span id="waveValue">0</span>/<span id="waveTotal">12</span></strong></div>
-        </div>
-        <div class="top-actions">
-          <button id="speedBtn" class="text-btn" aria-label="Change game speed">1×</button>
-          <button id="pauseBtn" class="icon-btn" aria-label="Pause game">Ⅱ</button>
-        </div>
-      </header>
-
-      <div class="objective-card" id="objectiveCard">
-        <span class="objective-icon">◆</span>
-        <div><small>OBJECTIVE</small><strong id="objectiveText">Prepare your defenses</strong></div>
-      </div>
-
-      <div class="wave-card" id="waveCard">
-        <div>
-          <small id="waveStateLabel">READY</small>
-          <strong id="waveStateText">Wave 1</strong>
-        </div>
-        <button id="startWaveBtn" class="primary-btn">START WAVE <span>→</span></button>
-      </div>
-
-      <div class="camera-controls" aria-label="Camera controls">
-        <button id="rotateLeftBtn" aria-label="Rotate camera left">↶</button>
-        <button id="homeCameraBtn" aria-label="Reset camera">⌂</button>
-        <button id="rotateRightBtn" aria-label="Rotate camera right">↷</button>
-      </div>
-
-      <aside id="towerPanel" class="tower-panel hidden" aria-live="polite">
-        <button id="closeTowerPanel" class="panel-close" aria-label="Close tower panel">×</button>
-        <div class="tower-panel-heading">
-          <span id="towerIcon" class="tower-icon">R</span>
-          <div><small id="towerLevel">LEVEL 1</small><strong id="towerName">Ranger</strong></div>
-        </div>
-        <div class="tower-stats">
-          <div><span>Damage</span><strong id="towerDamage">12</strong></div>
-          <div><span>Range</span><strong id="towerRange">9.5</strong></div>
-          <div><span>Rate</span><strong id="towerRate">0.48s</strong></div>
-        </div>
-        <button id="upgradeBtn" class="upgrade-btn"><span>UPGRADE</span><strong id="upgradeCost">$190</strong></button>
-        <button id="sellBtn" class="sell-btn">SELL <strong id="sellValue">+$150</strong></button>
-      </aside>
-
-      <nav class="build-dock" aria-label="Build towers">
-        <div class="dock-label"><span>BUILD</span><small>Select a tower, then tap a pad</small></div>
-        <button class="tower-card selected" data-tower="ranger">
-          <span class="tower-preview ranger-preview" aria-hidden="true"><i></i></span>
-          <span class="tower-info"><strong>Ranger</strong><small>Fast · Long range</small></span>
-          <b>$250</b><kbd>1</kbd>
+      <div class="history-actions" aria-label="History controls">
+        <button class="top-button icon-only" id="undoBtn" type="button" aria-label="Undo" title="Undo (Ctrl or Command + Z)" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7 4 12l5 5M5 12h8a6 6 0 0 1 6 6" /></svg>
         </button>
-        <button class="tower-card" data-tower="cannon">
-          <span class="tower-preview cannon-preview" aria-hidden="true"><i></i></span>
-          <span class="tower-info"><strong>Cannon</strong><small>Heavy · Splash</small></span>
-          <b>$450</b><kbd>2</kbd>
+        <button class="top-button icon-only" id="redoBtn" type="button" aria-label="Redo" title="Redo (Ctrl or Command + Shift + Z)" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 7 5 5-5 5m4-5h-8a6 6 0 0 0-6 6" /></svg>
         </button>
-        <button class="tower-card" data-tower="frost">
-          <span class="tower-preview frost-preview" aria-hidden="true"><i></i></span>
-          <span class="tower-info"><strong>Cryo</strong><small>Slows the horde</small></span>
-          <b>$350</b><kbd>3</kbd>
+      </div>
+
+      <div class="document-name" aria-label="Document name">
+        <span class="save-indicator" aria-hidden="true"></span>
+        <input id="documentName" value="Untitled artwork" maxlength="48" aria-label="Artwork name" />
+      </div>
+
+      <div class="file-actions">
+        <button class="top-button" id="clearBtn" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5" /></svg>
+          <span>Clear</span>
+        </button>
+        <button class="export-button" id="exportBtn" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" /></svg>
+          <span>Save PNG</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="workspace">
+      <nav class="tool-rail" aria-label="Drawing tools">
+        <button class="tool-button active" data-tool="brush" type="button" aria-label="Brush" aria-pressed="true" title="Brush (B)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 5 5M13 6l5-3 3 3-3 5M13 6 5 14m0 0c-2 0-3 2-3 5 3 0 5-1 5-3l-2-2Zm2 2 3 3" /></svg>
+          <span>Brush</span>
+        </button>
+        <button class="tool-button" data-tool="marker" type="button" aria-label="Marker" aria-pressed="false" title="Marker (M)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 4 5 5L9 20H4v-5L15 4Zm-9 9 5 5m-7 2h7" /></svg>
+          <span>Marker</span>
+        </button>
+        <button class="tool-button" data-tool="eraser" type="button" aria-label="Eraser" aria-pressed="false" title="Eraser (E)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 20-4-4L14 5a2 2 0 0 1 3 0l2 2a2 2 0 0 1 0 3L9 20H7Zm2-8 5 5m-4 3h10" /></svg>
+          <span>Eraser</span>
+        </button>
+
+        <div class="tool-divider" role="separator"></div>
+
+        <button class="tool-button" data-tool="line" type="button" aria-label="Line" aria-pressed="false" title="Line (L)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5" /><circle cx="5" cy="19" r="1.5" /><circle cx="19" cy="5" r="1.5" /></svg>
+          <span>Line</span>
+        </button>
+        <button class="tool-button" data-tool="rectangle" type="button" aria-label="Rectangle" aria-pressed="false" title="Rectangle (R)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="1" /></svg>
+          <span>Box</span>
+        </button>
+        <button class="tool-button" data-tool="ellipse" type="button" aria-label="Ellipse" aria-pressed="false" title="Ellipse (O)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="8" ry="6.5" /></svg>
+          <span>Circle</span>
+        </button>
+        <button class="tool-button" data-tool="fill" type="button" aria-label="Fill" aria-pressed="false" title="Fill (G)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m13 3 8 8-8 8-9-9 8-7h1Zm-9 7h17M4 21h16" /></svg>
+          <span>Fill</span>
+        </button>
+        <button class="tool-button" data-tool="eyedropper" type="button" aria-label="Eyedropper" aria-pressed="false" title="Eyedropper (I)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 5 5M9 19l-4 1 1-4L16 6l2 2L9 19Zm7-13 2-2a2 2 0 0 1 3 3l-2 2" /></svg>
+          <span>Pick</span>
         </button>
       </nav>
+
+      <section class="stage" id="stage" aria-label="Drawing area">
+        <div class="canvas-frame" id="canvasFrame">
+          <canvas id="paintCanvas" width="1280" height="800" aria-label="Blank drawing canvas"></canvas>
+          <div class="brush-cursor" id="brushCursor" aria-hidden="true"></div>
+        </div>
+        <div class="empty-hint" id="emptyHint" aria-hidden="true">
+          <strong>Start drawing</strong>
+          <span>Use your finger, Apple Pencil, or mouse</span>
+        </div>
+      </section>
+
+      <aside class="inspector" aria-label="Brush settings">
+        <section class="inspector-section color-section">
+          <div class="section-heading">
+            <h2>Color</h2>
+            <output id="colorHex" for="colorPicker">#202124</output>
+          </div>
+          <label class="current-color" title="Choose any color">
+            <span id="currentColorPreview"></span>
+            <input id="colorPicker" type="color" value="#202124" aria-label="Custom color" />
+            <small>Custom color</small>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+          </label>
+          <div class="swatch-grid" id="swatchGrid" aria-label="Color palette">
+            <button class="swatch selected light-swatch" data-color="#ffffff" style="--swatch:#ffffff" aria-label="White" type="button"></button>
+            <button class="swatch" data-color="#202124" style="--swatch:#202124" aria-label="Charcoal" type="button"></button>
+            <button class="swatch" data-color="#ef4444" style="--swatch:#ef4444" aria-label="Red" type="button"></button>
+            <button class="swatch" data-color="#f97316" style="--swatch:#f97316" aria-label="Orange" type="button"></button>
+            <button class="swatch" data-color="#facc15" style="--swatch:#facc15" aria-label="Yellow" type="button"></button>
+            <button class="swatch" data-color="#22c55e" style="--swatch:#22c55e" aria-label="Green" type="button"></button>
+            <button class="swatch" data-color="#14b8a6" style="--swatch:#14b8a6" aria-label="Teal" type="button"></button>
+            <button class="swatch" data-color="#0ea5e9" style="--swatch:#0ea5e9" aria-label="Sky blue" type="button"></button>
+            <button class="swatch" data-color="#3b82f6" style="--swatch:#3b82f6" aria-label="Blue" type="button"></button>
+            <button class="swatch" data-color="#8b5cf6" style="--swatch:#8b5cf6" aria-label="Purple" type="button"></button>
+            <button class="swatch" data-color="#ec4899" style="--swatch:#ec4899" aria-label="Pink" type="button"></button>
+            <button class="swatch" data-color="#92400e" style="--swatch:#92400e" aria-label="Brown" type="button"></button>
+          </div>
+        </section>
+
+        <section class="inspector-section">
+          <div class="section-heading">
+            <h2>Brush size</h2>
+            <output id="sizeValue" for="sizeSlider">18 px</output>
+          </div>
+          <input class="range" id="sizeSlider" type="range" min="1" max="100" value="18" aria-label="Brush size" />
+          <div class="range-labels" aria-hidden="true"><span>1</span><span>100</span></div>
+        </section>
+
+        <section class="inspector-section">
+          <div class="section-heading">
+            <h2>Opacity</h2>
+            <output id="opacityValue" for="opacitySlider">100%</output>
+          </div>
+          <input class="range opacity-range" id="opacitySlider" type="range" min="5" max="100" value="100" aria-label="Brush opacity" />
+          <div class="range-labels" aria-hidden="true"><span>5%</span><span>100%</span></div>
+        </section>
+
+        <section class="inspector-section tips-section">
+          <h2>Quick keys</h2>
+          <div class="shortcut"><span>Brush / eraser</span><span><kbd>B</kbd><kbd>E</kbd></span></div>
+          <div class="shortcut"><span>Change size</span><span><kbd>[</kbd><kbd>]</kbd></span></div>
+          <div class="shortcut"><span>Undo / redo</span><span><kbd>⌘Z</kbd><kbd>⇧⌘Z</kbd></span></div>
+        </section>
+      </aside>
     </section>
 
-    <section id="endScreen" class="overlay end-screen hidden" aria-live="assertive">
-      <div class="end-card">
-        <span id="endKicker" class="end-kicker">SECTOR SECURED</span>
-        <h2 id="endTitle">YOU SURVIVED</h2>
-        <p id="endSummary">The final wave has been stopped.</p>
-        <div class="end-stats">
-          <div><small>WAVES</small><strong id="endWaves">12</strong></div>
-          <div><small>ZOMBIES STOPPED</small><strong id="endKills">0</strong></div>
-          <div><small>CASH LEFT</small><strong id="endCash">$0</strong></div>
-        </div>
-        <div class="end-actions">
-          <button id="replayBtn" class="primary-btn">PLAY AGAIN</button>
-          <button id="modesBtn" class="secondary-btn">CHOOSE MODE</button>
-        </div>
-      </div>
-    </section>
+    <footer class="statusbar">
+      <span><strong id="toolStatus">Brush</strong><i></i><span id="coordinateStatus">Ready</span></span>
+      <span><span>1280 × 800</span><i></i><span id="zoomStatus">100%</span></span>
+    </footer>
 
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    <div id="damageFlash" class="damage-flash" aria-hidden="true"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <dialog class="clear-dialog" id="clearDialog">
+      <form method="dialog">
+        <div class="dialog-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5" /></svg>
+        </div>
+        <h2>Clear the canvas?</h2>
+        <p>This removes everything currently drawn. You can still undo it afterward.</p>
+        <div class="dialog-actions">
+          <button value="cancel" type="submit">Cancel</button>
+          <button class="danger-button" value="confirm" type="submit">Clear canvas</button>
+        </div>
+      </form>
+    </dialog>
   </main>
 
-  <noscript>This game needs JavaScript enabled.</noscript>
-  <script type="module" src="js/game.js?v=visual-2"></script>
+  <noscript>BOB Paint needs JavaScript enabled to draw.</noscript>
+  <script src="js/paint.js?v=1"></script>
 </body>
 </html>
