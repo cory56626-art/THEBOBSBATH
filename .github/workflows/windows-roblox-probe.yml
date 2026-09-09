@@ -1,4 +1,4 @@
-name: Windows Roblox Launch Diagnose
+name: Windows 11 Capability Probe
 
 on:
   push:
@@ -6,95 +6,23 @@ on:
       - ".github/workflows/windows-roblox-probe.yml"
 
 jobs:
-  roblox:
+  probe:
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
-      - name: Windows and display
+      - name: Check nested virtualization
         shell: pwsh
         run: |
-          Get-ComputerInfo | Select-Object WindowsProductName,WindowsVersion,OsArchitecture | Format-List
-          query user 2>&1
-          qwinsta 2>&1
-          Get-CimInstance Win32_VideoController |
-            Select-Object Name,DriverVersion,VideoModeDescription,AdapterRAM,Status |
+          Get-ComputerInfo | Select-Object WindowsProductName,WindowsVersion,OsArchitecture,HyperVisorPresent | Format-List
+          Get-CimInstance Win32_Processor |
+            Select-Object Name,VirtualizationFirmwareEnabled,SecondLevelAddressTranslationExtensions,VMMonitorModeExtensions |
             Format-List
-          Get-Process explorer -ErrorAction SilentlyContinue |
-            Select-Object Id,SessionId,Path | Format-List
-
-      - name: Download normal Roblox
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Continue"
-          $installer = Join-Path $env:TEMP "RobloxPlayerInstaller.exe"
-          Invoke-WebRequest -Uri "https://setup.rbxcdn.com/RobloxPlayerInstaller.exe" -OutFile $installer
-          Write-Host "DOWNLOADED=$installer"
-          Get-Item $installer | Select-Object FullName,Length | Format-List
-          $p = Start-Process -FilePath $installer -PassThru
-          if (-not $p.WaitForExit(120000)) {
-            Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
-          }
-          Write-Host "INSTALLER_EXIT=$($p.ExitCode)"
-          $player = Get-ChildItem "C:\Program Files\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $player) {
-            $player = Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          }
-          if (-not $player) { throw "RobloxPlayerBeta.exe was not installed" }
-          Write-Host "PLAYER=$($player.FullName)"
-          $player.FullName | Set-Content "$env:GITHUB_WORKSPACE\player-path.txt"
-
-      - name: Launch downloaded Roblox and collect result
-        shell: pwsh
-        continue-on-error: true
-        run: |
-          $player = Get-Content "$env:GITHUB_WORKSPACE\player-path.txt"
-          Write-Host "Launching $player"
-          $p = Start-Process -FilePath $player -ArgumentList "-app" -PassThru
-          Write-Host "START_PID=$($p.Id)"
-          Start-Sleep -Seconds 12
-          Write-Host "=== Roblox processes after 12s ==="
-          Get-Process *Roblox* -ErrorAction SilentlyContinue |
-            Select-Object Id,SessionId,ProcessName,Path,Responding |
-            Format-List
-
-          Write-Host "=== Recent Roblox logs ==="
-          $logs = @()
-          $logs += Get-ChildItem "$env:LOCALAPPDATA\Roblox\logs" -File -ErrorAction SilentlyContinue
-          $logs += Get-ChildItem "C:\Program Files\Roblox\Versions" -Filter "*.log" -Recurse -File -ErrorAction SilentlyContinue
-          $logs = $logs | Sort-Object LastWriteTime -Descending | Select-Object -First 8
-          foreach ($log in $logs) {
-            Write-Host "----- $($log.FullName) -----"
-            Get-Content $log.FullName -Tail 180 -ErrorAction SilentlyContinue
-          }
-
-      - name: Capture Windows desktop
-        shell: pwsh
-        continue-on-error: true
-        run: |
-          Add-Type -AssemblyName System.Windows.Forms
-          Add-Type -AssemblyName System.Drawing
-          $bounds = [System.Windows.Forms.SystemInformation]::VirtualScreen
-          Write-Host "SCREEN=$($bounds.Width)x$($bounds.Height)"
-          if ($bounds.Width -gt 0 -and $bounds.Height -gt 0) {
-            $bmp = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
-            $g = [System.Drawing.Graphics]::FromImage($bmp)
-            $g.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
-            $out = "$env:GITHUB_WORKSPACE\windows-screen.png"
-            $bmp.Save($out, [System.Drawing.Imaging.ImageFormat]::Png)
-            $g.Dispose()
-            $bmp.Dispose()
-            Write-Host "SCREENSHOT=$out"
-          }
-          New-Item -ItemType Directory -Force "$env:GITHUB_WORKSPACE\roblox-logs" | Out-Null
-          Get-ChildItem "$env:LOCALAPPDATA\Roblox\logs" -File -ErrorAction SilentlyContinue |
-            Copy-Item -Destination "$env:GITHUB_WORKSPACE\roblox-logs" -Force -ErrorAction SilentlyContinue
-
-      - name: Upload Windows Roblox diagnostics
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-roblox-diagnostics
-          path: |
-            windows-screen.png
-            roblox-logs
-          if-no-files-found: ignore
-          retention-days: 1
+          Write-Host "=== systeminfo virtualization ==="
+          systeminfo | Select-String -Pattern "Hyper-V|Virtualization|Second Level|VM Monitor"
+          Write-Host "=== optional features ==="
+          Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All,HypervisorPlatform,VirtualMachinePlatform -ErrorAction SilentlyContinue |
+            Select-Object FeatureName,State | Format-Table -AutoSize
+          Write-Host "=== hyper-v cmdlets ==="
+          Get-Command Get-VM -ErrorAction SilentlyContinue | Format-List Name,Source
+          Write-Host "=== qemu ==="
+          Get-Command qemu-system-x86_64 -ErrorAction SilentlyContinue | Format-List Source
