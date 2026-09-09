@@ -1,4 +1,4 @@
-name: Windows Roblox Desktop Probe
+name: Windows Roblox Launch Diagnose
 
 on:
   push:
@@ -10,60 +10,64 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
-      - name: Inspect Windows desktop sessions
+      - name: Windows and display
         shell: pwsh
         run: |
-          Write-Host "=== OS ==="
           Get-ComputerInfo | Select-Object WindowsProductName,WindowsVersion,OsArchitecture | Format-List
-          Write-Host "ARCH=$env:PROCESSOR_ARCHITECTURE"
-          Write-Host "USER=$env:USERNAME"
-          Write-Host "SESSIONNAME=$env:SESSIONNAME"
-          Write-Host "=== query user ==="
           query user 2>&1
-          Write-Host "=== qwinsta ==="
           qwinsta 2>&1
-          Write-Host "=== explorer ==="
-          Get-Process explorer -ErrorAction SilentlyContinue | Select-Object Id,SessionId,ProcessName,Path | Format-Table -AutoSize
+          Get-CimInstance Win32_VideoController |
+            Select-Object Name,DriverVersion,VideoModeDescription,AdapterRAM,Status |
+            Format-List
+          Get-Process explorer -ErrorAction SilentlyContinue |
+            Select-Object Id,SessionId,Path | Format-List
 
-      - name: Download and install normal Roblox
+      - name: Download normal Roblox
         shell: pwsh
         run: |
           $ErrorActionPreference = "Continue"
           $installer = Join-Path $env:TEMP "RobloxPlayerInstaller.exe"
           Invoke-WebRequest -Uri "https://setup.rbxcdn.com/RobloxPlayerInstaller.exe" -OutFile $installer
-          Write-Host "DOWNLOADED_ROBLOX_INSTALLER=$installer"
+          Write-Host "DOWNLOADED=$installer"
           Get-Item $installer | Select-Object FullName,Length | Format-List
           $p = Start-Process -FilePath $installer -PassThru
           if (-not $p.WaitForExit(120000)) {
             Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
           }
           Write-Host "INSTALLER_EXIT=$($p.ExitCode)"
-          Write-Host "=== Roblox player files ==="
-          Get-ChildItem "C:\Program Files\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue |
-            Select-Object FullName,Length,LastWriteTime | Format-List
-          Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue |
-            Select-Object FullName,Length,LastWriteTime | Format-List
-
-      - name: Launch downloaded Roblox
-        shell: pwsh
-        continue-on-error: true
-        run: |
           $player = Get-ChildItem "C:\Program Files\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
           if (-not $player) {
             $player = Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
           }
-          if (-not $player) {
-            Write-Host "ROBLOX_PLAYER_NOT_FOUND"
-            exit 0
-          }
-          Write-Host "ROBLOX_PLAYER=$($player.FullName)"
-          $p = Start-Process -FilePath $player.FullName -ArgumentList "-app" -PassThru
-          Write-Host "ROBLOX_PID=$($p.Id)"
-          Start-Sleep -Seconds 20
-          Get-Process RobloxPlayerBeta -ErrorAction SilentlyContinue |
-            Select-Object Id,SessionId,ProcessName,Path,Responding | Format-List
+          if (-not $player) { throw "RobloxPlayerBeta.exe was not installed" }
+          Write-Host "PLAYER=$($player.FullName)"
+          $player.FullName | Set-Content "$env:GITHUB_WORKSPACE\player-path.txt"
 
-      - name: Capture Windows screen
+      - name: Launch downloaded Roblox and collect result
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $player = Get-Content "$env:GITHUB_WORKSPACE\player-path.txt"
+          Write-Host "Launching $player"
+          $p = Start-Process -FilePath $player -ArgumentList "-app" -PassThru
+          Write-Host "START_PID=$($p.Id)"
+          Start-Sleep -Seconds 12
+          Write-Host "=== Roblox processes after 12s ==="
+          Get-Process *Roblox* -ErrorAction SilentlyContinue |
+            Select-Object Id,SessionId,ProcessName,Path,Responding |
+            Format-List
+
+          Write-Host "=== Recent Roblox logs ==="
+          $logs = @()
+          $logs += Get-ChildItem "$env:LOCALAPPDATA\Roblox\logs" -File -ErrorAction SilentlyContinue
+          $logs += Get-ChildItem "C:\Program Files\Roblox\Versions" -Filter "*.log" -Recurse -File -ErrorAction SilentlyContinue
+          $logs = $logs | Sort-Object LastWriteTime -Descending | Select-Object -First 8
+          foreach ($log in $logs) {
+            Write-Host "----- $($log.FullName) -----"
+            Get-Content $log.FullName -Tail 180 -ErrorAction SilentlyContinue
+          }
+
+      - name: Capture Windows desktop
         shell: pwsh
         continue-on-error: true
         run: |
@@ -75,19 +79,22 @@ jobs:
             $bmp = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
             $g = [System.Drawing.Graphics]::FromImage($bmp)
             $g.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
-            $out = "$env:RUNNER_TEMP\windows-screen.png"
+            $out = "$env:GITHUB_WORKSPACE\windows-screen.png"
             $bmp.Save($out, [System.Drawing.Imaging.ImageFormat]::Png)
             $g.Dispose()
             $bmp.Dispose()
             Write-Host "SCREENSHOT=$out"
           }
+          New-Item -ItemType Directory -Force "$env:GITHUB_WORKSPACE\roblox-logs" | Out-Null
+          Get-ChildItem "$env:LOCALAPPDATA\Roblox\logs" -File -ErrorAction SilentlyContinue |
+            Copy-Item -Destination "$env:GITHUB_WORKSPACE\roblox-logs" -Force -ErrorAction SilentlyContinue
 
-      - name: Upload diagnostics
+      - name: Upload Windows Roblox diagnostics
         uses: actions/upload-artifact@v4
         with:
           name: windows-roblox-diagnostics
           path: |
-            ${{ runner.temp }}\windows-screen.png
-            C:\Users\runneradmin\AppData\Local\Roblox\logs\*.log
+            windows-screen.png
+            roblox-logs
           if-no-files-found: ignore
           retention-days: 1
