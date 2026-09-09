@@ -1,4 +1,4 @@
-name: Windows 11 Runner Reboot Capability
+name: Normal User Roblox on Windows 11
 
 on:
   push:
@@ -6,40 +6,110 @@ on:
       - ".github/workflows/windows-roblox-probe.yml"
 
 jobs:
-  probe:
+  roblox:
     runs-on: windows-11-arm
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
-      - name: Inspect runner startup
+      - name: Verify Windows 11 and clear BCD test flag
         shell: pwsh
         run: |
-          Write-Host "=== runner processes ==="
-          Get-CimInstance Win32_Process |
-            Where-Object { $_.Name -match 'Runner|Agent|run' -or $_.CommandLine -match 'Runner.Listener|Runner.Worker' } |
-            Select-Object Name,ProcessId,ParentProcessId,ExecutablePath,CommandLine |
-            Format-List
-          Write-Host "=== services ==="
-          Get-Service |
-            Where-Object { $_.Name -match 'actions|runner|agent' -or $_.DisplayName -match 'actions|runner|agent' } |
-            Select-Object Name,DisplayName,Status,StartType |
-            Format-Table -AutoSize
-          Write-Host "=== scheduled tasks ==="
-          Get-ScheduledTask |
-            Where-Object { $_.TaskName -match 'runner|agent|actions' -or $_.TaskPath -match 'runner|agent|actions' } |
-            Select-Object TaskName,TaskPath,State |
-            Format-Table -AutoSize
-          Write-Host "=== startup ==="
-          Get-CimInstance Win32_StartupCommand |
-            Select-Object Name,Command,Location,User |
-            Format-List
-          Write-Host "=== runner dirs ==="
-          Get-ChildItem C:\ -Directory -Force -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -match 'actions|agent|runner' } |
-            Select-Object FullName |
-            Format-List
-          Get-ChildItem D:\ -Directory -Force -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -match 'actions|agent|runner' } |
-            Select-Object FullName |
-            Format-List
-          Write-Host "=== BCD ==="
+          Write-Host "=== OS ==="
+          Get-ComputerInfo | Select-Object WindowsProductName,WindowsVersion,OsArchitecture,OsBuildNumber | Format-List
+          Write-Host "=== BCD before ==="
           bcdedit /enum "{current}"
+          bcdedit /set testsigning off
+          bcdedit /debug off
+          bcdedit /set nointegritychecks off
+          Write-Host "=== BCD after ==="
+          bcdedit /enum "{current}"
+          query user 2>&1
+          Get-Process explorer | Select-Object Id,SessionId,Path | Format-List
+
+      - name: Download official normal Roblox
+        shell: pwsh
+        run: |
+          $installer = Join-Path $env:TEMP "RobloxPlayerInstaller.exe"
+          Invoke-WebRequest -Uri "https://setup.rbxcdn.com/RobloxPlayerInstaller.exe" -OutFile $installer
+          Write-Host "DOWNLOADED=$installer"
+          Get-Item $installer | Select-Object FullName,Length,VersionInfo | Format-List
+
+      - name: Install Roblox as normal desktop user
+        shell: pwsh
+        run: |
+          $installer = Join-Path $env:TEMP "RobloxPlayerInstaller.exe"
+          Write-Host "Launching installer through desktop Shell.Application"
+          $shell = New-Object -ComObject Shell.Application
+          $shell.ShellExecute($installer, "", "", "open", 1)
+          Start-Sleep -Seconds 3
+          $deadline=(Get-Date).AddSeconds(100)
+          while((Get-Date) -lt $deadline) {
+            $p=Get-Process RobloxPlayerInstaller -ErrorAction SilentlyContinue
+            if(-not $p) {
+              $player=Get-ChildItem "C:\Program Files\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+              if(-not $player) {
+                $player=Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+              }
+              if($player) { break }
+            }
+            Start-Sleep -Seconds 2
+          }
+          Write-Host "=== installer logs ==="
+          Get-ChildItem "$env:LOCALAPPDATA\Roblox\logs\RobloxPlayerInstaller_*.log" -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending | Select-Object -First 1 |
+            ForEach-Object { Get-Content $_.FullName -Tail 220 }
+          Write-Host "=== installed player ==="
+          Get-ChildItem "C:\Program Files\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue |
+            Select-Object FullName,Length | Format-List
+          Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue |
+            Select-Object FullName,Length | Format-List
+
+      - name: Launch downloaded Roblox as desktop user
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $player=Get-ChildItem "C:\Program Files\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if(-not $player) {
+            $player=Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          }
+          if(-not $player) { Write-Host "ROBLOX_PLAYER_NOT_FOUND"; exit 0 }
+          Write-Host "ROBLOX_PLAYER=$($player.FullName)"
+          $shell=New-Object -ComObject Shell.Application
+          $shell.ShellExecute($player.FullName, "-app", "", "open", 1)
+          Start-Sleep -Seconds 30
+          Write-Host "=== Roblox processes after 30s ==="
+          Get-Process *Roblox* -ErrorAction SilentlyContinue |
+            Select-Object Id,SessionId,ProcessName,Path,Responding | Format-List
+          Write-Host "=== latest Roblox logs ==="
+          Get-ChildItem "$env:LOCALAPPDATA\Roblox\logs" -File -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending | Select-Object -First 6 |
+            ForEach-Object {
+              Write-Host "----- $($_.Name) -----"
+              Get-Content $_.FullName -Tail 250 -ErrorAction SilentlyContinue
+            }
+
+      - name: Capture Windows 11 desktop
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+          $bounds=[System.Windows.Forms.SystemInformation]::VirtualScreen
+          Write-Host "SCREEN=$($bounds.Width)x$($bounds.Height)"
+          $bmp=New-Object System.Drawing.Bitmap $bounds.Width,$bounds.Height
+          $g=[System.Drawing.Graphics]::FromImage($bmp)
+          $g.CopyFromScreen($bounds.Location,[System.Drawing.Point]::Empty,$bounds.Size)
+          $bmp.Save("$env:GITHUB_WORKSPACE\windows11-normal-roblox.png",[System.Drawing.Imaging.ImageFormat]::Png)
+          $g.Dispose(); $bmp.Dispose()
+          New-Item -ItemType Directory -Force "$env:GITHUB_WORKSPACE\roblox-logs" | Out-Null
+          Get-ChildItem "$env:LOCALAPPDATA\Roblox\logs" -File -ErrorAction SilentlyContinue |
+            Copy-Item -Destination "$env:GITHUB_WORKSPACE\roblox-logs" -Force -ErrorAction SilentlyContinue
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows11-normal-user-roblox
+          path: |
+            windows11-normal-roblox.png
+            roblox-logs
+          if-no-files-found: ignore
+          retention-days: 1
