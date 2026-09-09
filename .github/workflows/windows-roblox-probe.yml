@@ -1,0 +1,86 @@
+name: Windows Roblox Probe
+
+on:
+  push:
+    paths:
+      - ".github/workflows/windows-roblox-probe.yml"
+
+jobs:
+  roblox:
+    runs-on: windows-11-arm
+    timeout-minutes: 15
+    steps:
+      - name: System info
+        shell: pwsh
+        run: |
+          Write-Host "OS:"
+          Get-ComputerInfo | Select-Object WindowsProductName,WindowsVersion,OsArchitecture | Format-List
+          Write-Host "PROCESSOR_ARCHITECTURE=$env:PROCESSOR_ARCHITECTURE"
+          Write-Host "USERNAME=$env:USERNAME"
+          Write-Host "SESSIONNAME=$env:SESSIONNAME"
+
+      - name: Download official Roblox installer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $url = "https://setup.rbxcdn.com/RobloxPlayerInstaller.exe"
+          $out = Join-Path $env:TEMP "RobloxPlayerInstaller.exe"
+          Invoke-WebRequest -Uri $url -OutFile $out
+          Get-Item $out | Select-Object FullName,Length,VersionInfo | Format-List
+          Get-FileHash $out -Algorithm SHA256 | Format-List
+
+      - name: Attempt Roblox installer
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $installer = Join-Path $env:TEMP "RobloxPlayerInstaller.exe"
+          Write-Host "Launching installer..."
+          try {
+            $p = Start-Process -FilePath $installer -PassThru
+            Write-Host "PID=$($p.Id)"
+            if (-not $p.WaitForExit(180000)) {
+              Write-Host "Installer still running after 180s; stopping probe process."
+              Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+            } else {
+              Write-Host "InstallerExitCode=$($p.ExitCode)"
+            }
+          } catch {
+            Write-Host "InstallerError=$($_.Exception.Message)"
+          }
+
+      - name: Inspect Roblox installation
+        shell: pwsh
+        run: |
+          Write-Host "Roblox directories:"
+          Get-ChildItem "$env:LOCALAPPDATA\Roblox" -Recurse -ErrorAction SilentlyContinue |
+            Select-Object -First 200 FullName,Length | Format-Table -AutoSize
+          Write-Host "Installed AppX Roblox packages:"
+          Get-AppxPackage *Roblox* -ErrorAction SilentlyContinue |
+            Select-Object Name,PackageFullName,InstallLocation,Architecture | Format-List
+          Write-Host "Roblox processes:"
+          Get-Process *Roblox* -ErrorAction SilentlyContinue |
+            Select-Object Name,Id,Path | Format-Table -AutoSize
+
+      - name: Try launching installed Roblox
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $players = Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue
+          if ($players) {
+            $exe = $players[0].FullName
+            Write-Host "Found player: $exe"
+            try {
+              $p = Start-Process -FilePath $exe -PassThru
+              Start-Sleep -Seconds 15
+              if (Get-Process -Id $p.Id -ErrorAction SilentlyContinue) {
+                Write-Host "ROBLOX_PROCESS_ALIVE PID=$($p.Id)"
+                Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+              } else {
+                Write-Host "Roblox process exited before 15s."
+              }
+            } catch {
+              Write-Host "LaunchError=$($_.Exception.Message)"
+            }
+          } else {
+            Write-Host "RobloxPlayerBeta.exe not found."
+          }
