@@ -1,4 +1,4 @@
-name: Limited User Roblox on Windows 11
+name: Native Roblox Writable Folder Windows 11
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     runs-on: windows-11-arm
     timeout-minutes: 15
     steps:
-      - name: Prepare genuine Windows 11
+      - name: Prepare Windows 11
         shell: pwsh
         run: |
           Get-ComputerInfo | Select-Object WindowsProductName,WindowsVersion,OsArchitecture,OsBuildNumber | Format-List
@@ -18,71 +18,64 @@ jobs:
           bcdedit /debug off
           bcdedit /set nointegritychecks off
           bcdedit /enum "{current}"
-          Write-Host "=== trust levels ==="
-          runas /showtrustlevels
+          New-Item -ItemType Directory -Force "C:\Program Files\Roblox" | Out-Null
+          icacls "C:\Program Files\Roblox" /grant "$env:USERNAME:(OI)(CI)M" /T /C
+          Write-Host "=== ACL ==="
+          icacls "C:\Program Files\Roblox"
           query user 2>&1
           exit 0
 
-      - name: Download normal Roblox
+      - name: Download official Roblox installer
         shell: pwsh
         run: |
           $installer=Join-Path $env:TEMP "RobloxPlayerInstaller.exe"
           Invoke-WebRequest -Uri "https://setup.rbxcdn.com/RobloxPlayerInstaller.exe" -OutFile $installer
           Get-Item $installer | Select-Object FullName,Length,VersionInfo | Format-List
 
-      - name: Install Roblox at Basic User trust level
+      - name: Install downloaded Roblox as Basic User
         shell: pwsh
         run: |
           $installer=Join-Path $env:TEMP "RobloxPlayerInstaller.exe"
           $cmd='runas.exe /trustlevel:0x20000 "' + $installer + '"'
-          Write-Host "Starting installer with Basic User trust level"
           cmd.exe /c $cmd
           Start-Sleep -Seconds 3
           $deadline=(Get-Date).AddSeconds(100)
           while((Get-Date) -lt $deadline) {
-            $installers=Get-Process RobloxPlayerInstaller -ErrorAction SilentlyContinue
+            $p=Get-Process RobloxPlayerInstaller -ErrorAction SilentlyContinue
             $player=Get-ChildItem "C:\Program Files\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-            if(-not $player) {
-              $player=Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-            }
-            if($player -and -not $installers) { break }
+            if($player -and -not $p) { break }
             Start-Sleep -Seconds 2
           }
           Write-Host "=== installer log ==="
           Get-ChildItem "$env:LOCALAPPDATA\Roblox\logs\RobloxPlayerInstaller_*.log" -ErrorAction SilentlyContinue |
             Sort-Object LastWriteTime -Descending | Select-Object -First 1 |
-            ForEach-Object { Get-Content $_.FullName -Tail 250 }
-          Write-Host "=== player paths ==="
+            ForEach-Object { Get-Content $_.FullName -Tail 300 }
+          Write-Host "=== player ==="
           Get-ChildItem "C:\Program Files\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue |
-            Select-Object FullName,Length | Format-List
-          Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue |
-            Select-Object FullName,Length | Format-List
+            Select-Object FullName,Length,VersionInfo | Format-List
 
-      - name: Launch downloaded Roblox at Basic User trust level
+      - name: Launch normal downloaded Roblox
         shell: pwsh
         continue-on-error: true
         run: |
           $player=Get-ChildItem "C:\Program Files\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          if(-not $player) {
-            $player=Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          }
           if(-not $player) { Write-Host "ROBLOX_PLAYER_NOT_FOUND"; exit 0 }
           Write-Host "ROBLOX_PLAYER=$($player.FullName)"
           $cmd='runas.exe /trustlevel:0x20000 "' + $player.FullName + ' -app"'
           cmd.exe /c $cmd
-          Start-Sleep -Seconds 30
-          Write-Host "=== Roblox processes after 30s ==="
+          Start-Sleep -Seconds 35
+          Write-Host "=== Roblox processes after 35s ==="
           Get-Process *Roblox* -ErrorAction SilentlyContinue |
             Select-Object Id,SessionId,ProcessName,Path,Responding | Format-List
           Write-Host "=== logs ==="
           Get-ChildItem "$env:LOCALAPPDATA\Roblox\logs" -File -ErrorAction SilentlyContinue |
-            Sort-Object LastWriteTime -Descending | Select-Object -First 8 |
+            Sort-Object LastWriteTime -Descending | Select-Object -First 10 |
             ForEach-Object {
               Write-Host "----- $($_.Name) -----"
-              Get-Content $_.FullName -Tail 250 -ErrorAction SilentlyContinue
+              Get-Content $_.FullName -Tail 300 -ErrorAction SilentlyContinue
             }
 
-      - name: Capture Windows 11 screen
+      - name: Capture desktop
         shell: pwsh
         continue-on-error: true
         run: |
@@ -92,7 +85,7 @@ jobs:
           $bmp=New-Object System.Drawing.Bitmap $bounds.Width,$bounds.Height
           $g=[System.Drawing.Graphics]::FromImage($bmp)
           $g.CopyFromScreen($bounds.Location,[System.Drawing.Point]::Empty,$bounds.Size)
-          $bmp.Save("$env:GITHUB_WORKSPACE\windows11-limited-roblox.png",[System.Drawing.Imaging.ImageFormat]::Png)
+          $bmp.Save("$env:GITHUB_WORKSPACE\windows11-roblox-writable.png",[System.Drawing.Imaging.ImageFormat]::Png)
           $g.Dispose(); $bmp.Dispose()
           New-Item -ItemType Directory -Force "$env:GITHUB_WORKSPACE\roblox-logs" | Out-Null
           Get-ChildItem "$env:LOCALAPPDATA\Roblox\logs" -File -ErrorAction SilentlyContinue |
@@ -101,9 +94,9 @@ jobs:
       - name: Upload result
         uses: actions/upload-artifact@v4
         with:
-          name: windows11-limited-user-roblox
+          name: windows11-downloaded-roblox
           path: |
-            windows11-limited-roblox.png
+            windows11-roblox-writable.png
             roblox-logs
           if-no-files-found: ignore
           retention-days: 1
