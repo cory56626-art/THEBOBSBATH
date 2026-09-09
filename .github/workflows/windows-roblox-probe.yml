@@ -1,4 +1,4 @@
-name: Windows Roblox Interactive
+name: Windows Roblox Desktop Probe
 
 on:
   push:
@@ -7,89 +7,87 @@ on:
 
 jobs:
   roblox:
-    runs-on: windows-11-arm
+    runs-on: windows-latest
     timeout-minutes: 15
     steps:
-      - name: Install Roblox
+      - name: Inspect Windows desktop sessions
+        shell: pwsh
+        run: |
+          Write-Host "=== OS ==="
+          Get-ComputerInfo | Select-Object WindowsProductName,WindowsVersion,OsArchitecture | Format-List
+          Write-Host "ARCH=$env:PROCESSOR_ARCHITECTURE"
+          Write-Host "USER=$env:USERNAME"
+          Write-Host "SESSIONNAME=$env:SESSIONNAME"
+          Write-Host "=== query user ==="
+          query user 2>&1
+          Write-Host "=== qwinsta ==="
+          qwinsta 2>&1
+          Write-Host "=== explorer ==="
+          Get-Process explorer -ErrorAction SilentlyContinue | Select-Object Id,SessionId,ProcessName,Path | Format-Table -AutoSize
+
+      - name: Download and install normal Roblox
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Continue"
+          $installer = Join-Path $env:TEMP "RobloxPlayerInstaller.exe"
+          Invoke-WebRequest -Uri "https://setup.rbxcdn.com/RobloxPlayerInstaller.exe" -OutFile $installer
+          Write-Host "DOWNLOADED_ROBLOX_INSTALLER=$installer"
+          Get-Item $installer | Select-Object FullName,Length | Format-List
+          $p = Start-Process -FilePath $installer -PassThru
+          if (-not $p.WaitForExit(120000)) {
+            Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+          }
+          Write-Host "INSTALLER_EXIT=$($p.ExitCode)"
+          Write-Host "=== Roblox player files ==="
+          Get-ChildItem "C:\Program Files\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue |
+            Select-Object FullName,Length,LastWriteTime | Format-List
+          Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue |
+            Select-Object FullName,Length,LastWriteTime | Format-List
+
+      - name: Launch downloaded Roblox
         shell: pwsh
         continue-on-error: true
         run: |
-          $installer = Join-Path $env:TEMP "RobloxPlayerInstaller.exe"
-          Invoke-WebRequest -Uri "https://setup.rbxcdn.com/RobloxPlayerInstaller.exe" -OutFile $installer
-          try {
-            $p = Start-Process -FilePath $installer -PassThru
-            $p.WaitForExit(90000) | Out-Null
-            if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue }
-          } catch {}
           $player = Get-ChildItem "C:\Program Files\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($player) { Write-Host "ROBLOX_INSTALLED=$($player.FullName)" } else { Write-Host "ROBLOX_NOT_FOUND" }
+          if (-not $player) {
+            $player = Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Filter RobloxPlayerBeta.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          }
+          if (-not $player) {
+            Write-Host "ROBLOX_PLAYER_NOT_FOUND"
+            exit 0
+          }
+          Write-Host "ROBLOX_PLAYER=$($player.FullName)"
+          $p = Start-Process -FilePath $player.FullName -ArgumentList "-app" -PassThru
+          Write-Host "ROBLOX_PID=$($p.Id)"
+          Start-Sleep -Seconds 20
+          Get-Process RobloxPlayerBeta -ErrorAction SilentlyContinue |
+            Select-Object Id,SessionId,ProcessName,Path,Responding | Format-List
 
-      - name: Enable temporary RDP desktop
-        id: rdp
+      - name: Capture Windows screen
         shell: pwsh
+        continue-on-error: true
         run: |
-          $ErrorActionPreference = "Stop"
-          $bytes = New-Object byte[] 18
-          [System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
-          $password = "Aa1!" + ([Convert]::ToBase64String($bytes).Replace("/","A").Replace("+","B").TrimEnd("="))
-          $secure = ConvertTo-SecureString $password -AsPlainText -Force
-
-          if (-not (Get-LocalUser -Name "RobloxAgent" -ErrorAction SilentlyContinue)) {
-            New-LocalUser -Name "RobloxAgent" -Password $secure -PasswordNeverExpires -AccountNeverExpires
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+          $bounds = [System.Windows.Forms.SystemInformation]::VirtualScreen
+          Write-Host "SCREEN=$($bounds.Width)x$($bounds.Height)"
+          if ($bounds.Width -gt 0 -and $bounds.Height -gt 0) {
+            $bmp = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
+            $g = [System.Drawing.Graphics]::FromImage($bmp)
+            $g.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+            $out = "$env:RUNNER_TEMP\windows-screen.png"
+            $bmp.Save($out, [System.Drawing.Imaging.ImageFormat]::Png)
+            $g.Dispose()
+            $bmp.Dispose()
+            Write-Host "SCREENSHOT=$out"
           }
-          Add-LocalGroupMember -Group "Administrators" -Member "RobloxAgent" -ErrorAction SilentlyContinue
-          Add-LocalGroupMember -Group "Remote Desktop Users" -Member "RobloxAgent" -ErrorAction SilentlyContinue
 
-          Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" -Name fDenyTSConnections -Value 0
-          Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name UserAuthentication -Value 1
-          Enable-NetFirewallRule -DisplayGroup "Remote Desktop" -ErrorAction SilentlyContinue
-          Set-Service TermService -StartupType Automatic
-          Start-Service TermService
-
-          $out = Join-Path $env:TEMP "pinggy-out.txt"
-          $err = Join-Path $env:TEMP "pinggy-err.txt"
-          $args = @(
-            "-o","StrictHostKeyChecking=no",
-            "-o","UserKnownHostsFile=NUL",
-            "-o","ServerAliveInterval=20",
-            "-p","443",
-            "-R0:localhost:3389",
-            "tcp@free.pinggy.io"
-          )
-          $tunnel = Start-Process -FilePath "ssh.exe" -ArgumentList $args -RedirectStandardOutput $out -RedirectStandardError $err -PassThru
-          Start-Sleep -Seconds 12
-
-          $text = ((Get-Content $out -Raw -ErrorAction SilentlyContinue) + "`n" + (Get-Content $err -Raw -ErrorAction SilentlyContinue))
-          Write-Host "Tunnel output captured."
-          $match = [regex]::Match($text, 'tcp://([A-Za-z0-9.-]+):(\d+)')
-          if (-not $match.Success) {
-            Write-Host $text
-            throw "Could not find Pinggy TCP endpoint"
-          }
-          $hostName = $match.Groups[1].Value
-          $port = $match.Groups[2].Value
-
-          @"
-HOST=$hostName
-PORT=$port
-USERNAME=RobloxAgent
-PASSWORD=$password
-"@ | Set-Content "$env:RUNNER_TEMP\rdp-connection.txt"
-
-          Write-Host "RDP_TUNNEL_READY"
-          Write-Host "HOST=$hostName"
-          Write-Host "PORT=$port"
-          Write-Host "TUNNEL_PID=$($tunnel.Id)"
-
-      - name: Upload private-ish connection bundle
+      - name: Upload diagnostics
         uses: actions/upload-artifact@v4
         with:
-          name: rdp-connection
-          path: ${{ runner.temp }}\rdp-connection.txt
+          name: windows-roblox-diagnostics
+          path: |
+            ${{ runner.temp }}\windows-screen.png
+            C:\Users\runneradmin\AppData\Local\Roblox\logs\*.log
+          if-no-files-found: ignore
           retention-days: 1
-
-      - name: Keep Windows desktop alive
-        shell: pwsh
-        run: |
-          Write-Host "Keeping the Windows runner alive for remote GUI control."
-          Start-Sleep -Seconds 600
