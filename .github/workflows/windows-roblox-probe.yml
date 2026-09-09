@@ -24,6 +24,7 @@ jobs:
           bcdedit /enum "{current}"
           query user 2>&1
           Get-Process explorer | Select-Object Id,SessionId,Path | Format-List
+          exit 0
 
       - name: Download official normal Roblox
         shell: pwsh
