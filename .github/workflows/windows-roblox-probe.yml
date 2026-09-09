@@ -19,7 +19,8 @@ jobs:
           bcdedit /set nointegritychecks off
           bcdedit /enum "{current}"
           New-Item -ItemType Directory -Force "C:\Program Files\Roblox" | Out-Null
-          icacls "C:\Program Files\Roblox" /grant "$env:USERNAME:(OI)(CI)M" /T /C
+          $acct="$env:USERDOMAIN\$env:USERNAME"
+          & icacls.exe "C:\Program Files\Roblox" /grant:r "$($acct):(OI)(CI)M" /T /C
           Write-Host "=== ACL ==="
           icacls "C:\Program Files\Roblox"
           query user 2>&1
