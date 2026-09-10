@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#111218" />
+  <meta name="description" content="BOB Paint — a fast, touch-friendly drawing studio that runs in your browser." />
+  <title>BOB Paint</title>
+  <link rel="stylesheet" href="css/paint.css?v=1" />
+</head>
+<body>
+  <main class="app-shell" id="app">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="BOB Paint home">
+        <span class="brand-mark" aria-hidden="true">
+          <i></i><i></i><i></i>
+        </span>
+        <span>BOB <strong>Paint</strong></span>
+      </a>
+
+      <div class="history-actions" aria-label="History controls">
+        <button class="top-button icon-only" id="undoBtn" type="button" aria-label="Undo" title="Undo (Ctrl or Command + Z)" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7 4 12l5 5M5 12h8a6 6 0 0 1 6 6" /></svg>
+        </button>
+        <button class="top-button icon-only" id="redoBtn" type="button" aria-label="Redo" title="Redo (Ctrl or Command + Shift + Z)" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 7 5 5-5 5m4-5h-8a6 6 0 0 0-6 6" /></svg>
+        </button>
+      </div>
+
+      <div class="document-name" aria-label="Document name">
+        <span class="save-indicator" aria-hidden="true"></span>
+        <input id="documentName" value="Untitled artwork" maxlength="48" aria-label="Artwork name" />
+      </div>
+
+      <div class="file-actions">
+        <button class="top-button" id="clearBtn" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5" /></svg>
+          <span>Clear</span>
+        </button>
+        <button class="export-button" id="exportBtn" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" /></svg>
+          <span>Save PNG</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="workspace">
+      <nav class="tool-rail" aria-label="Drawing tools">
+        <button class="tool-button active" data-tool="brush" type="button" aria-label="Brush" aria-pressed="true" title="Brush (B)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 5 5M13 6l5-3 3 3-3 5M13 6 5 14m0 0c-2 0-3 2-3 5 3 0 5-1 5-3l-2-2Zm2 2 3 3" /></svg>
+          <span>Brush</span>
+        </button>
+        <button class="tool-button" data-tool="marker" type="button" aria-label="Marker" aria-pressed="false" title="Marker (M)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 4 5 5L9 20H4v-5L15 4Zm-9 9 5 5m-7 2h7" /></svg>
+          <span>Marker</span>
+        </button>
+        <button class="tool-button" data-tool="eraser" type="button" aria-label="Eraser" aria-pressed="false" title="Eraser (E)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 20-4-4L14 5a2 2 0 0 1 3 0l2 2a2 2 0 0 1 0 3L9 20H7Zm2-8 5 5m-4 3h10" /></svg>
+          <span>Eraser</span>
+        </button>
+
+        <div class="tool-divider" role="separator"></div>
+
+        <button class="tool-button" data-tool="line" type="button" aria-label="Line" aria-pressed="false" title="Line (L)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5" /><circle cx="5" cy="19" r="1.5" /><circle cx="19" cy="5" r="1.5" /></svg>
+          <span>Line</span>
+        </button>
+        <button class="tool-button" data-tool="rectangle" type="button" aria-label="Rectangle" aria-pressed="false" title="Rectangle (R)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="1" /></svg>
+          <span>Box</span>
+        </button>
+        <button class="tool-button" data-tool="ellipse" type="button" aria-label="Ellipse" aria-pressed="false" title="Ellipse (O)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="8" ry="6.5" /></svg>
+          <span>Circle</span>
+        </button>
+        <button class="tool-button" data-tool="fill" type="button" aria-label="Fill" aria-pressed="false" title="Fill (G)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m13 3 8 8-8 8-9-9 8-7h1Zm-9 7h17M4 21h16" /></svg>
+          <span>Fill</span>
+        </button>
+        <button class="tool-button" data-tool="eyedropper" type="button" aria-label="Eyedropper" aria-pressed="false" title="Eyedropper (I)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 5 5M9 19l-4 1 1-4L16 6l2 2L9 19Zm7-13 2-2a2 2 0 0 1 3 3l-2 2" /></svg>
+          <span>Pick</span>
+        </button>
+      </nav>
+
+      <section class="stage" id="stage" aria-label="Drawing area">
+        <div class="canvas-frame" id="canvasFrame">
+          <canvas id="paintCanvas" width="1280" height="800" aria-label="Blank drawing canvas"></canvas>
+          <div class="brush-cursor" id="brushCursor" aria-hidden="true"></div>
+        </div>
+        <div class="empty-hint" id="emptyHint" aria-hidden="true">
+          <strong>Start drawing</strong>
+          <span>Use your finger, Apple Pencil, or mouse</span>
+        </div>
+      </section>
+
+      <aside class="inspector" aria-label="Brush settings">
+        <section class="inspector-section color-section">
+          <div class="section-heading">
+            <h2>Color</h2>
+            <output id="colorHex" for="colorPicker">#202124</output>
+          </div>
+          <label class="current-color" title="Choose any color">
+            <span id="currentColorPreview"></span>
+            <input id="colorPicker" type="color" value="#202124" aria-label="Custom color" />
+            <small>Custom color</small>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+          </label>
+          <div class="swatch-grid" id="swatchGrid" aria-label="Color palette">
+            <button class="swatch selected light-swatch" data-color="#ffffff" style="--swatch:#ffffff" aria-label="White" type="button"></button>
+            <button class="swatch" data-color="#202124" style="--swatch:#202124" aria-label="Charcoal" type="button"></button>
+            <button class="swatch" data-color="#ef4444" style="--swatch:#ef4444" aria-label="Red" type="button"></button>
+            <button class="swatch" data-color="#f97316" style="--swatch:#f97316" aria-label="Orange" type="button"></button>
+            <button class="swatch" data-color="#facc15" style="--swatch:#facc15" aria-label="Yellow" type="button"></button>
+            <button class="swatch" data-color="#22c55e" style="--swatch:#22c55e" aria-label="Green" type="button"></button>
+            <button class="swatch" data-color="#14b8a6" style="--swatch:#14b8a6" aria-label="Teal" type="button"></button>
+            <button class="swatch" data-color="#0ea5e9" style="--swatch:#0ea5e9" aria-label="Sky blue" type="button"></button>
+            <button class="swatch" data-color="#3b82f6" style="--swatch:#3b82f6" aria-label="Blue" type="button"></button>
+            <button class="swatch" data-color="#8b5cf6" style="--swatch:#8b5cf6" aria-label="Purple" type="button"></button>
+            <button class="swatch" data-color="#ec4899" style="--swatch:#ec4899" aria-label="Pink" type="button"></button>
+            <button class="swatch" data-color="#92400e" style="--swatch:#92400e" aria-label="Brown" type="button"></button>
+          </div>
+        </section>
+
+        <section class="inspector-section">
+          <div class="section-heading">
+            <h2>Brush size</h2>
+            <output id="sizeValue" for="sizeSlider">18 px</output>
+          </div>
+          <input class="range" id="sizeSlider" type="range" min="1" max="100" value="18" aria-label="Brush size" />
+          <div class="range-labels" aria-hidden="true"><span>1</span><span>100</span></div>
+        </section>
+
+        <section class="inspector-section">
+          <div class="section-heading">
+            <h2>Opacity</h2>
+            <output id="opacityValue" for="opacitySlider">100%</output>
+          </div>
+          <input class="range opacity-range" id="opacitySlider" type="range" min="5" max="100" value="100" aria-label="Brush opacity" />
+          <div class="range-labels" aria-hidden="true"><span>5%</span><span>100%</span></div>
+        </section>
+
+        <section class="inspector-section tips-section">
+          <h2>Quick keys</h2>
+          <div class="shortcut"><span>Brush / eraser</span><span><kbd>B</kbd><kbd>E</kbd></span></div>
+          <div class="shortcut"><span>Change size</span><span><kbd>[</kbd><kbd>]</kbd></span></div>
+          <div class="shortcut"><span>Undo / redo</span><span><kbd>⌘Z</kbd><kbd>⇧⌘Z</kbd></span></div>
+        </section>
+      </aside>
+    </section>
+
+    <footer class="statusbar">
+      <span><strong id="toolStatus">Brush</strong><i></i><span id="coordinateStatus">Ready</span></span>
+      <span><span>1280 × 800</span><i></i><span id="zoomStatus">100%</span></span>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <dialog class="clear-dialog" id="clearDialog">
+      <form method="dialog">
+        <div class="dialog-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5" /></svg>
+        </div>
+        <h2>Clear the canvas?</h2>
+        <p>This removes everything currently drawn. You can still undo it afterward.</p>
+        <div class="dialog-actions">
+          <button value="cancel" type="submit">Cancel</button>
+          <button class="danger-button" value="confirm" type="submit">Clear canvas</button>
+        </div>
+      </form>
+    </dialog>
+  </main>
+
+  <noscript>BOB Paint needs JavaScript enabled to draw.</noscript>
+  <script src="js/paint.js?v=1"></script>
+</body>
+</html>

@@ -1,177 +1,20 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <meta name="theme-color" content="#111218" />
-  <meta name="description" content="BOB Paint — a fast, touch-friendly drawing studio that runs in your browser." />
-  <title>BOB Paint</title>
-  <link rel="stylesheet" href="css/paint.css?v=1" />
-</head>
-<body>
-  <main class="app-shell" id="app">
-    <header class="topbar">
-      <a class="brand" href="./" aria-label="BOB Paint home">
-        <span class="brand-mark" aria-hidden="true">
-          <i></i><i></i><i></i>
-        </span>
-        <span>BOB <strong>Paint</strong></span>
-      </a>
-
-      <div class="history-actions" aria-label="History controls">
-        <button class="top-button icon-only" id="undoBtn" type="button" aria-label="Undo" title="Undo (Ctrl or Command + Z)" disabled>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7 4 12l5 5M5 12h8a6 6 0 0 1 6 6" /></svg>
-        </button>
-        <button class="top-button icon-only" id="redoBtn" type="button" aria-label="Redo" title="Redo (Ctrl or Command + Shift + Z)" disabled>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 7 5 5-5 5m4-5h-8a6 6 0 0 0-6 6" /></svg>
-        </button>
-      </div>
-
-      <div class="document-name" aria-label="Document name">
-        <span class="save-indicator" aria-hidden="true"></span>
-        <input id="documentName" value="Untitled artwork" maxlength="48" aria-label="Artwork name" />
-      </div>
-
-      <div class="file-actions">
-        <button class="top-button" id="clearBtn" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5" /></svg>
-          <span>Clear</span>
-        </button>
-        <button class="export-button" id="exportBtn" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" /></svg>
-          <span>Save PNG</span>
-        </button>
-      </div>
-    </header>
-
-    <section class="workspace">
-      <nav class="tool-rail" aria-label="Drawing tools">
-        <button class="tool-button active" data-tool="brush" type="button" aria-label="Brush" aria-pressed="true" title="Brush (B)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 5 5M13 6l5-3 3 3-3 5M13 6 5 14m0 0c-2 0-3 2-3 5 3 0 5-1 5-3l-2-2Zm2 2 3 3" /></svg>
-          <span>Brush</span>
-        </button>
-        <button class="tool-button" data-tool="marker" type="button" aria-label="Marker" aria-pressed="false" title="Marker (M)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 4 5 5L9 20H4v-5L15 4Zm-9 9 5 5m-7 2h7" /></svg>
-          <span>Marker</span>
-        </button>
-        <button class="tool-button" data-tool="eraser" type="button" aria-label="Eraser" aria-pressed="false" title="Eraser (E)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 20-4-4L14 5a2 2 0 0 1 3 0l2 2a2 2 0 0 1 0 3L9 20H7Zm2-8 5 5m-4 3h10" /></svg>
-          <span>Eraser</span>
-        </button>
-
-        <div class="tool-divider" role="separator"></div>
-
-        <button class="tool-button" data-tool="line" type="button" aria-label="Line" aria-pressed="false" title="Line (L)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5" /><circle cx="5" cy="19" r="1.5" /><circle cx="19" cy="5" r="1.5" /></svg>
-          <span>Line</span>
-        </button>
-        <button class="tool-button" data-tool="rectangle" type="button" aria-label="Rectangle" aria-pressed="false" title="Rectangle (R)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="1" /></svg>
-          <span>Box</span>
-        </button>
-        <button class="tool-button" data-tool="ellipse" type="button" aria-label="Ellipse" aria-pressed="false" title="Ellipse (O)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="8" ry="6.5" /></svg>
-          <span>Circle</span>
-        </button>
-        <button class="tool-button" data-tool="fill" type="button" aria-label="Fill" aria-pressed="false" title="Fill (G)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m13 3 8 8-8 8-9-9 8-7h1Zm-9 7h17M4 21h16" /></svg>
-          <span>Fill</span>
-        </button>
-        <button class="tool-button" data-tool="eyedropper" type="button" aria-label="Eyedropper" aria-pressed="false" title="Eyedropper (I)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 5 5M9 19l-4 1 1-4L16 6l2 2L9 19Zm7-13 2-2a2 2 0 0 1 3 3l-2 2" /></svg>
-          <span>Pick</span>
-        </button>
-      </nav>
-
-      <section class="stage" id="stage" aria-label="Drawing area">
-        <div class="canvas-frame" id="canvasFrame">
-          <canvas id="paintCanvas" width="1280" height="800" aria-label="Blank drawing canvas"></canvas>
-          <div class="brush-cursor" id="brushCursor" aria-hidden="true"></div>
-        </div>
-        <div class="empty-hint" id="emptyHint" aria-hidden="true">
-          <strong>Start drawing</strong>
-          <span>Use your finger, Apple Pencil, or mouse</span>
-        </div>
-      </section>
-
-      <aside class="inspector" aria-label="Brush settings">
-        <section class="inspector-section color-section">
-          <div class="section-heading">
-            <h2>Color</h2>
-            <output id="colorHex" for="colorPicker">#202124</output>
-          </div>
-          <label class="current-color" title="Choose any color">
-            <span id="currentColorPreview"></span>
-            <input id="colorPicker" type="color" value="#202124" aria-label="Custom color" />
-            <small>Custom color</small>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
-          </label>
-          <div class="swatch-grid" id="swatchGrid" aria-label="Color palette">
-            <button class="swatch selected light-swatch" data-color="#ffffff" style="--swatch:#ffffff" aria-label="White" type="button"></button>
-            <button class="swatch" data-color="#202124" style="--swatch:#202124" aria-label="Charcoal" type="button"></button>
-            <button class="swatch" data-color="#ef4444" style="--swatch:#ef4444" aria-label="Red" type="button"></button>
-            <button class="swatch" data-color="#f97316" style="--swatch:#f97316" aria-label="Orange" type="button"></button>
-            <button class="swatch" data-color="#facc15" style="--swatch:#facc15" aria-label="Yellow" type="button"></button>
-            <button class="swatch" data-color="#22c55e" style="--swatch:#22c55e" aria-label="Green" type="button"></button>
-            <button class="swatch" data-color="#14b8a6" style="--swatch:#14b8a6" aria-label="Teal" type="button"></button>
-            <button class="swatch" data-color="#0ea5e9" style="--swatch:#0ea5e9" aria-label="Sky blue" type="button"></button>
-            <button class="swatch" data-color="#3b82f6" style="--swatch:#3b82f6" aria-label="Blue" type="button"></button>
-            <button class="swatch" data-color="#8b5cf6" style="--swatch:#8b5cf6" aria-label="Purple" type="button"></button>
-            <button class="swatch" data-color="#ec4899" style="--swatch:#ec4899" aria-label="Pink" type="button"></button>
-            <button class="swatch" data-color="#92400e" style="--swatch:#92400e" aria-label="Brown" type="button"></button>
-          </div>
-        </section>
-
-        <section class="inspector-section">
-          <div class="section-heading">
-            <h2>Brush size</h2>
-            <output id="sizeValue" for="sizeSlider">18 px</output>
-          </div>
-          <input class="range" id="sizeSlider" type="range" min="1" max="100" value="18" aria-label="Brush size" />
-          <div class="range-labels" aria-hidden="true"><span>1</span><span>100</span></div>
-        </section>
-
-        <section class="inspector-section">
-          <div class="section-heading">
-            <h2>Opacity</h2>
-            <output id="opacityValue" for="opacitySlider">100%</output>
-          </div>
-          <input class="range opacity-range" id="opacitySlider" type="range" min="5" max="100" value="100" aria-label="Brush opacity" />
-          <div class="range-labels" aria-hidden="true"><span>5%</span><span>100%</span></div>
-        </section>
-
-        <section class="inspector-section tips-section">
-          <h2>Quick keys</h2>
-          <div class="shortcut"><span>Brush / eraser</span><span><kbd>B</kbd><kbd>E</kbd></span></div>
-          <div class="shortcut"><span>Change size</span><span><kbd>[</kbd><kbd>]</kbd></span></div>
-          <div class="shortcut"><span>Undo / redo</span><span><kbd>⌘Z</kbd><kbd>⇧⌘Z</kbd></span></div>
-        </section>
-      </aside>
-    </section>
-
-    <footer class="statusbar">
-      <span><strong id="toolStatus">Brush</strong><i></i><span id="coordinateStatus">Ready</span></span>
-      <span><span>1280 × 800</span><i></i><span id="zoomStatus">100%</span></span>
-    </footer>
-
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-    <dialog class="clear-dialog" id="clearDialog">
-      <form method="dialog">
-        <div class="dialog-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5" /></svg>
-        </div>
-        <h2>Clear the canvas?</h2>
-        <p>This removes everything currently drawn. You can still undo it afterward.</p>
-        <div class="dialog-actions">
-          <button value="cancel" type="submit">Cancel</button>
-          <button class="danger-button" value="confirm" type="submit">Clear canvas</button>
-        </div>
-      </form>
-    </dialog>
-  </main>
-
-  <noscript>BOB Paint needs JavaScript enabled to draw.</noscript>
-  <script src="js/paint.js?v=1"></script>
-</body>
-</html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141510"><meta name="description" content="Still Here: 3D Backrooms survival. Build a shelter, invite friends and bot companions, and survive the night."><title>STILL HERE — Backrooms Survival</title><link rel="icon" href="data:,"><link rel="stylesheet" href="backrooms/style.css?v=1"></head><body>
+<canvas id="scene" aria-label="3D Backrooms game"></canvas><div class="vignette"></div><div class="grain"></div>
+<div id="boot"><span class="eyebrow">THE COMPLEX / CONNECTION ESTABLISHED</span><strong>Remembering the rooms…</strong><p id="boot-status">Loading the 3D world</p></div>
+<main id="menu" class="hidden"><header class="masthead"><span class="brand-mini">▥ &nbsp; THE COMPLEX</span><span class="version">SURVIVAL ARCHIVE / 001</span><button id="settings-open" class="quiet">Settings</button></header>
+<div class="menu-layout"><section class="title-panel"><div class="eyebrow"><span class="signal"></span> YOU ARE STILL RECEIVING</div><h1>STILL<br><em>HERE.</em></h1><p class="tagline">The lights will go out.<br>Make somewhere worth coming back to.</p><div class="small-rule"></div><p class="intro">Scavenge. Build. Stay together.<br>And if you see yourself down a hallway…<br>keep walking.</p><div class="record"><span>PERSONAL RECORD</span><strong id="best">NO SIGNAL YET</strong></div></section>
+<section class="lobby-panel"><div class="panel-heading"><span class="eyebrow">EXPEDITION SETUP</span><span class="serial">01 / ∞</span></div><h2>Don't go alone.</h2><label for="player-name">Your callsign</label><input id="player-name" maxlength="18" value="Wanderer" autocomplete="nickname" spellcheck="false"><div class="split-label"><label>Invite companions</label><span>up to 3 bots</span></div><div id="bot-options"></div><div class="field-row"><label for="difficulty">Conditions</label><select id="difficulty"><option value="normal">Standard</option><option value="calm">Gentle</option><option value="hard">Relentless</option></select></div>
+<button id="play-solo" class="primary">Enter the Backrooms <span>↗</span></button><div class="or">OR SURVIVE WITH FRIENDS</div><button id="host-lobby" class="secondary">Create multiplayer lobby <span>＋</span></button><div class="join-row"><input id="join-code" maxlength="12" placeholder="LOBBY CODE" aria-label="Lobby code" autocomplete="off"><button id="join-lobby" class="secondary">Join</button></div><p id="network-status" role="status" class="network-note">1–4 players · private invite codes</p><p class="bot-note">Companions understand survival questions and orders. Their dialogue and decisions run locally.</p></section></div>
+<footer class="menu-footer"><span>BACKROOMS / ENDLESS SURVIVAL</span><button id="guide-open" class="quiet">How to survive</button><span id="input-hint">WASD + MOUSE / TOUCH SUPPORTED</span></footer></main>
+<section id="waiting" class="overlay hidden"><div class="dialog"><span class="eyebrow">EXPEDITION LOBBY</span><h2>The others are coming.</h2><p>Share this code or invite link. The host keeps the expedition running.</p><div class="code-line"><strong id="room-code">…</strong><button id="copy-invite" class="secondary">Copy invite</button></div><div id="roster"></div><p id="lobby-note" role="status"></p><button id="start-lobby" class="primary">Start expedition <span>↗</span></button><button id="leave-lobby" class="quiet">Leave lobby</button></div></section>
+<section id="hud" class="hidden"><div class="hud-top"><div class="zone"><span class="eyebrow">SECTOR <b id="sector">A1</b></span><strong id="room-name">THE YELLOW</strong></div><div class="cycle"><span id="phase">DAY 01</span><strong id="clock">03:00</strong><div class="cycle-line"><i id="cycle-fill"></i></div><small id="phase-hint">UNTIL LIGHTS OUT</small></div><div class="top-actions"><button id="map-open" title="Map (M)">Map</button><button id="pause-open" title="Pause (Esc)">Ⅱ</button></div></div>
+<div id="event-banner" class="hidden"><span id="event-kicker"></span><strong id="event-title"></strong></div><div id="crosshair"><i></i></div><div id="interaction" class="hidden"><kbd>E</kbd><span></span></div><div id="build-hint" class="hidden"></div><div id="damage"></div>
+<div class="hud-left"><div id="team-list"></div><div id="chat-feed" aria-live="polite"></div><button id="chat-open" class="radio-button">⌁ &nbsp; Team radio <kbd>T</kbd></button></div>
+<div class="hud-bottom"><div class="vitals"><div><span>HEALTH</span><b id="health-value">100</b><i><u id="health-bar"></u></i></div><div><span>FOOD</span><b id="food-value">100</b><i><u id="food-bar"></u></i></div><div><span>WATER</span><b id="water-value">100</b><i><u id="water-bar"></u></i></div><div><span>STAMINA</span><b id="stamina-value">100</b><i><u id="stamina-bar"></u></i></div></div><div class="hotbar"><button data-action="eat"><kbd>1</kbd>Food <b id="inv-food">2</b></button><button data-action="drink"><kbd>2</kbd>Water <b id="inv-water">2</b></button><button data-action="heal"><kbd>3</kbd>Medkit <b id="inv-med">1</b></button><button id="build-toggle"><kbd>B</kbd>Build <b id="inv-scrap">8</b></button><button id="flash-toggle"><kbd>F</kbd>Light <b id="flash-state">ON</b></button></div></div>
+<div id="touch-controls"><div id="joystick"><span></span></div><div class="touch-right"><button id="touch-sprint">RUN</button><button id="touch-jump">JUMP</button><button id="touch-use">USE</button><button id="touch-push">PUSH</button></div></div><div id="touch-look-hint">Drag the right side to look</div></section>
+<section id="chat-panel" class="overlay hidden"><form class="dialog" id="chat-form"><span class="eyebrow">TEAM RADIO / OPEN CHANNEL</span><h2>What’s the plan?</h2><div id="chat-history"></div><div class="quick-orders"><button type="button" data-order="Everyone follow me">Follow me</button><button type="button" data-order="Mira find food and water">Find supplies</button><button type="button" data-order="Dex build a shelter here">Build shelter</button><button type="button" data-order="Sol help me">Help me</button><button type="button" data-order="Where is the chair room?">Find secrets</button></div><label for="chat-input">Talk to your team</label><input id="chat-input" maxlength="180" placeholder="Mira, can you find us some water?" autocomplete="off"><button class="primary" type="submit">Transmit <span>↗</span></button><button id="chat-close" class="quiet" type="button">Back to expedition</button></form></section>
+<section id="pause" class="overlay hidden"><div class="dialog"><span class="eyebrow">TAKE A BREATH</span><h2>Still here?</h2><p id="pause-note">Your expedition is paused.</p><button id="resume" class="primary">Keep going <span>↗</span></button><button id="pause-settings" class="secondary">Settings</button><button id="pause-guide" class="secondary">Survival guide</button><button id="quit" class="quiet">Save record & return to menu</button></div></section>
+<section id="settings" class="overlay hidden"><div class="dialog"><span class="eyebrow">PERSONAL EQUIPMENT</span><h2>Settings</h2><label for="quality">Graphics</label><select id="quality"><option value="balanced">Balanced</option><option value="high">High</option><option value="low">Battery saver</option></select><label for="sensitivity">Look sensitivity</label><input type="range" id="sensitivity" min="0.3" max="2" step="0.1" value="1"><label for="volume">Ambient audio</label><input type="range" id="volume" min="0" max="1" step="0.05" value="0.45"><label class="check-row"><input type="checkbox" id="voice"> Spoken bot replies</label><label class="check-row"><input type="checkbox" id="motion"> Reduce camera motion</label><label class="check-row"><input type="checkbox" id="touch-mode"> Show touch controls</label><button id="settings-close" class="primary">Done</button></div></section>
+<section id="guide" class="overlay hidden"><div class="dialog wide"><span class="eyebrow">FIELD NOTES / READ BEFORE DARK</span><h2>Survive another night.</h2><div class="guide-grid"><article><h3>01 — Gather</h3><p>Look at supplies and press E or USE. Food, water, medkits, and salvaged materials restock at dawn. Eat with 1, drink with 2, heal with 3.</p></article><article><h3>02 — Make a shelter</h3><p>B opens building. Choose a barricade (3 material) or a light (2). R rotates. Click / USE places. Barricades slow entities and can be broken. X dismantles one you’re looking at.</p></article><article><h3>03 — Trust your radio</h3><p>Invite Mira, Dex, and Sol in the menu. T opens chat. Ask questions or give orders: follow, wait, gather, build, heal, or find a secret. They navigate, share supplies, and help you recover.</p></article><article><h3>04 — When it goes dark</h3><p>Sprint with Shift. Space jumps. Click / PUSH shoves a nearby entity. Light slows the Watcher. Still Lifes copy your suit and words, but their proportions and movements are wrong.</p></article><article><h3>05 — Explore</h3><p>M opens your field map. Find the chair assembly, pool annex, records office, conservatory, and replica home. There is no final wave: outlast your best run.</p></article><article><h3>06 — Stay connected</h3><p>Create a lobby, copy its invite, and let friends join before or during the run. The host must keep the tab open. Internet lobbies use PeerJS signaling and WebRTC; restrictive networks may prevent joining.</p></article></div><button id="guide-close" class="primary">Understood</button></div></section>
+<section id="map-panel" class="overlay hidden"><div class="dialog wide"><span class="eyebrow">SURVEY / SHARED DISCOVERIES</span><h2>The places you remember.</h2><canvas id="map-canvas" width="650" height="650"></canvas><p id="map-legend">You • Teammates • Discovered rooms · Blank areas are unexplored</p><button id="map-close" class="primary">Back to expedition</button></div></section>
+<section id="game-over" class="overlay hidden"><div class="dialog"><span class="eyebrow">END OF TRANSMISSION</span><h2>The rooms remember.</h2><p id="results"></p><button id="retry" class="primary">Try another expedition <span>↗</span></button></div></section><div id="toast" class="hidden" role="status"></div><noscript>This 3D game requires JavaScript.</noscript><script src="backrooms/vendor/peerjs.min.js"></script><script type="module" src="backrooms/game.js?v=1"></script></body></html>
