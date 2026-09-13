@@ -8,7 +8,7 @@ Open `wildwake/index.html` through HTTP or GitHub Pages. Start empty-handed, gat
 
 WASD move, mouse look, Shift sprint, Space jump, C crouch, E interact, I or Tab inventory, B crafting, 1–8 hotbar, Q drop, F eat, R rotate placement, X dismantle, F5 save, Escape pause. Hold left mouse to charge an equipped spear; release to throw. Right mouse cancels. Touch controls include a movement joystick, drag-to-look, action, interact, sprint, crouch and jump.
 
-Settings: sensitivity, volume, graphics, touch mode. Saves and autosaves use browser local storage and remain on that device/browser. The whole world pauses in inventory/settings and when backgrounded. Interacting with a camp structure allows time and cooking to continue.
+Settings: sensitivity, volume, graphics, touch mode. When WebGL2 is unavailable, a Canvas 2D compatibility renderer projects the same Three.js scene and skinned geometry with reduced foliage, coarse terrain, a shorter draw distance and no shadows. It keeps the same Rapier physics and controls. Saves and autosaves use browser local storage and remain on that device/browser. The whole world pauses in inventory/settings and when backgrounded. Interacting with a camp structure allows time and cooking to continue.
 
 ## Physics and intentional approximations
 
