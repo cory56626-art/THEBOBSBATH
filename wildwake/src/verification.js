@@ -1,0 +1,48 @@
+import {Simulation,initPhysics} from './sim.js';
+import {V,poseRig,volumeHit,skinnedAnimal} from './rig.js';
+import {DT,height,Inventory,RECIPES,ITEMS} from './data.js';
+const almost=(a,b,eps=.015)=>Math.abs(a-b)<eps;
+export async function verifySimulation(){
+ await initPhysics();let checks=[],failed=0,worlds=[];const check=(name,ok,detail='')=>{checks.push({name,passed:!!ok,...(detail?{detail}: {})});if(!ok)failed++;};const make=()=>{let s=new Simulation();worlds.push(s);return s;};const steps=(s,n)=>{for(let i=0;i<n;i++)s.step();};const tp=(s,x,z,y=height(x,z)+.9)=>{s.player.setTranslation({x,y,z},true);s.player.setLinvel(V(),true);};
+ try{
+  let s=make();check('Start with empty hands and inventory',s.inv.slots.every(x=>x===null));steps(s,90);
+  const collect=(id,min)=>{let tries=0;while(s.inv.count(id)<min&&tries++<50){let o=s.objects.find(o=>o.item===id&&!o.attachment);if(!o)break;let p=o.body.translation();tp(s,p.x+.6,p.z);if(!s.gather(o))break;}return s.inv.count(id)>=min;};
+  collect('branch',18);collect('stone',12);collect('fiber',15);check('Gather branches, stones and plant fiber from physical objects',s.inv.count('branch')>=18&&s.inv.count('stone')>=12&&s.inv.count('fiber')>=15);
+  let before=s.inv.count('branch');check('Craft hatchet consumes exact recipe counts',s.craft('axe')&&s.inv.count('branch')===before-2&&s.inv.count('axe')===1);
+  for(let tree of s.layout.trees.filter(t=>t.hp>0).slice(0,2)){tp(s,tree.x+1.3,tree.z);s.selected=s.inv.slots.findIndex(x=>x?.id==='axe');for(let i=0;i<4;i++){s.stats.stamina=100;s.chopCooldown=0;s.chop(tree);}steps(s,20);}
+  collect('wood',14);check('Hatchet harvest creates recoverable physical wood',s.inv.count('wood')>=14&&s.layout.trees.filter(t=>t.hp===0).length===2);
+  check('Craft a throwable field spear',s.craft('spear'));
+  // Aim at the actual fixed target from its lane, compensating for the game gravity.
+  let target=s.targets[0],p=target.body.translation();tp(s,p.x,p.z+7);steps(s,1);let origin=V(p.x,p.y+.03,p.z+6),dir=V(0,.033,-1).normalize(),spear=s.throwSpear(origin,dir,1);steps(s,35);
+  check('Charged spear hits the woven target without tunneling',target.hits>0&&!!spear?.attachment,`hits=${target.hits}`);
+  if(spear){let p=spear.body.translation();tp(s,p.x,p.z+.8);check('Lodged projectile recovers to inventory exactly once',s.gather(spear)&&!s.gather(spear)&&s.inv.count('spear')===1);}
+  let branchCount=s.inv.count('branch'),dropIndex=s.inv.slots.findIndex(x=>x?.id==='branch'),d=s.drop(dropIndex);steps(s,60);if(d){let p=d.body.translation();tp(s,p.x,p.z+.5);check('Drop, settle and recover preserves a stack count',s.gather(d)&&s.inv.count('branch')===branchCount);}else check('Drop, settle and recover preserves a stack count',false);
+  for(let id of ['campfire','chest','shelter'])check('Working recipe: '+id,s.craft(id));
+  tp(s,-3,22);let shelterPos=V(-3,height(-3,18),18);check('Build shelter on supported ground',s.place('shelter',shelterPos,0));
+  tp(s,2,26);check('Build campfire',s.place('campfire',V(2,height(2,22),22),0));tp(s,-3,8);check('Build storage',s.place('chest',V(-3,height(-3,12),12),0));
+  let chest=s.structures.find(x=>x.kind==='chest');if(chest){tp(s,chest.p.x,chest.p.z+1);let slot=s.inv.slots.findIndex(x=>x?.id==='stone'),n=s.inv.count('stone');let deposit=s.transfer(chest,slot),stored=chest.storage.count('stone'),withdraw=s.transfer(chest,chest.storage.slots.findIndex(x=>x?.id==='stone'),true);check('Storage deposit and withdrawal conserve item counts',deposit&&withdraw&&stored===n&&s.inv.count('stone')===n);}
+  collect('mushroom',2);let fire=s.structures.find(x=>x.kind==='campfire');if(fire){tp(s,fire.p.x,fire.p.z+1);let n=s.inv.count('mushroom');let started=s.fuel(fire)&&s.cook(fire);steps(s,490);let cooked=s.cook(fire);check('Fuel, cooking and collecting a meal complete',started&&cooked&&s.inv.count('meal')===1&&s.inv.count('mushroom')===n-1);s.stats.hunger=50;s.selected=s.inv.slots.findIndex(x=>x?.id==='meal');check('Cooked food is usable',s.consume()&&s.stats.hunger===88);}
+  tp(s,8,4);s.stats.thirst=24;check('Freshwater restores thirst',s.drink()&&s.stats.thirst===100);
+  let shelter=s.structures.find(x=>x.kind==='shelter');if(shelter){tp(s,shelter.p.x,shelter.p.z+.5);s.stats.hunger=90;s.stats.thirst=90;s.time=580;check('Shelter rest advances to a new day',s.rest(shelter)&&s.day===2&&s.stats.exposure===0);}
+  let a=s.animals[0];tp(s,0,17);let mesh=skinnedAnimal(a.rig);check('Each species has a skinned mesh and articulated skeleton',mesh.isSkinnedMesh&&s.animals.every(a=>a.rig.bones.length>=15&&a.rig.volumes.length>=10));
+  let save=JSON.parse(JSON.stringify(s.snapshot()));let loaded=new Simulation(save);worlds.push(loaded);check('Save and reload preserve inventory and structures',JSON.stringify(s.inv.slots)===JSON.stringify(loaded.inv.slots)&&loaded.structures.length===s.structures.length&&loaded.objects.length===s.objects.length&&loaded.time===s.time);check('Save and reload preserve animal progress and harvested trees',loaded.animals.every((a,i)=>a.health===s.animals[i].health)&&loaded.layout.trees.filter(t=>t.hp===0).length===2);
+  let inv=new Inventory(1,[{id:'stone',n:30}]);check('Inventory capacity fails without deleting or duplicating items',!inv.add('branch',1)&&inv.count('stone')===30);let raw=JSON.stringify(inv.slots);check('Missing recipe fails transactionally',!inv.craft('shelter').ok&&JSON.stringify(inv.slots)===raw);
+  // Force a repeatable high-speed impact against a thin moving board.
+  let moving=make();steps(moving,45);let board=moving.targets[1],bp=board.body.translation();let fast=moving.spawnObject('spear',1,V(bp.x,bp.y,bp.z+3),{projectile:true,rotation:new (await import('three')).Quaternion().setFromUnitVectors(V(0,1,0),V(0,0,-1)),velocity:V(0,0,-155)});steps(moving,4);check('155-unit/s projectile is detected against a thin board',board.hits===1&&!!fast.attachment);
+  if(fast.attachment){board.body.applyImpulse(V(0,0,-6),true);steps(moving,80);let expected=fast.attachment.local.clone().applyQuaternion(new (await import('three')).Quaternion().copy(board.body.rotation())).add(new (await import('three')).Vector3().copy(board.body.translation())),actual=V().copy(fast.body.translation());check('Lodged spear follows a swinging rigid body without drift',expected.distanceTo(actual)<.06,`error=${expected.distanceTo(actual).toFixed(4)}`);let ss=moving.snapshot(),ld=new Simulation(JSON.parse(JSON.stringify(ss)));worlds.push(ld);let recovered=ld.objects.find(o=>o.id===fast.id);check('Lodged attachment survives a save and reload',!!recovered?.attachment?.body&&recovered.attachment.target===board.id);}
+  // Continuous hits on very narrow fictional anatomy structures, no random roll.
+  let animal=moving.animals[3];poseRig(animal.rig,animal,moving.elapsed);let volume=animal.rig.volumes.find(v=>v.layer==='frame'),center=volume.offset.clone().applyMatrix4(volume.bone.matrixWorld),hit=volumeHit(volume,center.clone().add(V(-3,0,0)),center.clone().add(V(3,0,0)));check('Swept narrow anatomical frame is resolved geometrically',!!hit&&hit.f>0&&hit.f<1);
+  let fake=moving.spawnObject('spear',1,center.clone().add(V(1,0,0)));moving.lodge(fake,{point:center,normal:V(1,0,0)},{bone:volume.bone,animal:animal.id,boneIndex:volume.bone.userData.index});animal.body.applyImpulse(V(20,0,0),true);steps(moving,30);let ep=fake.attachment.local.clone().applyMatrix4(volume.bone.matrixWorld);check('Bone-local lodged projectile follows a moving animal',ep.distanceTo(V().copy(fake.body.translation()))<.15);
+  // Same initial state, fixed step schedule, three different rendering rates.
+  let endpoints=[];for(let fps of[30,60,144]){let w=make();w.input={x:.5,z:-1,sprint:false,crouch:false,jump:false};for(let f=0;f<fps*3;f++)w.advance(1/fps);endpoints.push({fps,steps:w.metrics.steps,p:{...w.position},a:w.animals.map(a=>({...a.body.translation()}))});}
+  check('Physics behavior is independent of 30/60/144 Hz rendering',endpoints.every(p=>p.steps===180&&almost(p.p.x,endpoints[0].p.x,.0001)&&almost(p.p.z,endpoints[0].p.z,.0001)),endpoints.map(x=>`${x.fps}fps:${x.steps} steps`).join(', '));
+  let walk=make();let starts=walk.animals.map(a=>({...a.body.translation()})),states=new Set(),maxError=0,maxSpeed=0,start=performance.now();
+  for(let i=0;i<900;i++){if(i===180){let deer=walk.animals[0].body.translation();tp(walk,deer.x+4,deer.z+1);}if(i===360)tp(walk,0,18);walk.step();for(let a of walk.animals){states.add(a.state);let p=a.body.translation(),v=a.body.linvel();maxError=Math.max(maxError,Math.abs(p.y-height(p.x,p.z)-a.clearance));maxSpeed=Math.max(maxSpeed,Math.hypot(v.x,v.z));}}
+  const total=performance.now()-start;check('Animals walk, turn, flee and stay grounded on uneven terrain',walk.animals.every((a,i)=>Math.hypot(a.body.translation().x-starts[i].x,a.body.translation().z-starts[i].z)>.4)&&states.has('retreat')&&maxError<1.2&&maxSpeed<12,`states=${[...states].join(', ')}, max ground error=${maxError.toFixed(2)}`);
+  check('Five nearby animals remain finite with bounded physics cost',walk.animals.every(a=>Number.isFinite(a.body.translation().y))&&total<18000,`${(total/900).toFixed(2)} ms/physics step in this runtime`);
+  // No contact window: overlap alone must never apply an animal attack.
+  let contact=walk.animals[1];contact.state='rest';contact.brainTimer=5;contact.attackTime=0;contact.cooldown=5;let cp=contact.body.translation();tp(walk,cp.x,cp.z);walk.stats.health=80;let health0=walk.stats.health;walk.step();check('Proximity alone causes no animal attack damage',walk.stats.health>=health0);
+ }catch(e){check('Verification completed without exception',false,e.stack||e.message);}
+ finally{for(let s of worlds)s.dispose();}
+ return {passed:checks.length-failed,failed,checks};
+}

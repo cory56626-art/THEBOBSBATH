@@ -1,0 +1,1 @@
+{"name":"wildwake","version":"1.0.0","private":true,"type":"module","scripts":{"build":"esbuild src/app.js --bundle --format=esm --minify --outfile=game.js","test":"node tests/simulation.test.mjs"},"dependencies":{"@dimforge/rapier3d-compat":"0.20.0","three":"0.186.0"},"devDependencies":{"esbuild":"0.25.12"}}

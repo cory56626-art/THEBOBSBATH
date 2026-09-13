@@ -1,0 +1,143 @@
+{
+  "passed": 33,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "Start with empty hands and inventory",
+      "passed": true
+    },
+    {
+      "name": "Gather branches, stones and plant fiber from physical objects",
+      "passed": true
+    },
+    {
+      "name": "Craft hatchet consumes exact recipe counts",
+      "passed": true
+    },
+    {
+      "name": "Hatchet harvest creates recoverable physical wood",
+      "passed": true
+    },
+    {
+      "name": "Craft a throwable field spear",
+      "passed": true
+    },
+    {
+      "name": "Charged spear hits the woven target without tunneling",
+      "passed": true,
+      "detail": "hits=1"
+    },
+    {
+      "name": "Lodged projectile recovers to inventory exactly once",
+      "passed": true
+    },
+    {
+      "name": "Drop, settle and recover preserves a stack count",
+      "passed": true
+    },
+    {
+      "name": "Working recipe: campfire",
+      "passed": true
+    },
+    {
+      "name": "Working recipe: chest",
+      "passed": true
+    },
+    {
+      "name": "Working recipe: shelter",
+      "passed": true
+    },
+    {
+      "name": "Build shelter on supported ground",
+      "passed": true
+    },
+    {
+      "name": "Build campfire",
+      "passed": true
+    },
+    {
+      "name": "Build storage",
+      "passed": true
+    },
+    {
+      "name": "Storage deposit and withdrawal conserve item counts",
+      "passed": true
+    },
+    {
+      "name": "Fuel, cooking and collecting a meal complete",
+      "passed": true
+    },
+    {
+      "name": "Cooked food is usable",
+      "passed": true
+    },
+    {
+      "name": "Freshwater restores thirst",
+      "passed": true
+    },
+    {
+      "name": "Shelter rest advances to a new day",
+      "passed": true
+    },
+    {
+      "name": "Each species has a skinned mesh and articulated skeleton",
+      "passed": true
+    },
+    {
+      "name": "Save and reload preserve inventory and structures",
+      "passed": true
+    },
+    {
+      "name": "Save and reload preserve animal progress and harvested trees",
+      "passed": true
+    },
+    {
+      "name": "Inventory capacity fails without deleting or duplicating items",
+      "passed": true
+    },
+    {
+      "name": "Missing recipe fails transactionally",
+      "passed": true
+    },
+    {
+      "name": "155-unit/s projectile is detected against a thin board",
+      "passed": true
+    },
+    {
+      "name": "Lodged spear follows a swinging rigid body without drift",
+      "passed": true,
+      "detail": "error=0.0376"
+    },
+    {
+      "name": "Lodged attachment survives a save and reload",
+      "passed": true
+    },
+    {
+      "name": "Swept narrow anatomical frame is resolved geometrically",
+      "passed": true
+    },
+    {
+      "name": "Bone-local lodged projectile follows a moving animal",
+      "passed": true
+    },
+    {
+      "name": "Physics behavior is independent of 30/60/144 Hz rendering",
+      "passed": true,
+      "detail": "30fps:180 steps, 60fps:180 steps, 144fps:180 steps"
+    },
+    {
+      "name": "Animals walk, turn, flee and stay grounded on uneven terrain",
+      "passed": true,
+      "detail": "states=roam, retreat, graze, max ground error=0.09"
+    },
+    {
+      "name": "Five nearby animals remain finite with bounded physics cost",
+      "passed": true,
+      "detail": "1.60 ms/physics step in this runtime"
+    },
+    {
+      "name": "Proximity alone causes no animal attack damage",
+      "passed": true
+    }
+  ]
+}
