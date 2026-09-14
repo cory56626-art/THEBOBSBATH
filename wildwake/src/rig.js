@@ -43,6 +43,7 @@ export function makeRig(species){
 export function poseRig(r,a,t){
  let s=SPECIES[r.species],p=a.body.translation(),vel=a.body.linvel(),speed=Math.hypot(vel.x,vel.z),rest=a.state==='rest'||a.state==='down';
  r.group.position.set(p.x,p.y-a.clearance,p.z);r.group.rotation.y=a.yaw;
+ if(a.state==='dead'){r.root.position.y=.36;r.root.rotation.set(0,0,Math.PI/2);r.neck.rotation.x=.25;for(let l of r.legs){l.hip.rotation.x=.55;l.knee.rotation.x=-1.1;l.foot.rotation.x=.2;}r.group.updateMatrixWorld(true);r.skeleton.update();return;}
  r.root.position.y=s.height-(rest?.26:0)+Math.sin(a.gait*2)*Math.min(.025,speed*.012);
  r.root.rotation.z=clamp(a.recoil||0,-.19,.19);r.root.rotation.x=clamp((height(p.x-Math.sin(a.yaw)*.5,p.z-Math.cos(a.yaw)*.5)-height(p.x+Math.sin(a.yaw)*.5,p.z+Math.cos(a.yaw)*.5))*.55,-.22,.22);
  r.neck.rotation.x=a.state==='drink'||a.state==='graze'?.7:rest?.23:Math.sin(t*.8)*.035;
@@ -78,4 +79,4 @@ export function skinnedAnimal(r){
  let mesh=new T.SkinnedMesh(g,new T.MeshStandardMaterial({vertexColors:true,roughness:.92}));mesh.add(r.root);r.group.add(mesh);mesh.bind(r.skeleton);mesh.frustumCulled=false;mesh.castShadow=true;mesh.receiveShadow=true;return mesh;
 }
 // Analytic continuous segment/ellipsoid intersection in the animated bone frame.
-export function volumeHit(volume,start,end){let m=volume.bone.matrixWorld,inv=m.clone().invert(),a=start.clone().applyMatrix4(inv).sub(volume.offset).divide(volume.r),b=end.clone().applyMatrix4(inv).sub(volume.offset).divide(volume.r),d=b.clone().sub(a);let A=d.lengthSq(),B=2*a.dot(d),C=a.lengthSq()-1,D=B*B-4*A*C;if(D<0||A<1e-12)return null;let t0=(-B-Math.sqrt(D))/(2*A),t1=(-B+Math.sqrt(D))/(2*A);if(t1<0||t0>1)return null;let f=Math.max(0,t0),point=start.clone().lerp(end,f),normal=a.addScaledVector(d,f).divide(volume.r).transformDirection(m);return {f,point,normal,exit:Math.min(1,t1),volume};}
+export function volumeHit(volume,start,end,padding=0){let radius=volume.r.clone().addScalar(padding),m=volume.bone.matrixWorld,inv=m.clone().invert(),a=start.clone().applyMatrix4(inv).sub(volume.offset).divide(radius),b=end.clone().applyMatrix4(inv).sub(volume.offset).divide(radius),d=b.clone().sub(a);let A=d.lengthSq(),B=2*a.dot(d),C=a.lengthSq()-1,D=B*B-4*A*C;if(D<0||A<1e-12)return null;let t0=(-B-Math.sqrt(D))/(2*A),t1=(-B+Math.sqrt(D))/(2*A);if(t1<0||t0>1)return null;let f=Math.max(0,t0),point=start.clone().lerp(end,f),normal=a.addScaledVector(d,f).divide(radius).transformDirection(m);return {f,point,normal,exit:Math.min(1,t1),volume};}

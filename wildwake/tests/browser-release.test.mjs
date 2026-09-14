@@ -40,9 +40,9 @@ try{
  await page.locator('#touch-climb').click();
  assert.match(await page.locator('#toast').innerText(),/tree|Climbing|Rest/);
  await page.locator('#touch-grab').click();checks.push('Touch climbing and grabbing controls respond');
- await page.locator('#quick-save').click();
- assert.match(await page.locator('#toast').innerText(),/saved/i);
  await page.locator('#pause-open').click();
+ await page.locator('#save-pause').click();
+ assert.match(await page.locator('#toast').innerText(),/saved/i);
  await page.locator('#load-pause').click();
  await page.locator('#hud').waitFor({state:'visible'});checks.push('Browser save and reload succeed');
  await page.screenshot({path:'wildwake/tests/release-game.png'});

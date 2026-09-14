@@ -1,14 +1,17 @@
-export const DT=1/60, SIZE=72, WATER=-0.62, SAVE_VERSION=3;
+export const DT=1/60, SIZE=216, WATER=-0.62, SAVE_VERSION=3;
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function rng(seed=84219){return ()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
 export function height(x,z){
   const base=.32*Math.sin(x*.105)*Math.cos(z*.12)+.18*Math.sin(z*.21+x*.14);
   const hill=4.5*Math.exp(-((x+34)**2+(z+23)**2)/350)+3.7*Math.exp(-((x-32)**2+(z+32)**2)/350);
   const pool=-2.3*Math.exp(-((x-15)**2/110+(z-5)**2/190));
-  const rim=Math.max(0,(Math.max(Math.abs(x),Math.abs(z))-53)/7)**2;
-  return base+hill+pool+rim;
+  const radius=Math.max(Math.abs(x),Math.abs(z)),outer=clamp((radius-60)/30,0,1);
+  const oldRim=Math.max(0,(radius-53)/7)**2*(1-clamp((radius-60)/15,0,1));
+  const ridges=outer*(7*Math.exp(-((x+112)**2+(z-85)**2)/1600)+11*Math.exp(-((x-120)**2+(z+85)**2)/2100)+3*Math.sin(x*.035)*Math.cos(z*.028));
+  const rim=Math.max(0,(Math.max(Math.abs(x),Math.abs(z))-190)/9)**2;
+  return base+hill+pool+oldRim+Math.max(0,ridges)+outer*.5+rim;
 }
-export function terrainData(n=144){const p=[],ix=[];for(let j=0;j<=n;j++)for(let i=0;i<=n;i++){let x=-SIZE+i*SIZE*2/n,z=-SIZE+j*SIZE*2/n;p.push(x,height(x,z),z);}for(let j=0;j<n;j++)for(let i=0;i<n;i++){let a=j*(n+1)+i;ix.push(a,a+n+1,a+1,a+1,a+n+1,a+n+2);}return {positions:new Float32Array(p),indices:new Uint32Array(ix)};}
+export function terrainData(n=288){const p=[],ix=[];for(let j=0;j<=n;j++)for(let i=0;i<=n;i++){let x=-SIZE+i*SIZE*2/n,z=-SIZE+j*SIZE*2/n;p.push(x,height(x,z),z);}for(let j=0;j<n;j++)for(let i=0;i<n;i++){let a=j*(n+1)+i;ix.push(a,a+n+1,a+1,a+1,a+n+1,a+n+2);}return {positions:new Float32Array(p),indices:new Uint32Array(ix)};}
 export const ITEMS={
  branch:{name:'Branch',icon:'╱',color:'#b89165',mass:.5,stack:30,material:'wood'},
  stone:{name:'Stone',icon:'◆',color:'#b8c4c5',mass:2,stack:30,material:'stone'},
@@ -22,15 +25,39 @@ export const ITEMS={
  campfire:{name:'Campfire kit',icon:'♨',color:'#eaaa6b',mass:4,stack:4,material:'wood',build:true},
  chest:{name:'Storage crate',icon:'▣',color:'#c7a97f',mass:6,stack:3,material:'wood',build:true},
  shelter:{name:'Lean-to kit',icon:'⌂',color:'#b2c894',mass:9,stack:2,material:'wood',build:true},
- plank:{name:'Loose timber',icon:'▱',color:'#ba8c57',mass:5,stack:8,material:'wood',build:true}
+ plank:{name:'Loose timber',icon:'▱',color:'#ba8c57',mass:5,stack:8,material:'wood',build:true},
+ rope:{name:'Fiber cord',icon:'∞',color:'#d5c69d',mass:.3,stack:20,material:'soft'},
+ bandage:{name:'Field wrap',icon:'✚',color:'#dfdac3',mass:.2,stack:10,material:'soft',usable:true},
+ waterskin:{name:'Water pouch',icon:'◒',color:'#9fcac8',mass:.6,stack:1,material:'soft',usable:true},
+ torch:{name:'Trail torch',icon:'♧',color:'#efbf70',mass:.7,stack:1,material:'wood',usable:true},
+ pickaxe:{name:'Stone pick',icon:'⛏',color:'#bdc6c3',mass:2.5,stack:1,material:'stone'},
+ pike:{name:'Reinforced spear',icon:'↟',color:'#e8d9aa',mass:1.2,stack:6,material:'wood',weapon:'spear'},
+ bedroll:{name:'Bedroll',icon:'▤',color:'#adbc84',mass:2,stack:3,material:'soft',build:true},
+ workbench:{name:'Workbench',icon:'⊞',color:'#c5a178',mass:12,stack:2,material:'wood',build:true},
+ palisade:{name:'Timber wall',icon:'▥',color:'#a98960',mass:10,stack:8,material:'wood',build:true},
+ collector:{name:'Rain catcher',icon:'▽',color:'#9db7a4',mass:5,stack:3,material:'wood',build:true},
+ foundation:{name:'Raised deck',icon:'⊟',color:'#c7a97f',mass:16,stack:5,material:'wood',build:true},
+ bridge:{name:'Bridge timber',icon:'═',color:'#c1a172',mass:12,stack:4,material:'wood',build:true}
 };
 export const RECIPES=[
  {id:'axe',out:1,cost:{branch:2,stone:2,fiber:2},note:'Harvest standing trees.'},
- {id:'spear',out:1,cost:{branch:2,stone:1,fiber:1},note:'Hold to charge. Release to throw. Recover with E.'},
+ {id:'spear',out:1,cost:{branch:2,stone:1,fiber:1},note:'Tap to thrust; hold to aim and throw. Recover with E.'},
  {id:'campfire',out:1,cost:{stone:4,branch:3},note:'Place, add wood, and cook amber caps.'},
  {id:'chest',out:1,cost:{wood:5,fiber:3},note:'Stores 12 stacks. Use to deposit or recover items.'},
  {id:'shelter',out:1,cost:{wood:7,fiber:5,branch:4},note:'A dry retreat. Rest here through the night.'},
- {id:'plank',out:1,cost:{wood:2},note:'A physical timber. Falls when unsupported.'}
+ {id:'plank',out:1,cost:{wood:2},note:'A physical timber. Falls when unsupported.'},
+ {id:'rope',out:2,cost:{fiber:3},note:'Cord for more advanced camp equipment.'},
+ {id:'bandage',out:1,cost:{fiber:5},note:'Use to restore 30 health. Fictional game item.'},
+ {id:'waterskin',out:1,cost:{fiber:6,rope:1},note:'Fill by freshwater; carries three drinks.'},
+ {id:'torch',out:1,cost:{branch:2,fiber:2},note:'Equip for portable light after dark. Use to toggle.'},
+ {id:'pickaxe',out:1,cost:{wood:2,stone:3,rope:1},note:'Mine rocks for five stone per strike.'},
+ {id:'workbench',out:1,cost:{wood:6,stone:3,rope:2},note:'Place for reinforced equipment and camp construction.'},
+ {id:'pike',out:1,cost:{spear:1,stone:2,rope:1},station:true,note:'At a workbench: stronger melee and thrown strikes.'},
+ {id:'bedroll',out:1,cost:{fiber:8,rope:2},note:'Set your return point and rest until morning.'},
+ {id:'palisade',out:1,cost:{wood:5,rope:2},station:true,note:'A solid wall that physically blocks wildlife.'},
+ {id:'collector',out:1,cost:{wood:3,fiber:5,rope:1},note:'Collects rain. Drink from it or refill your pouch.'},
+ {id:'foundation',out:1,cost:{wood:6,rope:2},station:true,note:'Raised deck; other camp kits can stand on it.'},
+ {id:'bridge',out:1,cost:{wood:5,rope:2},station:true,note:'A heavy, movable span. Set it over water or gaps.'}
 ];
 export class Inventory{
  constructor(slots=20,raw=[]){this.capacity=slots;this.slots=Array.from({length:slots},(_,i)=>raw[i]?{...raw[i]}:null);}
@@ -41,12 +68,21 @@ export class Inventory{
  craft(id){let r=RECIPES.find(r=>r.id===id);if(!r)return {ok:false,message:'Unknown recipe.'};for(let [k,n]of Object.entries(r.cost))if(this.count(k)<n)return {ok:false,message:`Need ${n-this.count(k)} more ${ITEMS[k].name.toLowerCase()}.`};let copy=new Inventory(this.capacity,this.slots);for(let[k,n]of Object.entries(r.cost))copy.remove(k,n);if(!copy.add(id,r.out))return {ok:false,message:'Your pack is full. Drop or store a stack.'};this.slots=copy.slots;return {ok:true,message:`Crafted ${ITEMS[id].name}.`};}
 }
 export const SPECIES={
- jaguar:{name:'Jaguar',height:.92,width:.42,length:.92,mass:58,speed:2.2,run:6.3,color:0xc89446,alert:17,territory:22},
- chimp:{name:'Chimpanzee',height:1.02,width:.4,length:.48,mass:42,speed:1.6,run:4.3,color:0x353c39,alert:14,territory:14},
- deer:{name:'Marsh deer',height:1.16,width:.32,length:.7,mass:48,speed:1.8,run:6.7,color:0x98714c,alert:14,territory:0}
+ jaguar:{maxHealth:100,name:'Jaguar',height:.92,width:.42,length:.92,mass:58,speed:2.2,run:6.3,color:0xc89446,alert:25,territory:38},
+ chimp:{maxHealth:90,name:'Chimpanzee',height:1.02,width:.4,length:.48,mass:42,speed:1.6,run:4.3,color:0x353c39,alert:21,territory:28},
+ deer:{maxHealth:65,name:'Marsh deer',height:1.16,width:.32,length:.7,mass:48,speed:1.8,run:6.7,color:0x98714c,alert:14,territory:0}
 };
 export function worldLayout(){let r=rng(),trees=[],rocks=[],resources=[];for(let i=0;i<155;i++){let x=(r()-.5)*112,z=(r()-.5)*112;if(Math.hypot(x,z-15)<13||Math.hypot(x+10,z+5)<11||height(x,z)<WATER+.45||Math.hypot(x+31,z+24)<7)continue;trees.push({id:'tree'+i,x,z,scale:1+r()*.9,seed:r(),hp:4});}for(let i=0;i<30;i++){let x=(r()-.5)*105,z=(r()-.5)*105;if(Math.hypot(x,z-15)<9||Math.hypot(x+10,z+5)<10||height(x,z)<WATER)continue;rocks.push({id:'rock'+i,x,z,sx:1+r()*2,sy:.5+r()*1.7,sz:.7+r()*2,seed:r()});}for(let i=0;i<135;i++){let x=(r()-.5)*97,z=(r()-.5)*97;if(height(x,z)<WATER+.3||rocks.some(o=>Math.hypot(o.x-x,o.z-z)<o.sx+1)||trees.some(o=>Math.hypot(o.x-x,o.z-z)<.8))continue;let id=['branch','stone','fiber','berries','mushroom'][i%5];resources.push({id:'res'+i,item:id,x,z,n:id==='fiber'?3:2});}
  // A readable, guaranteed empty-handed start; these are visible world pickups.
  [[-2,14,'branch',3],[1,12,'stone',3],[3,15,'fiber',3],[-3,10,'branch',3],[3,9,'stone',3],[-5,14,'berries',3],[1,18,'mushroom',3],[-2,18,'fiber',3],[-6,8,'branch',3],[5,18,'stone',3]].forEach(([x,z,item,n],i)=>resources.push({id:'start'+i,item,x,z,n}));
+
+ // Preserve the original valley IDs and append the larger connected wilderness.
+ let er=rng(44821);
+ for(let i=0;i<720;i++){let x=(er()-.5)*366,z=(er()-.5)*366;if(Math.max(Math.abs(x),Math.abs(z))<61||height(x,z)<WATER+.45)continue;trees.push({id:'outer-tree'+i,x,z,scale:1+er()*1.2,seed:er(),hp:4});}
+ for(let i=0;i<105;i++){let x=(er()-.5)*360,z=(er()-.5)*360;if(Math.max(Math.abs(x),Math.abs(z))<61||height(x,z)<WATER)continue;rocks.push({id:'outer-rock'+i,x,z,sx:1+er()*2.5,sy:.6+er()*2,sz:.8+er()*2,seed:er()});}
+ for(let i=0;i<470;i++){let x=(er()-.5)*355,z=(er()-.5)*355;if(Math.max(Math.abs(x),Math.abs(z))<58||height(x,z)<WATER+.3||rocks.some(o=>Math.hypot(o.x-x,o.z-z)<o.sx+1)||trees.some(o=>Math.hypot(o.x-x,o.z-z)<.9))continue;let item=['branch','stone','fiber','berries','mushroom'][i%5];resources.push({id:'outer-res'+i,item,x,z,n:3});}
  return {trees,rocks,resources};}
 export const LANDMARKS=[{id:'pool',name:'Glasswater pool',x:15,z:5,note:'A freshwater spring. Drink at the shore.'},{id:'range',name:'The old range',x:-10,z:-5,note:'Three surfaces. One moving target. Recover every throw.'},{id:'arch',name:'Sentinel arch',x:-31,z:-24,note:'An old survey cache beneath the stone.'},{id:'grove',name:'The lantern grove',x:32,z:-30,note:'Amber caps gather under ancient branches.'}];
+
+export const REGIONS=[{id:'ridge',name:'Cedar Highlands',x:-112,z:85,note:'Long ridgelines and old-growth trees.'},{id:'marsh',name:'Eastwater Reach',x:128,z:45,note:'Open flats beneath the eastern hills.'},{id:'pass',name:'Northern Passage',x:-60,z:-130,note:'The valley continues beyond the old boundary.'},{id:'summit',name:'Sunstone Rise',x:118,z:-88,note:'A high lookout over the expanded wilderness.'}];
+LANDMARKS.push(...REGIONS);

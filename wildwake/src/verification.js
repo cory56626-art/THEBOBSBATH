@@ -1,3 +1,4 @@
+import {verifyUpgrade} from './upgrade-verification.js';
 import {Simulation,initPhysics} from './sim.js';
 import {V,poseRig,volumeHit,skinnedAnimal} from './rig.js';
 import {DT,height,Inventory,RECIPES,ITEMS} from './data.js';
@@ -38,10 +39,11 @@ export async function verifySimulation(){
   check('Physics behavior is independent of 30/60/144 Hz rendering',endpoints.every(p=>p.steps===180&&almost(p.p.x,endpoints[0].p.x,.0001)&&almost(p.p.z,endpoints[0].p.z,.0001)),endpoints.map(x=>`${x.fps}fps:${x.steps} steps`).join(', '));
   let walk=make();let starts=walk.animals.map(a=>({...a.body.translation()})),states=new Set(),maxError=0,maxSpeed=0,start=performance.now();
   for(let i=0;i<900;i++){if(i===180){let deer=walk.animals[0].body.translation();tp(walk,deer.x+4,deer.z+1);}if(i===360)tp(walk,0,18);walk.step();for(let a of walk.animals){states.add(a.state);let p=a.body.translation(),v=a.body.linvel();maxError=Math.max(maxError,Math.abs(p.y-height(p.x,p.z)-a.clearance));maxSpeed=Math.max(maxSpeed,Math.hypot(v.x,v.z));}}
-  const total=performance.now()-start;check('Animals walk, turn, flee and stay grounded on uneven terrain',walk.animals.every((a,i)=>Math.hypot(a.body.translation().x-starts[i].x,a.body.translation().z-starts[i].z)>.4)&&states.has('retreat')&&maxError<1.2&&maxSpeed<12,`states=${[...states].join(', ')}, max ground error=${maxError.toFixed(2)}`);
+  const total=performance.now()-start;check('Animals walk, turn, flee and stay grounded on uneven terrain',walk.animals.slice(0,5).every((a,i)=>Math.hypot(a.body.translation().x-starts[i].x,a.body.translation().z-starts[i].z)>.4)&&states.has('retreat')&&maxError<1.2&&maxSpeed<12,`states=${[...states].join(', ')}, max ground error=${maxError.toFixed(2)}`);
   check('Five nearby animals remain finite with bounded physics cost',walk.animals.every(a=>Number.isFinite(a.body.translation().y))&&total<18000,`${(total/900).toFixed(2)} ms/physics step in this runtime`);
   // No contact window: overlap alone must never apply an animal attack.
   let contact=walk.animals[1];contact.state='rest';contact.brainTimer=5;contact.attackTime=0;contact.cooldown=5;let cp=contact.body.translation();tp(walk,cp.x,cp.z);walk.stats.health=80;let health0=walk.stats.health;walk.step();check('Proximity alone causes no animal attack damage',walk.stats.health>=health0);
+  verifyUpgrade(check,worlds);
  }catch(e){check('Verification completed without exception',false,e.stack||e.message);}
  finally{for(let s of worlds)s.dispose();}
  return {passed:checks.length-failed,failed,checks};

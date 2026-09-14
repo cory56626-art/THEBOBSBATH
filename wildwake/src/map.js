@@ -1,0 +1,7 @@
+import {LANDMARKS,height,SIZE} from './data.js';
+export function mapMarkup(sim){
+ let land='';for(let z=-200;z<200;z+=10)for(let x=-200;x<200;x+=10){let y=height(x,z),light=24+Math.min(18,y*1.1);land+=`<rect x="${x+210}" y="${z+210}" width="10.5" height="10.5" fill="hsl(100,18%,${light}%)"/>`;}
+ let points=LANDMARKS.map(l=>`<g><circle cx="${l.x+210}" cy="${l.z+210}" r="3" fill="${sim.discovered.includes(l.id)?'#e7d39b':'#aabb99'}"/><text x="${l.x+216}" y="${l.z+207}">${l.name}</text></g>`).join('');
+ let camps=sim.structures.filter(s=>['shelter','bedroll','workbench'].includes(s.kind)).map(s=>`<rect x="${s.p.x+207}" y="${s.p.z+207}" width="6" height="6" fill="#ebbc79"/>`).join('');
+ return `<p class="storage-note">432 × 432 game units · four new regions beyond Glasswater. Gold squares mark your camp. North is up.</p><svg class="valley-map" viewBox="0 0 420 420" role="img" aria-label="Valley map showing landmarks, camp and your position"><rect width="420" height="420" fill="#2a3f32"/>${land}<ellipse cx="225" cy="215" rx="8" ry="12" fill="#73a99e"/>${points}${camps}<circle cx="${sim.position.x+210}" cy="${sim.position.z+210}" r="4" fill="#fff4ce" stroke="#213e31" stroke-width="2"/><text x="${sim.position.x+217}" y="${sim.position.z+219}" fill="#fff4ce">YOU</text><text x="210" y="15">N ↑</text></svg><div class="map-list">${LANDMARKS.map(l=>`<p><b>${l.name}</b> · ${Math.round(Math.hypot(l.x-sim.position.x,l.z-sim.position.z))} steps away<br>${l.note}</p>`).join('')}</div>`;
+}
