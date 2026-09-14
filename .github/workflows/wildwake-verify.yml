@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install game dependencies
-        run: npm ci --prefix wildwake
+        run: npm install --prefix wildwake --package-lock=false --no-audit --no-fund
       - name: Verify editable simulation source
         run: node wildwake/tests/simulation.test.mjs
       - name: Check source build without replacing the shipped release
