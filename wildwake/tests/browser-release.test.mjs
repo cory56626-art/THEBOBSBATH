@@ -17,12 +17,12 @@ try{
  await page.waitForFunction(()=>document.querySelector('#verification-results').dataset.passed!==undefined,{},{timeout:180000});
  const simulation=JSON.parse(await page.locator('#verification-results').innerText());
  assert.equal(simulation.failed,0,JSON.stringify(simulation.checks.filter(c=>!c.passed)));
- assert.ok(simulation.passed>=82);checks.push('82 embedded simulation checks pass');
+ assert.ok(simulation.passed>=82);checks.push('82 embedded simulation checks pass');console.log('82 embedded simulation checks passed.');
  await page.goto('http://127.0.0.1:4173/wildwake/',{waitUntil:'networkidle'});
  await page.locator('#loading').waitFor({state:'hidden'});
  await page.getByRole('button',{name:/Enter the wilderness/}).click();
  await page.locator('#hud').waitFor({state:'visible'});
- await page.locator('#pack-open').click();
+ await page.keyboard.press('i');
  await page.getByRole('button',{name:'Crafting',exact:true}).click();
  assert.equal(await page.locator('[data-craft]').count(),18);checks.push('18 recipes are visible');
  await page.locator('[data-craft="spear"]').click();
