@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "json_files": 379,
+  "material_sets": 248,
+  "material_images": 744,
+  "resolutions": [
+    512
+  ],
+  "biomes": 89,
+  "transparent_materials": 21,
+  "normal_max_unit_error": 0.006588,
+  "normal_min_forward_component": 0.066667,
+  "checks": [
+    "JSON parsing and duplicate keys",
+    "manifest UUIDs and capability",
+    "documented configuration fields and ranges",
+    "resource identifiers and all stable biomes",
+    "vanilla texture paths",
+    "image dimensions and channel layouts",
+    "normal-map unit length and orientation",
+    "metalness/subsurface exclusivity",
+    "biome blend constraints",
+    "texture registry completeness",
+    "replacement animation frame indices"
+  ],
+  "in_game_tested": false
+}

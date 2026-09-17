@@ -1,0 +1,468 @@
+{
+  "name": "Wildlight Realism Ultra",
+  "version": [
+    1,
+    0,
+    0
+  ],
+  "target": "Bedrock 26.50 / 1.26.50",
+  "texture_resolution": 512,
+  "material_count": 248,
+  "texture_images": 744,
+  "biome_count": 89,
+  "biomes": [
+    {
+      "biome": "bamboo_jungle",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "bamboo_jungle_hills",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "basalt_deltas",
+      "lighting": "nether",
+      "water": "clear"
+    },
+    {
+      "biome": "beach",
+      "lighting": "temperate",
+      "water": "clear"
+    },
+    {
+      "biome": "birch_forest",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "birch_forest_hills",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "birch_forest_hills_mutated",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "birch_forest_mutated",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "cherry_grove",
+      "lighting": "temperate",
+      "water": "clear"
+    },
+    {
+      "biome": "cold_beach",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "cold_ocean",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "cold_taiga",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "cold_taiga_hills",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "cold_taiga_mutated",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "crimson_forest",
+      "lighting": "nether",
+      "water": "clear"
+    },
+    {
+      "biome": "dappled_forest",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "deep_cold_ocean",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "deep_dark",
+      "lighting": "cave",
+      "water": "clear"
+    },
+    {
+      "biome": "deep_frozen_ocean",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "deep_lukewarm_ocean",
+      "lighting": "temperate",
+      "water": "tropical"
+    },
+    {
+      "biome": "deep_ocean",
+      "lighting": "temperate",
+      "water": "ocean"
+    },
+    {
+      "biome": "deep_warm_ocean",
+      "lighting": "temperate",
+      "water": "tropical"
+    },
+    {
+      "biome": "desert",
+      "lighting": "dry",
+      "water": "clear"
+    },
+    {
+      "biome": "desert_hills",
+      "lighting": "dry",
+      "water": "clear"
+    },
+    {
+      "biome": "desert_mutated",
+      "lighting": "dry",
+      "water": "clear"
+    },
+    {
+      "biome": "dripstone_caves",
+      "lighting": "cave",
+      "water": "clear"
+    },
+    {
+      "biome": "extreme_hills",
+      "lighting": "temperate",
+      "water": "clear"
+    },
+    {
+      "biome": "extreme_hills_edge",
+      "lighting": "temperate",
+      "water": "clear"
+    },
+    {
+      "biome": "extreme_hills_mutated",
+      "lighting": "temperate",
+      "water": "clear"
+    },
+    {
+      "biome": "extreme_hills_plus_trees",
+      "lighting": "temperate",
+      "water": "clear"
+    },
+    {
+      "biome": "extreme_hills_plus_trees_mutated",
+      "lighting": "temperate",
+      "water": "clear"
+    },
+    {
+      "biome": "flower_forest",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "forest",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "forest_hills",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "frozen_ocean",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "frozen_peaks",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "frozen_river",
+      "lighting": "cold",
+      "water": "river"
+    },
+    {
+      "biome": "grove",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "hell",
+      "lighting": "nether",
+      "water": "clear"
+    },
+    {
+      "biome": "ice_mountains",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "ice_plains",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "ice_plains_spikes",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "jagged_peaks",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "jungle",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "jungle_edge",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "jungle_edge_mutated",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "jungle_hills",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "jungle_mutated",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "legacy_frozen_ocean",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "lukewarm_ocean",
+      "lighting": "temperate",
+      "water": "tropical"
+    },
+    {
+      "biome": "lush_caves",
+      "lighting": "cave",
+      "water": "clear"
+    },
+    {
+      "biome": "mangrove_swamp",
+      "lighting": "swamp",
+      "water": "swamp"
+    },
+    {
+      "biome": "meadow",
+      "lighting": "temperate",
+      "water": "clear"
+    },
+    {
+      "biome": "mega_taiga",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "mega_taiga_hills",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "mesa",
+      "lighting": "dry",
+      "water": "clear"
+    },
+    {
+      "biome": "mesa_bryce",
+      "lighting": "dry",
+      "water": "clear"
+    },
+    {
+      "biome": "mesa_plateau",
+      "lighting": "dry",
+      "water": "clear"
+    },
+    {
+      "biome": "mesa_plateau_mutated",
+      "lighting": "dry",
+      "water": "clear"
+    },
+    {
+      "biome": "mesa_plateau_stone",
+      "lighting": "dry",
+      "water": "clear"
+    },
+    {
+      "biome": "mesa_plateau_stone_mutated",
+      "lighting": "dry",
+      "water": "clear"
+    },
+    {
+      "biome": "mushroom_island",
+      "lighting": "temperate",
+      "water": "clear"
+    },
+    {
+      "biome": "mushroom_island_shore",
+      "lighting": "temperate",
+      "water": "clear"
+    },
+    {
+      "biome": "ocean",
+      "lighting": "temperate",
+      "water": "ocean"
+    },
+    {
+      "biome": "pale_garden",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "plains",
+      "lighting": "temperate",
+      "water": "clear"
+    },
+    {
+      "biome": "redwood_taiga_hills_mutated",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "redwood_taiga_mutated",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "river",
+      "lighting": "temperate",
+      "water": "river"
+    },
+    {
+      "biome": "roofed_forest",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "roofed_forest_mutated",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "savanna",
+      "lighting": "dry",
+      "water": "clear"
+    },
+    {
+      "biome": "savanna_mutated",
+      "lighting": "dry",
+      "water": "clear"
+    },
+    {
+      "biome": "savanna_plateau",
+      "lighting": "dry",
+      "water": "clear"
+    },
+    {
+      "biome": "savanna_plateau_mutated",
+      "lighting": "dry",
+      "water": "clear"
+    },
+    {
+      "biome": "snowy_slopes",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "soulsand_valley",
+      "lighting": "nether",
+      "water": "clear"
+    },
+    {
+      "biome": "stone_beach",
+      "lighting": "temperate",
+      "water": "clear"
+    },
+    {
+      "biome": "stony_peaks",
+      "lighting": "cold",
+      "water": "cold"
+    },
+    {
+      "biome": "sulfur_caves",
+      "lighting": "cave",
+      "water": "clear"
+    },
+    {
+      "biome": "sunflower_plains",
+      "lighting": "temperate",
+      "water": "clear"
+    },
+    {
+      "biome": "swampland",
+      "lighting": "swamp",
+      "water": "swamp"
+    },
+    {
+      "biome": "swampland_mutated",
+      "lighting": "swamp",
+      "water": "swamp"
+    },
+    {
+      "biome": "taiga",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "taiga_hills",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "taiga_mutated",
+      "lighting": "forest",
+      "water": "clear"
+    },
+    {
+      "biome": "the_end",
+      "lighting": "end",
+      "water": "clear"
+    },
+    {
+      "biome": "warm_ocean",
+      "lighting": "temperate",
+      "water": "tropical"
+    },
+    {
+      "biome": "warped_forest",
+      "lighting": "nether",
+      "water": "clear"
+    }
+  ],
+  "static_replacements_for_animated_textures": [
+    "textures/blocks/magma",
+    "textures/blocks/huge_fungus/crimson_log_side",
+    "textures/blocks/huge_fungus/warped_stem_side"
+  ],
+  "in_game_tested": false,
+  "renderer": "Vibrant Visuals",
+  "material_origin": "original procedural recipes"
+}
