@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b0e17">
+  <meta name="description" content="Veilguard is an original, fully 3D tower-defense game. Build, upgrade, and defend the beacon across three game modes.">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+  <title>Veilguard — Defend the Light</title>
+</head>
+<body>
+  <canvas id="world" aria-label="3D tower-defense battlefield"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+  <div id="load-error" class="load-error hidden" role="alert"></div>
+
+  <main id="menu" class="screen">
+    <header class="menu-header">
+      <a class="brand" href="../"><span class="brand-mark">✦</span> VEILGUARD <small>/ ORIGINAL 3D TD</small></a>
+      <button class="text-button" id="open-guide">How to play <span>↗</span></button>
+    </header>
+    <div class="menu-content">
+      <section class="hero">
+        <div class="eyebrow"><span class="pulse"></span> THE BEACON IS THE LAST LIGHT</div>
+        <h1>HOLD<br><em>THE VEIL.</em></h1>
+        <p class="hero-description">Build your line. Shape your strategy. Keep the signal burning while a world of constructs closes in.</p>
+        <div class="hero-actions"><button id="begin" class="button primary">Defend the beacon <span>→</span></button><span>SOLO · 3D · PLAY IN BROWSER</span></div>
+        <div class="hero-caption"><span class="rule"></span> A NEW WORLD TO DEFEND <span class="rule"></span></div>
+      </section>
+      <aside class="lobby">
+        <div class="lobby-heading"><div><span class="eyebrow">01 / CHOOSE A CAMPAIGN</span><h2>Pick your stand.</h2></div><span class="ornament">✧</span></div>
+        <div id="modes" class="modes"></div>
+        <div class="lobby-heading loadout-heading"><div><span class="eyebrow">02 / YOUR FOUR TOWERS</span><h2>Assemble your line.</h2></div><span id="loadout-count" class="counter">4 / 4</span></div>
+        <div id="loadout" class="loadout"></div>
+        <div class="profile" id="profile"></div>
+      </aside>
+    </div>
+    <footer class="menu-footer"><span>✦ &nbsp; VEILGUARD / A SELF-CONTAINED ORIGINAL GAME</span><span>THREE MODES · SIX TOWERS · FIVE UPGRADES EACH</span></footer>
+  </main>
+
+  <section id="game-ui" class="hidden" aria-label="Battle controls">
+    <header class="hud-top">
+      <div class="hud-brand"><span class="brand-mark">✦</span><span>VEILGUARD<small id="mode-label">EMBER CAMPAIGN</small></span></div>
+      <div class="hud-stats">
+        <div class="hud-stat"><small>BEACON</small><strong id="hp-label">120 <span>◆</span></strong></div>
+        <div class="hud-stat"><small>WAVE</small><strong id="wave-label">0 / 18</strong></div>
+        <div class="hud-stat"><small>MATCH CASH</small><strong id="cash-label">$680</strong></div>
+      </div>
+      <div class="hud-controls"><button id="speed" title="Cycle game speed">1× SPEED</button><button id="pause" title="Pause game (P)">Ⅱ PAUSE</button></div>
+    </header>
+    <div class="battle-tip" id="battle-tip"><span class="eyebrow">A GOOD FIRST MOVE</span><p>Pick a tower below, then tap an open tile near the glowing route.</p></div>
+    <div id="wave-control" class="wave-control"><span class="eyebrow" id="wave-kicker">THE FIRST WAVE AWAITS</span><strong id="wave-title">Set your defenses.</strong><button id="start-wave" class="button primary">Begin wave 1 <span>→</span></button></div>
+    <aside id="inspector" class="inspector hidden"></aside>
+    <div id="placement-hint" class="placement-hint hidden">Click an open tile to place · Esc to cancel</div>
+    <footer class="shop-wrap"><div class="shop-caption"><span class="eyebrow">YOUR LOADOUT</span><span>SELECT A TOWER · CLICK TO BUILD</span></div><div id="shop" class="shop"></div><div class="shop-help">DRAG TO ROTATE VIEW · SCROLL TO ZOOM <span>·</span> 1–4 TO SELECT</div></footer>
+  </section>
+
+  <section id="pause-screen" class="overlay hidden" aria-label="Paused">
+    <div class="modal"><span class="eyebrow">TIME STANDS STILL</span><h2>Hold the line.</h2><p>The wave is paused. Your progress stays in this tab until the battle ends.</p><button id="resume" class="button primary">Resume defense <span>→</span></button><button id="quit" class="button outline">Return to title</button></div>
+  </section>
+  <section id="end-screen" class="overlay hidden" aria-label="Battle result">
+    <div class="modal result"><span class="eyebrow" id="result-kicker">BATTLE COMPLETE</span><h2 id="result-title">The beacon endures.</h2><p id="result-desc"></p><div id="rewards" class="rewards"></div><button id="retry" class="button primary">Play again <span>→</span></button><button id="to-menu" class="button outline">Back to title</button></div>
+  </section>
+  <section id="guide" class="overlay hidden" aria-label="How to play">
+    <div class="modal guide-modal"><button id="close-guide" class="close" aria-label="Close guide">×</button><span class="eyebrow">FIELD MANUAL / 01</span><h2>Light against the veil.</h2><div class="guide-grid"><p><b>Build</b> Pick one of your four towers, then click an open tile. Place before a wave or while it is running.</p><p><b>Adapt</b> Select a tower to upgrade it five times, change its targeting, or sell it for 70% of what you spent.</p><p><b>Watch the traits</b> Plated constructs resist physical hits. Shrouds need detection. Gliders require anti-air.</p><p><b>Grow</b> Kills and cleared waves earn match cash. Battles award persistent coins and EXP; coins unlock more towers.</p></div><p class="guide-note">Keyboard: 1–4 choose a tower · Space begins a wave · P pauses · Esc cancels. Drag the battlefield to rotate; scroll to zoom.</p><button id="guide-done" class="button primary">Understood <span>→</span></button></div>
+  </section>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <noscript>Enable JavaScript to play Veilguard.</noscript>
+  <script type="module" src="app.mjs"></script>
+</body>
+</html>

@@ -2,6 +2,10 @@
 
 **Play:** https://cory56626-art.github.io/THEBOBSBATH/
 
+## Veilguard — original 3D tower defense
+
+Play at [THEBOBSBATH/veilguard/](https://cory56626-art.github.io/THEBOBSBATH/veilguard/). Three solo modes, six original animated towers with five upgrade levels each, enemy traits, target priorities, wave income, persistent coins/EXP, and local tower unlocks. Everything runs on GitHub Pages without a backend or build step. See [veilguard/README.md](veilguard/README.md) for controls and development notes.
+
 A first-person, fully 3D survival game for desktop and touch devices. Scavenge during the day, build a shelter, and survive increasingly dangerous nights.
 
 - 130 × 130 meter seeded maze with loops, furniture, textured walls, ceiling fixtures, and five secret areas: the chair assembly, pool annex, records office, conservatory, and replica home.
