@@ -1,5 +1,5 @@
 import * as T from '../backrooms/vendor/three.js';
-import { SoftwareRenderer } from './software-renderer.mjs?v=4';
+import { SoftwareRenderer } from './software-renderer.mjs?v=5';
 import { PATH, TOWERS, ENEMIES, TILE_X, TILE_Z } from './data.mjs';
 import { nearestTile, positionOnPath, towerStats } from './sim.mjs';
 
@@ -320,8 +320,9 @@ export class WorldView {
       const halo = unit(new T.TorusGeometry(.65, .045, 5, 20), eye, root, 0, .72, 0);
       halo.rotation.x = Math.PI / 2;
     }
-    const hpBack = box(root, 1.18, .085, .055, charcoal, 0, info.boss ? 2.02 : 1.68, 0);
-    const hpBar = box(root, 1.12, .055, .065, eye, 0, hpBack.position.y, .04);
+    // Damage appears as a short ground marker, never as a detached line over a head.
+    const hpBack = box(root, 1.05, .018, .16, charcoal, 0, info.air ? -1.36 : -.11, .43);
+    const hpBar = box(root, 1.0, .024, .12, eye, 0, hpBack.position.y + .018, .43);
     hpBack.visible = hpBar.visible = false;
     this.scene.add(root);
     this.enemyMeshes.set(enemy.id, { root, hpBack, hpBar, arms, legs, scale, phase: Math.random() * 6 });

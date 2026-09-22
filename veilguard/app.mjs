@@ -1,6 +1,6 @@
 import { MODES, TOWERS, levelFromXp, xpForLevel } from './data.mjs';
 import { Battle, nearestTile, towerStats } from './sim.mjs';
-import { WorldView } from './view.mjs?v=4';
+import { WorldView } from './view.mjs?v=5';
 
 const $ = id => document.getElementById(id);
 const icons = { spark: '✦', prism: '◇', frost: '❄', relay: '◈', mortar: '✶', aegis: '⬡' };
