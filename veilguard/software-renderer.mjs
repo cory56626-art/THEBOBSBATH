@@ -87,7 +87,8 @@ export class SoftwareRenderer {
         let shade = .92;
         if (normals) { point.fromBufferAttribute(normals, ia).transformDirection(matrix); shade = .66 + Math.max(0, point.dot(light)) * .48; }
         const color = new T.Color(base).multiplyScalar(shade).lerp(background, Math.min(.45, 1 - Math.exp(-(-a.z - b.z - c.z) / 3 * .0002)));
-        faces.push({ screen, depth: -(a.z + b.z + c.z) / 3, color: `#${color.getHexString()}`, opacity: material.transparent ? material.opacity : 1 });
+        faces.push({ screen, layer: object.userData.cpuLayer ?? 6, depth: -(a.z + b.z + c.z) / 3,
+          color: `#${color.getHexString()}`, opacity: material.transparent ? material.opacity : 1 });
       }
     };
 
@@ -101,7 +102,7 @@ export class SoftwareRenderer {
         }
       }
     });
-    faces.sort((a, b) => b.depth - a.depth);
+    faces.sort((a, b) => a.layer - b.layer || b.depth - a.depth);
     ctx.lineJoin = 'round';
     for (const face of faces) {
       ctx.globalAlpha = face.opacity;

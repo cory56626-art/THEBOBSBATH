@@ -1,5 +1,5 @@
 import * as T from '../backrooms/vendor/three.js';
-import { SoftwareRenderer } from './software-renderer.mjs';
+import { SoftwareRenderer } from './software-renderer.mjs?v=3';
 import { PATH, TOWERS, ENEMIES, TILE_X, TILE_Z } from './data.mjs';
 import { nearestTile, positionOnPath, towerStats } from './sim.mjs';
 
@@ -75,27 +75,33 @@ export class WorldView {
   }
 
   makeBoard() {
-    box(this.scene, 29.5, .88, 20.1, metal(0x353a45), 0, -.71, 0);
-    box(this.scene, 29.2, .12, 19.8, gold, 0, -.23, 0);
-    box(this.scene, 28.9, .2, 19.5, metal(0x303948), 0, -.11, 0);
+    // The canvas renderer must draw broad ground surfaces before small tiles.
+    // Sorting the board's huge triangles by their centers hides the field.
+    box(this.scene, 29.5, .88, 20.1, metal(0x353a45), 0, -.71, 0).userData.cpuLayer = 0;
+    box(this.scene, 29.2, .12, 19.8, gold, 0, -.23, 0).userData.cpuLayer = 1;
+    box(this.scene, 28.9, .2, 19.5, metal(0x303948), 0, -.11, 0).userData.cpuLayer = 2;
     for (const x of TILE_X) for (const z of TILE_Z) {
       const tone = ((x + z) / 2) % 2 ? 0x465363 : 0x3c4959;
       const square = box(this.scene, 1.94, .04, 1.94, metal(tone), x, .015, z);
       square.userData.tile = true;
+      square.userData.cpuLayer = 3;
     }
     for (let i = 1; i < PATH.length; i++) {
       const [ax, az] = PATH[i - 1], [bx, bz] = PATH[i];
       const length = Math.hypot(ax - bx, az - bz);
       const route = box(this.scene, 2.22, .085, length + .08, metal(0x776b5b), (ax + bx) / 2, .072, (az + bz) / 2);
+      route.userData.cpuLayer = 4;
       route.rotation.y = -Math.atan2(bx - ax, bz - az);
       for (const side of [-1, 1]) {
         const edge = box(this.scene, .065, .08, length, glow(0xf1bd71), side * 1.05, .135, 0);
+        edge.userData.cpuLayer = 5;
         route.add(edge);
       }
       const mark = box(this.scene, .07, .045, Math.max(.2, length - .8), glow(0xe4d2ae), 0, .082, 0);
+      mark.userData.cpuLayer = 5;
       route.add(mark);
     }
-    for (const [x, z] of PATH) cyl(this.scene, 1.12, 1.12, .09, metal(0x303645), x, .104, z, 12);
+    for (const [x, z] of PATH) cyl(this.scene, 1.12, 1.12, .09, metal(0x303645), x, .104, z, 12).userData.cpuLayer = 4;
     // Peripheral architecture creates depth without requiring downloaded assets.
     for (let i = 0; i < 27; i++) {
       const angle = i * 2.39996, radius = 19 + (i % 4) * 2;
