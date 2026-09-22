@@ -1,6 +1,7 @@
 import * as T from '../backrooms/vendor/three.js';
+import { SoftwareRenderer } from './software-renderer.mjs';
 import { PATH, TOWERS, ENEMIES, TILE_X, TILE_Z } from './data.mjs';
-import { nearestTile, towerStats } from './sim.mjs';
+import { nearestTile, positionOnPath, towerStats } from './sim.mjs';
 
 const metal = (color, emissive = 0x000000, intensity = 0) => new T.MeshStandardMaterial({
   color, roughness: .5, metalness: .48, emissive, emissiveIntensity: intensity,
@@ -19,24 +20,43 @@ const cyl = (parent, rt, rb, h, material, x = 0, y = 0, z = 0, sides = 8) =>
 
 export class WorldView {
   constructor(canvas) {
-    this.renderer = new T.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+    try {
+      const context = canvas.getContext('webgl2', { antialias: true, alpha: false });
+      if (context) this.renderer = new T.WebGLRenderer({ canvas, context, antialias: true, powerPreference: 'high-performance' });
+    } catch { /* Fall back to the CPU canvas renderer below. */ }
+    if (!this.renderer) {
+      try {
+        this.renderer = new SoftwareRenderer(canvas);
+      } catch {
+        const replacement = document.createElement('canvas');
+        replacement.id = canvas.id;
+        replacement.setAttribute('aria-label', canvas.getAttribute('aria-label') || '3D game battlefield');
+        canvas.replaceWith(replacement);
+        this.renderer = new SoftwareRenderer(replacement);
+      }
+    }
+    this.softwareMode = this.renderer.isSoftwareRenderer === true;
+    if (this.softwareMode) document.body.classList.add('software-rendering');
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.8));
     this.renderer.outputColorSpace = T.SRGBColorSpace;
     this.renderer.toneMapping = T.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.45;
+    this.renderer.toneMappingExposure = 1.72;
     this.scene = new T.Scene();
-    this.scene.background = new T.Color(0x080c15);
-    this.scene.fog = new T.FogExp2(0x080c15, .025);
+    this.scene.background = new T.Color(0x1b2a3b);
+    this.scene.fog = new T.FogExp2(0x26384b, .011);
     this.camera = new T.OrthographicCamera(-20, 20, 12, -12, .1, 130);
     this.orbit = .77;
     this.zoom = 1;
     this.camera.position.set(24, 30, 23);
     this.camera.lookAt(0, 0, 0);
-    this.scene.add(new T.HemisphereLight(0x9cb4da, 0x15101c, 2.1));
-    const sun = new T.DirectionalLight(0xffd49a, 2.5);
+    this.scene.add(new T.HemisphereLight(0xc5dcff, 0x544657, 3.1));
+    const sun = new T.DirectionalLight(0xffe4bd, 3.1);
     sun.position.set(-8, 18, 9);
     this.scene.add(sun);
-    const blue = new T.PointLight(0x87b0ff, 100, 28, 2);
+    const fill = new T.DirectionalLight(0x95baff, 1.8);
+    fill.position.set(12, 11, -12);
+    this.scene.add(fill);
+    const blue = new T.PointLight(0x87b0ff, 125, 36, 2);
     blue.position.set(8, 5, -6);
     this.scene.add(blue);
     this.towerMeshes = new Map();
@@ -44,6 +64,7 @@ export class WorldView {
     this.projectiles = [];
     this.flashes = [];
     this.time = 0;
+    this.renderElapsed = 0;
     this.selected = null;
     this.ghostTile = null;
     this.makeBoard();
@@ -54,24 +75,24 @@ export class WorldView {
   }
 
   makeBoard() {
-    box(this.scene, 29.5, .88, 20.1, metal(0x222531), 0, -.71, 0);
+    box(this.scene, 29.5, .88, 20.1, metal(0x353a45), 0, -.71, 0);
     box(this.scene, 29.2, .12, 19.8, gold, 0, -.23, 0);
-    box(this.scene, 28.9, .2, 19.5, metal(0x161d2b), 0, -.11, 0);
+    box(this.scene, 28.9, .2, 19.5, metal(0x303948), 0, -.11, 0);
     for (const x of TILE_X) for (const z of TILE_Z) {
-      const tone = ((x + z) / 2) % 2 ? 0x202738 : 0x1d2433;
+      const tone = ((x + z) / 2) % 2 ? 0x465363 : 0x3c4959;
       const square = box(this.scene, 1.94, .04, 1.94, metal(tone), x, .015, z);
       square.userData.tile = true;
     }
     for (let i = 1; i < PATH.length; i++) {
       const [ax, az] = PATH[i - 1], [bx, bz] = PATH[i];
       const length = Math.hypot(ax - bx, az - bz);
-      const route = box(this.scene, 2.22, .085, length + .08, metal(0x303645), (ax + bx) / 2, .072, (az + bz) / 2);
+      const route = box(this.scene, 2.22, .085, length + .08, metal(0x776b5b), (ax + bx) / 2, .072, (az + bz) / 2);
       route.rotation.y = -Math.atan2(bx - ax, bz - az);
       for (const side of [-1, 1]) {
-        const edge = box(this.scene, .065, .08, length, glow(0x9b7044), side * 1.05, .135, 0);
+        const edge = box(this.scene, .065, .08, length, glow(0xf1bd71), side * 1.05, .135, 0);
         route.add(edge);
       }
-      const mark = box(this.scene, .07, .045, Math.max(.2, length - .8), glow(0x7a6554), 0, .082, 0);
+      const mark = box(this.scene, .07, .045, Math.max(.2, length - .8), glow(0xe4d2ae), 0, .082, 0);
       route.add(mark);
     }
     for (const [x, z] of PATH) cyl(this.scene, 1.12, 1.12, .09, metal(0x303645), x, .104, z, 12);
@@ -144,60 +165,93 @@ export class WorldView {
   makeTower(tower) {
     this.removeTower(tower.id);
     const info = TOWERS[tower.type], color = new T.Color(info.color);
-    const bright = glow(color), body = metal(0x44434d), accent = metal(color, color, .22);
+    const bright = glow(color), armor = metal(0x596577), accent = metal(color, color, .24);
     const root = new T.Group();
     root.position.set(tower.x, .15, tower.z);
     root.userData.towerId = tower.id;
     this.scene.add(root);
-    cyl(root, .83, .94, .32, dark, 0, .15, 0, 8);
-    cyl(root, .72, .75, .1, accent, 0, .35, 0, 8);
-    box(root, .73, .62, .74, body, 0, .69, 0);
+    cyl(root, .7, .79, .2, dark, 0, .1, 0, 8);
+    cyl(root, .59, .62, .075, accent, 0, .23, 0, 8);
+    // An invisible, generous hit target makes selecting a defender reliable on touch.
+    unit(new T.CylinderGeometry(.72, .72, 2.2, 10), new T.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }), root, 0, 1.05, 0);
+    const legs = [], arms = [];
+    for (const side of [-1, 1]) {
+      cyl(root, .13, .13, .29, dark, side * .17, .39, .02, 8);
+      const leg = new T.Group();
+      leg.position.set(side * .17, .56, 0);
+      root.add(leg);
+      legs.push(leg);
+      cyl(leg, .115, .15, .38, armor, 0, -.15, 0, 7);
+      unit(new T.SphereGeometry(.14, 7, 5), accent, leg, 0, -.31, .025);
+    }
+    cyl(root, .31, .27, .53, armor, 0, .87, 0, 7);
+    box(root, .39, .15, .1, accent, 0, .83, .25);
+    for (const side of [-1, 1]) {
+      unit(new T.SphereGeometry(.21, 7, 5), armor, root, side * .32, 1.03, 0);
+      const arm = new T.Group();
+      arm.position.set(side * .34, .93, .02);
+      root.add(arm);
+      arms.push(arm);
+      const upper = cyl(arm, .105, .13, .4, armor, 0, -.2, .01, 7);
+      upper.rotation.z = side * -.18;
+      unit(new T.SphereGeometry(.115, 7, 5), accent, arm, 0, -.39, .07);
+    }
     const head = new T.Group();
-    head.position.y = 1.02;
+    head.position.y = 1.13;
     root.add(head);
+    unit(new T.SphereGeometry(.205, 9, 7), metal(0xd5b79b), head, 0, .23, 0);
+    unit(new T.SphereGeometry(.235, 8, 5), armor, head, 0, .31, -.015);
+    box(head, .31, .095, .12, bright, 0, .25, .195);
+    box(head, .28, .13, .27, accent, 0, .47, -.025);
+    box(root, .49, .12, .35, dark, 0, .89, -.28);
+    if (tower.type === 'relay') {
+      cyl(root, .04, .06, .48, gold, 0, 1.2, -.37, 6);
+      unit(new T.SphereGeometry(.12, 7, 5), bright, root, 0, 1.45, -.37);
+      const antennaRing = unit(new T.TorusGeometry(.22, .035, 5, 18), bright, root, 0, 1.39, -.37);
+      antennaRing.rotation.x = Math.PI / 2;
+    }
     if (tower.type === 'spark') {
-      cyl(head, .39, .46, .34, dark, 0, .02, 0);
-      const barrel = cyl(head, .12, .17, .88, accent, .52, .06, 0);
+      const barrel = cyl(head, .105, .135, .82, accent, .42, .02, .17, 8);
       barrel.rotation.z = Math.PI / 2;
-      cyl(head, .22, .22, .14, bright, .94, .06, 0);
-      for (const side of [-1, 1]) box(head, .48, .1, .13, gold, .27, .27, side * .3);
+      box(head, .31, .24, .24, dark, .35, .06, .17);
+      cyl(head, .14, .14, .11, bright, .84, .02, .17, 8).rotation.z = Math.PI / 2;
+      box(head, .27, .08, .08, gold, .36, .2, .17);
     } else if (tower.type === 'prism') {
-      cyl(head, .38, .47, .28, dark, 0, 0, 0, 6);
-      unit(new T.OctahedronGeometry(.42), bright, head, .32, .27, 0);
-      for (const side of [-1, 1]) box(head, .72, .09, .12, accent, .31, .16, side * .35);
+      const staff = cyl(head, .055, .075, 1.03, accent, .49, .08, .18, 7);
+      staff.rotation.z = Math.PI / 2;
+      unit(new T.OctahedronGeometry(.25), bright, head, 1.01, .08, .18);
+      unit(new T.OctahedronGeometry(.13), gold, head, .52, .08, .18);
     } else if (tower.type === 'frost') {
-      cyl(head, .37, .44, .28, dark);
-      unit(new T.IcosahedronGeometry(.39, 0), bright, head, .34, .2, 0);
+      const nozzle = cyl(head, .17, .24, .67, accent, .43, .04, .17, 7);
+      nozzle.rotation.z = Math.PI / 2;
+      unit(new T.IcosahedronGeometry(.22, 0), bright, head, .82, .04, .17);
       for (const side of [-1, 1]) {
-        const shard = unit(new T.ConeGeometry(.15, .52, 4), accent, head, .1, .4, side * .36);
-        shard.rotation.z = .3;
+        const shard = unit(new T.ConeGeometry(.095, .35, 4), bright, head, .37, .31, .17 + side * .16);
+        shard.rotation.z = Math.PI / 2;
       }
     } else if (tower.type === 'relay') {
-      cyl(head, .24, .36, .7, accent, 0, .25, 0);
-      const halo = unit(new T.TorusGeometry(.5, .062, 6, 22), bright, head, 0, .72, 0);
-      halo.rotation.x = Math.PI / 2.8;
-      head.userData.halo = halo;
-      unit(new T.OctahedronGeometry(.25), bright, head, 0, 1.0, 0);
+      const tablet = box(head, .33, .28, .08, dark, .31, .03, .19);
+      tablet.rotation.z = -.12;
+      box(head, .22, .16, .035, bright, .31, .03, .237);
     } else if (tower.type === 'mortar') {
-      cyl(head, .48, .5, .36, dark);
-      const cannon = cyl(head, .24, .32, 1.16, accent, .44, .27, 0, 10);
-      cannon.rotation.z = Math.PI / 2.6;
-      const rim = cyl(head, .32, .32, .13, bright, .95, .51, 0, 10);
-      rim.rotation.z = Math.PI / 2.6;
+      const cannon = cyl(head, .17, .23, .95, accent, .42, .22, .17, 8);
+      cannon.rotation.z = Math.PI / 2.85;
+      const rim = cyl(head, .23, .23, .11, bright, .83, .4, .17, 8);
+      rim.rotation.z = Math.PI / 2.85;
+      box(head, .38, .13, .24, dark, .27, -.09, .17);
     } else {
-      cyl(head, .51, .55, .36, dark, 0, 0, 0, 6);
       for (const side of [-1, 1]) {
-        const barrel = cyl(head, .13, .22, .99, accent, .46, .16, side * .26);
+        const barrel = cyl(head, .1, .14, .74, accent, .44, .02, .17 + side * .19, 8);
         barrel.rotation.z = Math.PI / 2;
-        unit(new T.OctahedronGeometry(.2), bright, head, .93, .16, side * .26);
+        cyl(head, .12, .12, .1, bright, .82, .02, .17 + side * .19, 8).rotation.z = Math.PI / 2;
       }
-      box(head, .3, .31, .63, gold, -.2, .35, 0);
+      box(root, .17, .52, .54, gold, -.36, .92, -.05);
     }
     for (let i = 0; i < tower.level; i++) {
-      const gem = box(root, .13, .13, .13, bright, -.52 + i * .25, .43, .53);
+      const gem = unit(new T.SphereGeometry(.075, 6, 4), bright, root, -.25 + i * .125, .58, .29);
       gem.rotation.y = Math.PI / 4;
     }
-    this.towerMeshes.set(tower.id, { root, head, info, recoil: 0, phase: Math.random() * 6 });
+    this.towerMeshes.set(tower.id, { root, head, info, recoil: 0, phase: Math.random() * 6, legs, arms });
     return root;
   }
 
@@ -208,33 +262,59 @@ export class WorldView {
   }
 
   makeEnemy(enemy) {
-    const info = ENEMIES[enemy.type], scale = info.boss ? 1.7 : info.air ? .9 : .75;
+    const info = ENEMIES[enemy.type], scale = info.boss ? 1.5 : info.air ? .95 : .92;
     const root = new T.Group();
     root.position.set(enemy.x, info.air ? 1.5 : .23, enemy.z);
     root.scale.setScalar(scale);
-    const mat = metal(info.color, info.color, .28), eye = glow(info.color);
-    cyl(root, .38, .48, .52, info.armor ? metal(0x74808d) : mat, 0, .32, 0, info.boss ? 8 : 6);
-    unit(new T.OctahedronGeometry(.32), eye, root, 0, .7, 0);
+    const shell = info.armor ? metal(0x8493a3) : metal(info.color, info.color, .12), eye = glow(info.color);
+    // Enemy units are now readable little armored people: head, torso, arms, and legs.
+    for (const side of [-1, 1]) {
+      const leg = new T.Group();
+      leg.position.set(side * .15, .45, 0);
+      root.add(leg);
+      cyl(leg, .12, .15, .4, shell, 0, -.17, 0, 6);
+      unit(new T.SphereGeometry(.15, 6, 4), dark, leg, 0, -.36, .035);
+    }
+    cyl(root, .3, .26, .53, shell, 0, .78, 0, 7);
+    box(root, .59, .18, .34, shell, 0, .96, -.015);
+    box(root, .34, .1, .07, eye, 0, 1.06, .18);
+    const arms = [];
+    for (const side of [-1, 1]) {
+      unit(new T.SphereGeometry(.14, 6, 4), shell, root, side * .34, .98, 0);
+      const arm = new T.Group();
+      arm.position.set(side * .35, .94, 0);
+      root.add(arm);
+      const forearm = cyl(arm, .105, .13, .42, shell, 0, -.19, 0, 6);
+      forearm.rotation.z = side * -.14;
+      unit(new T.SphereGeometry(.12, 6, 4), dark, arm, 0, -.39, .035);
+      arms.push(arm);
+    }
+    unit(new T.SphereGeometry(.195, 8, 6), metal(0xd0ad8e), root, 0, 1.27, 0);
+    unit(new T.SphereGeometry(.225, 8, 5), shell, root, 0, 1.34, -.035);
+    box(root, .3, .075, .1, eye, 0, 1.285, .19);
+    const legs = root.children.filter(child => child.type === 'Group' && child.position.y === .45);
     if (info.boss) {
-      const crown = unit(new T.TorusGeometry(.57, .07, 6, 8), gold, root, 0, 1.1, 0);
+      const crown = unit(new T.TorusGeometry(.42, .065, 6, 10), gold, root, 0, 1.58, 0);
       crown.rotation.x = Math.PI / 2;
-      for (const side of [-1, 1]) box(root, .28, .45, .27, mat, side * .62, .3, 0);
+      for (const side of [-1, 1]) {
+        const horn = unit(new T.ConeGeometry(.11, .4, 5), gold, root, side * .35, 1.48, -.02);
+        horn.rotation.z = side * -.45;
+      }
     } else if (info.air) {
       for (const side of [-1, 1]) {
-        const wing = box(root, .77, .08, .37, mat, side * .6, .42, 0);
+        const wing = box(root, .77, .08, .37, shell, side * .62, .86, -.16);
         wing.rotation.z = side * .28;
       }
-    } else {
-      for (const side of [-1, 1]) box(root, .16, .39, .19, dark, side * .3, -.1, 0);
+      unit(new T.OctahedronGeometry(.2), eye, root, 0, 1.5, 0);
     }
     if (info.hidden) {
-      const halo = unit(new T.TorusGeometry(.58, .045, 5, 18), eye, root, 0, .38, 0);
+      const halo = unit(new T.TorusGeometry(.65, .045, 5, 20), eye, root, 0, .72, 0);
       halo.rotation.x = Math.PI / 2;
     }
-    const hpBack = box(root, 1.18, .085, .055, charcoal, 0, info.boss ? 1.65 : 1.28, 0);
+    const hpBack = box(root, 1.18, .085, .055, charcoal, 0, info.boss ? 2.02 : 1.68, 0);
     const hpBar = box(root, 1.12, .055, .065, eye, 0, hpBack.position.y, .04);
     this.scene.add(root);
-    this.enemyMeshes.set(enemy.id, { root, hpBar, scale, phase: Math.random() * 6 });
+    this.enemyMeshes.set(enemy.id, { root, hpBar, arms, legs, scale, phase: Math.random() * 6 });
   }
 
   removeEnemy(id) {
@@ -278,16 +358,21 @@ export class WorldView {
       if (!visual) continue;
       const air = ENEMIES[enemy.type].air;
       visual.root.position.set(enemy.x, (air ? 1.52 : .23) + Math.sin(this.time * (air ? 4 : 9) + visual.phase) * (air ? .19 : .065), enemy.z);
-      const ahead = battle.enemies ? enemy.progress + .15 : 0;
-      if (Number.isFinite(ahead)) visual.root.rotation.y = Math.sin(this.time * 3 + visual.phase) * .11;
+      const next = positionOnPath(enemy.progress + .15);
+      visual.root.rotation.y = Math.atan2(next.x - enemy.x, next.z - enemy.z);
+      const stride = Math.sin(this.time * 8 + visual.phase) * .34;
+      visual.arms.forEach((arm, i) => { arm.rotation.x = stride * (i ? -1 : 1); });
+      visual.legs.forEach((leg, i) => { leg.rotation.x = stride * (i ? 1 : -1); });
       const fraction = Math.max(0, enemy.hp / enemy.maxHp);
       visual.hpBar.scale.x = fraction;
       visual.hpBar.position.x = -(1 - fraction) * .56;
     }
     for (const visual of this.towerMeshes.values()) {
       visual.recoil = Math.max(0, visual.recoil - dt * 1.4);
-      visual.head.position.y = 1.02 - visual.recoil + Math.sin(this.time * 2.7 + visual.phase) * .025;
+      visual.head.position.y = 1.13 - visual.recoil + Math.sin(this.time * 2.7 + visual.phase) * .025;
       if (visual.head.userData.halo) visual.head.userData.halo.rotation.z += dt;
+      visual.legs.forEach((leg, i) => { leg.rotation.x = Math.sin(this.time * 1.6 + visual.phase + i) * .035; });
+      visual.arms.forEach((arm, i) => { arm.rotation.x = Math.sin(this.time * 1.6 + visual.phase + i) * .022; });
     }
     for (const shot of [...this.projectiles]) {
       shot.time += dt;
@@ -307,6 +392,11 @@ export class WorldView {
         this.scene.remove(flash.mesh);
         this.flashes.splice(this.flashes.indexOf(flash), 1);
       }
+    }
+    if (this.softwareMode) {
+      this.renderElapsed += dt;
+      if (this.renderElapsed < 1 / 30) return;
+      this.renderElapsed = 0;
     }
     this.renderer.render(this.scene, this.camera);
   }

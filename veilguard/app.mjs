@@ -31,6 +31,9 @@ let lastHud = 0;
 let toasted;
 let guideReturn = 'menu';
 let guideWasPaused = false;
+let shopRenderKey = null;
+let waveRenderKey = null;
+let inspectorRenderKey = null;
 
 function notify(message) {
   $('toast').textContent = message;
@@ -77,6 +80,7 @@ function startBattle() {
   paused = false;
   speed = 1;
   accumulator = 0;
+  shopRenderKey = waveRenderKey = inspectorRenderKey = null;
   $('menu').classList.add('hidden');
   $('pause-screen').classList.add('hidden');
   $('end-screen').classList.add('hidden');
@@ -125,24 +129,39 @@ function updateHUD() {
   $('pause').textContent = paused ? '▶ RESUME' : 'Ⅱ PAUSE';
   const between = battle.phase === 'build';
   $('wave-control').classList.toggle('hidden', !between);
-  $('wave-kicker').textContent = battle.wave ? `WAVE ${battle.wave} CLEARED` : 'THE FIRST WAVE AWAITS';
-  $('wave-title').textContent = battle.wave ? 'Your defense holds.' : 'Set your defenses.';
-  $('start-wave').innerHTML = `Begin wave ${battle.wave + 1} <span>→</span>`;
+  const waveKey = `${battle.phase}:${battle.wave}`;
+  if (waveKey !== waveRenderKey) {
+    waveRenderKey = waveKey;
+    $('wave-kicker').textContent = battle.wave ? `WAVE ${battle.wave} CLEARED` : 'THE FIRST WAVE AWAITS';
+    $('wave-title').textContent = battle.wave ? 'Your defense holds.' : 'Set your defenses.';
+    $('start-wave').innerHTML = `Begin wave ${battle.wave + 1} <span>→</span>`;
+  }
   $('placement-hint').classList.toggle('hidden', !selectedType);
-  $('shop').innerHTML = battle.loadout.map((id, index) => {
-    const tower = TOWERS[id];
-    return `<button class="shop-card ${selectedType === id ? 'active' : ''} ${battle.cash < tower.cost ? 'unaffordable' : ''}" data-pick="${id}" title="${tower.description}" style="--accent:${tower.color}" aria-label="${index + 1}: ${tower.name}, $${tower.cost}" aria-pressed="${selectedType === id}">
-      <span class="tower-icon">${icons[id]}</span><span class="shop-details"><strong>${index + 1}. ${tower.name}</strong><small>$${tower.cost}</small></span></button>`;
-  }).join('');
+  const shopKey = `${battle.loadout.join(',')}:${selectedType || ''}`;
+  if (shopKey !== shopRenderKey) {
+    shopRenderKey = shopKey;
+    $('shop').innerHTML = battle.loadout.map((id, index) => {
+      const tower = TOWERS[id];
+      return `<button class="shop-card ${selectedType === id ? 'active' : ''}" data-pick="${id}" title="${tower.description}" style="--accent:${tower.color}" aria-label="${index + 1}: ${tower.name}, $${tower.cost}" aria-pressed="${selectedType === id}">
+        <span class="tower-icon">${icons[id]}</span><span class="shop-details"><strong>${index + 1}. ${tower.name}</strong><small>$${tower.cost}</small></span></button>`;
+    }).join('');
+  }
   const tower = battle.towers.find(t => t.id === selectedId);
   $('inspector').classList.toggle('hidden', !tower);
+  const inspectorKey = tower ? `${tower.id}:${tower.level}:${tower.target}:${tower.spent}` : '';
+  if (inspectorKey !== inspectorRenderKey) {
+    inspectorRenderKey = inspectorKey;
   if (tower) {
     const info = TOWERS[tower.type], stats = towerStats(tower), cost = info.upgrades[tower.level];
     $('inspector').innerHTML = `<button class="close-inspector" data-action="close" aria-label="Close tower details">×</button>
       <div class="inspector-top" style="--accent:${info.color}"><span class="tower-icon">${icons[tower.type]}</span><div><h3>${info.name}</h3><div class="level">LEVEL ${tower.level} / 5</div></div></div>
       <p>${info.description}</p><dl><dt>Damage</dt><dd>${stats.damage || 'Support'}</dd><dt>Range</dt><dd>${stats.range.toFixed(1)}</dd><dt>${stats.income ? 'Wave income' : 'Attack rate'}</dt><dd>${stats.income ? `$${stats.income}` : `${stats.rate.toFixed(2)}/s`}</dd><dt>Invested</dt><dd>$${tower.spent}</dd></dl>
-      <div class="inspector-actions"><button data-action="upgrade" ${cost === undefined || battle.cash < cost ? 'disabled' : ''}>${cost === undefined ? 'MAX LEVEL' : `UPGRADE · $${cost}`}<br><small>${cost === undefined ? 'Fully powered' : info.bonus[tower.level]}</small></button>
+      <div class="inspector-actions"><button class="upgrade-action" data-action="upgrade" aria-label="${cost === undefined ? 'Maximum level' : `Upgrade ${info.name} for ${cost} cash`}" ${cost === undefined ? 'disabled' : ''}>${cost === undefined ? 'MAX LEVEL' : `UPGRADE · $${cost}`}<br><small>${cost === undefined ? 'Fully powered' : info.bonus[tower.level]}</small></button>
       <button data-action="target" ${tower.type === 'relay' ? 'disabled' : ''}>TARGET: ${tower.target.toUpperCase()} ↻</button><button class="sell" data-action="sell">SELL · +$${Math.floor(tower.spent * .7)}</button></div>`;
+  }
+  }
+  if (tower) {
+    const stats = towerStats(tower);
     if (!selectedType) view.setRange(tower.x, tower.z, stats.range, true);
   } else if (!selectedType) view.setRange(0, 0, 1, false);
 }
@@ -343,6 +362,6 @@ try {
   requestAnimationFrame(frame);
 } catch (error) {
   console.error(error);
-  $('load-error').textContent = 'This game needs WebGL. Try an up-to-date browser with hardware acceleration enabled.';
+  $('load-error').textContent = 'This browser could not start a 3D canvas. Try a browser with Canvas 2D support.';
   $('load-error').classList.remove('hidden');
 }

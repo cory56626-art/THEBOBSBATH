@@ -11,7 +11,7 @@ Play: https://cory56626-art.github.io/THEBOBSBATH/veilguard/
 - Every tower has five upgrades. Attacking towers support First, Last, Strong, and Near target priorities. Select a tower to upgrade or sell for a 70% refund.
 - Nine enemy types including armored, hidden, flying, regenerating, splitting, and boss constructs. Prism can detect hidden units after its second upgrade; anti-air towers are marked in their descriptions.
 - Match cash is earned from kills, cleared waves, and Relay support. Coins, EXP, levels, and tower unlocks persist in localStorage on this device.
-- Procedural 3D models, animated tower heads and projectiles, moving enemies, hover placement previews, adjustable speed, pause, drag orbit, and scroll zoom.
+- Procedural 3D humanoid models, animated defenders and enemies, projectile effects, hover placement previews, adjustable speed, pause, drag orbit, and scroll zoom. A Canvas 2D software renderer preserves the 3D scene when WebGL is blocked.
 
 ## Controls
 
