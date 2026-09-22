@@ -1,5 +1,5 @@
 import * as T from '../backrooms/vendor/three.js';
-import { SoftwareRenderer } from './software-renderer.mjs?v=3';
+import { SoftwareRenderer } from './software-renderer.mjs?v=4';
 import { PATH, TOWERS, ENEMIES, TILE_X, TILE_Z } from './data.mjs';
 import { nearestTile, positionOnPath, towerStats } from './sim.mjs';
 
@@ -42,7 +42,7 @@ export class WorldView {
     this.renderer.toneMapping = T.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.72;
     this.scene = new T.Scene();
-    this.scene.background = new T.Color(0x1b2a3b);
+    this.scene.background = new T.Color(0x263c52);
     this.scene.fog = new T.FogExp2(0x26384b, .011);
     this.camera = new T.OrthographicCamera(-20, 20, 12, -12, .1, 130);
     this.orbit = .77;
@@ -79,9 +79,9 @@ export class WorldView {
     // Sorting the board's huge triangles by their centers hides the field.
     box(this.scene, 29.5, .88, 20.1, metal(0x353a45), 0, -.71, 0).userData.cpuLayer = 0;
     box(this.scene, 29.2, .12, 19.8, gold, 0, -.23, 0).userData.cpuLayer = 1;
-    box(this.scene, 28.9, .2, 19.5, metal(0x303948), 0, -.11, 0).userData.cpuLayer = 2;
+    box(this.scene, 28.9, .2, 19.5, metal(0x485869), 0, -.11, 0).userData.cpuLayer = 2;
     for (const x of TILE_X) for (const z of TILE_Z) {
-      const tone = ((x + z) / 2) % 2 ? 0x465363 : 0x3c4959;
+      const tone = ((x + z) / 2) % 2 ? 0x66788a : 0x596b7d;
       const square = box(this.scene, 1.94, .04, 1.94, metal(tone), x, .015, z);
       square.userData.tile = true;
       square.userData.cpuLayer = 3;
@@ -89,19 +89,19 @@ export class WorldView {
     for (let i = 1; i < PATH.length; i++) {
       const [ax, az] = PATH[i - 1], [bx, bz] = PATH[i];
       const length = Math.hypot(ax - bx, az - bz);
-      const route = box(this.scene, 2.22, .085, length + .08, metal(0x776b5b), (ax + bx) / 2, .072, (az + bz) / 2);
+      const route = box(this.scene, 2.22, .085, length + .08, metal(0x988775), (ax + bx) / 2, .072, (az + bz) / 2);
       route.userData.cpuLayer = 4;
       route.rotation.y = -Math.atan2(bx - ax, bz - az);
       for (const side of [-1, 1]) {
-        const edge = box(this.scene, .065, .08, length, glow(0xf1bd71), side * 1.05, .135, 0);
+        const edge = box(this.scene, .065, .08, Math.max(.2, length - 1.7), glow(0xf1bd71), side * 1.05, .135, 0);
         edge.userData.cpuLayer = 5;
         route.add(edge);
       }
-      const mark = box(this.scene, .07, .045, Math.max(.2, length - .8), glow(0xe4d2ae), 0, .082, 0);
+      const mark = box(this.scene, .07, .045, Math.max(.2, length - 2.6), glow(0xe4d2ae), 0, .082, 0);
       mark.userData.cpuLayer = 5;
       route.add(mark);
     }
-    for (const [x, z] of PATH) cyl(this.scene, 1.12, 1.12, .09, metal(0x303645), x, .104, z, 12).userData.cpuLayer = 4;
+    for (const [x, z] of PATH) cyl(this.scene, 1.12, 1.12, .09, metal(0x988775), x, .104, z, 12).userData.cpuLayer = 4;
     // Peripheral architecture creates depth without requiring downloaded assets.
     for (let i = 0; i < 27; i++) {
       const angle = i * 2.39996, radius = 19 + (i % 4) * 2;
@@ -174,6 +174,7 @@ export class WorldView {
     const bright = glow(color), armor = metal(0x596577), accent = metal(color, color, .24);
     const root = new T.Group();
     root.position.set(tower.x, .15, tower.z);
+    root.scale.setScalar(1.16);
     root.userData.towerId = tower.id;
     this.scene.add(root);
     cyl(root, .7, .79, .2, dark, 0, .1, 0, 8);
@@ -268,11 +269,12 @@ export class WorldView {
   }
 
   makeEnemy(enemy) {
-    const info = ENEMIES[enemy.type], scale = info.boss ? 1.5 : info.air ? .95 : .92;
+    const info = ENEMIES[enemy.type], scale = info.boss ? 1.6 : info.air ? 1.08 : 1.08;
     const root = new T.Group();
     root.position.set(enemy.x, info.air ? 1.5 : .23, enemy.z);
     root.scale.setScalar(scale);
-    const shell = info.armor ? metal(0x8493a3) : metal(info.color, info.color, .12), eye = glow(info.color);
+    const shell = metal(info.armor ? 0x8295a6 : 0x6b7e91);
+    const accent = metal(info.color, info.color, .2), eye = glow(info.color);
     // Enemy units are now readable little armored people: head, torso, arms, and legs.
     for (const side of [-1, 1]) {
       const leg = new T.Group();
@@ -283,6 +285,7 @@ export class WorldView {
     }
     cyl(root, .3, .26, .53, shell, 0, .78, 0, 7);
     box(root, .59, .18, .34, shell, 0, .96, -.015);
+    box(root, .4, .16, .11, accent, 0, .85, .23);
     box(root, .34, .1, .07, eye, 0, 1.06, .18);
     const arms = [];
     for (const side of [-1, 1]) {
@@ -319,8 +322,9 @@ export class WorldView {
     }
     const hpBack = box(root, 1.18, .085, .055, charcoal, 0, info.boss ? 2.02 : 1.68, 0);
     const hpBar = box(root, 1.12, .055, .065, eye, 0, hpBack.position.y, .04);
+    hpBack.visible = hpBar.visible = false;
     this.scene.add(root);
-    this.enemyMeshes.set(enemy.id, { root, hpBar, arms, legs, scale, phase: Math.random() * 6 });
+    this.enemyMeshes.set(enemy.id, { root, hpBack, hpBar, arms, legs, scale, phase: Math.random() * 6 });
   }
 
   removeEnemy(id) {
@@ -370,6 +374,7 @@ export class WorldView {
       visual.arms.forEach((arm, i) => { arm.rotation.x = stride * (i ? -1 : 1); });
       visual.legs.forEach((leg, i) => { leg.rotation.x = stride * (i ? 1 : -1); });
       const fraction = Math.max(0, enemy.hp / enemy.maxHp);
+      visual.hpBack.visible = visual.hpBar.visible = fraction < .999;
       visual.hpBar.scale.x = fraction;
       visual.hpBar.position.x = -(1 - fraction) * .56;
     }
