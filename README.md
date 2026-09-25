@@ -2,6 +2,10 @@
 
 **Play:** https://cory56626-art.github.io/THEBOBSBATH/
 
+## Draw
+
+Open the [drawing page](https://cory56626-art.github.io/THEBOBSBATH/draw/) to sketch with a mouse, finger, or stylus. It has a pen, marker, eraser, colors, undo/redo, automatic local saving, and PNG download. It is a static GitHub Pages page in `draw/`.
+
 ## Veilguard — original 3D tower defense
 
 Play at [THEBOBSBATH/veilguard/](https://cory56626-art.github.io/THEBOBSBATH/veilguard/). Three solo modes, six original animated towers with five upgrade levels each, enemy traits, target priorities, wave income, persistent coins/EXP, and local tower unlocks. Everything runs on GitHub Pages without a backend or build step. See [veilguard/README.md](veilguard/README.md) for controls and development notes.
