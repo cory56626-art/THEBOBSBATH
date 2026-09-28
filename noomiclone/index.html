@@ -2,64 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#141e29">
-  <meta name="description" content="A fan-made physics flipping game with seven courses, autonomous trick mode, and a climbing chimp chase.">
-  <title>Noomi Flip Lab — GitHub Pages</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#67bde8">
+  <meta name="description" content="A fan-made NoomiClone-inspired physics playground: swing, flip and regrab through seven maps.">
+  <title>NoomiClone-inspired Flip Playground — GitHub Pages</title>
   <link rel="stylesheet" href="./style.css">
   <script src="./game.js" defer></script>
 </head>
 <body>
-  <div id="app">
-    <header class="topbar">
-      <div class="brand"><span class="brand-mark" aria-hidden="true">↺</span><span>NOOMI<span class="brand-light">FLIP LAB</span></span><small>FAN-MADE PHYSICS PLAYGROUND</small></div>
-      <div class="top-actions">
-        <button id="mapButton" class="top-button" type="button" aria-label="Choose map"><span class="button-icon">▦</span> <span class="wide-label">MAPS</span><span id="mapNumber" class="number-label">01/07</span></button>
-        <button id="aiButton" class="top-button ai-button" type="button" aria-pressed="false"><span class="ai-spark">✦</span> AI MODE <span class="ai-indicator" aria-hidden="true"></span></button>
-        <button id="resetButton" class="top-button reset-button" type="button" title="Reset run (R)" aria-label="Reset run">↻</button>
-      </div>
-    </header>
+  <main id="gameArea">
+    <canvas id="game" role="img" aria-label="NoomiClone-inspired physics playground"></canvas>
 
-    <main class="game-shell">
-      <canvas id="game" aria-label="Side-view physics flipping game" role="img"></canvas>
-      <div class="vignette" aria-hidden="true"></div>
-      <div class="hud hud-left">
-        <div class="hud-kicker"><span id="courseTag">MAP 01</span><span class="hud-line"></span><span id="themeTag">BARS</span></div>
-        <h1 id="courseName">Classic Bar Park</h1>
-        <div class="play-label"><span id="playType">FREE PLAY · NO FINISH LINE</span><span id="record">BEST 0</span></div>
-      </div>
-      <div class="hud hud-right"><span class="stat-label">RUN SCORE</span><strong id="score">00000</strong><span id="combo" class="combo">AIRBORNE · 0</span></div>
-      <div id="chimpHud" class="chimp-hud" hidden><span class="chimp-icon">●</span><span>CHIMP DISTANCE</span><strong id="chimpDistance">—</strong><div class="threat-track"><span id="threatFill"></span></div></div>
-      <div id="callout" class="callout" aria-live="polite"></div>
-      <div id="introTip" class="intro-tip"><b>Build momentum.</b> Jump, tuck to spin, arch to control, and catch a bar.</div>
+    <div class="top-info" aria-live="polite"><span id="regrabs">0 regrabs</span><span id="mapCaption">Classic Bar Park</span></div>
+    <button id="aiButton" class="ai-switch" type="button" aria-pressed="false">✦ AI MODE: OFF</button>
+    <div id="chimpWarning" class="chimp-warning" hidden>CHIMP BEHIND YOU <strong id="chimpDistance">—</strong></div>
 
-      <div id="mobileControls" class="mobile-controls" aria-label="Touch controls">
-        <div class="controls-group move-controls">
-          <button type="button" data-control="moveLeft" aria-label="Run left">◀</button>
-          <button type="button" data-control="moveRight" aria-label="Run right">▶</button>
-        </div>
-        <div class="controls-group trick-controls">
-          <button type="button" data-control="arch">ARCH</button>
-          <button type="button" data-control="tuck">TUCK</button>
-          <button type="button" data-control="grab" id="grabButton">GRAB</button>
-          <button type="button" data-control="jump" class="jump-control">JUMP</button>
-        </div>
-      </div>
-      <div id="keyboardHint" class="keyboard-hint">A / D RUN <span>·</span> SPACE JUMP / TUCK <span>·</span> ← ARCH <span>·</span> → STRAIGHTEN <span>·</span> ↑ GRAB / RELEASE <span>·</span> R RESET</div>
-    </main>
+    <div id="flash" class="flash" aria-live="polite"></div>
 
-    <div id="menu" class="overlay" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
-      <div class="menu-panel">
-        <div class="menu-heading"><div><span class="eyebrow">NOOMI FLIP LAB / SEVEN MAPS TO PLAY IN</span><h2 id="menuTitle">Pick your playground.</h2><p>Six open maps for flips, regrabs, and bounces. Chimp Chase is the one map with an escape at the end.</p></div><button id="closeMenu" type="button" class="close-button" aria-label="Close maps">×</button></div>
-        <div id="mapGrid" class="map-grid"></div>
-        <div class="menu-bottom"><span><b>Manual:</b> tune every release yourself. <b>AI mode:</b> watch an acrobat roam the selected map and chain tricks.</span><button id="playButton" type="button" class="primary-button">PLAY SELECTED MAP <span>↗</span></button></div>
-        <p class="fan-note">Unofficial tribute with original code and artwork. No affiliation with the creators of NoomiClone.</p>
+    <div class="play-controls" aria-label="Game controls">
+      <button id="grabButton" class="touch-panel release-panel" type="button">LET GO</button>
+      <div class="pose-panels">
+        <button data-hold="arch" class="touch-panel arch-panel" type="button">ARCH</button>
+        <button data-hold="tuck" class="touch-panel tuck-panel" type="button">TUCK</button>
       </div>
     </div>
 
-    <div id="finish" class="overlay finish-overlay" role="dialog" aria-modal="true" aria-labelledby="finishTitle" hidden>
-      <div class="finish-panel"><span class="eyebrow" id="finishKicker">CHIMP CHASE</span><h2 id="finishTitle">You escaped.</h2><p id="finishText">He can climb, but you can fly.</p><div class="finish-score"><span>SCORE</span><strong id="finishScore">0</strong></div><div class="finish-actions"><button id="retryButton" type="button" class="secondary-button">RETRY CHASE</button><button id="nextButton" type="button" class="primary-button">CHOOSE MAP →</button></div></div>
+    <div class="lower-controls">
+      <button id="resetButton" type="button">reset</button>
+      <button id="mapButton" type="button">change map</button>
+      <button id="helpButton" type="button" aria-label="Show controls">?</button>
     </div>
-  </div>
+    <div id="help" class="help" hidden><b>Move with your body.</b> Hold <b>ARCH</b> and <b>TUCK</b> to build a swing. Time <b>LET GO</b> to fly, then <b>GRAB</b> near a bar. On the ground, hold and release TUCK to spring up.<br><span>Keyboard: ← / A arch · Space / S tuck · ↑ / W grab or release · R reset · M maps · I AI mode.</span></div>
+
+    <section id="maps" class="map-overlay" aria-label="Choose map" hidden>
+      <div class="map-window">
+        <div class="map-header"><div><small>CHANGE MAP</small><h1>Choose a place to flip.</h1><p>Six free-play maps. Chimp Chase is the only one with an ending.</p></div><button id="closeMaps" type="button" aria-label="Close map menu">×</button></div>
+        <div id="mapList" class="map-list"></div>
+      </div>
+    </section>
+
+    <section id="escaped" class="escape-overlay" aria-label="Chimp Chase complete" hidden>
+      <div><small>CHIMP CHASE</small><h1>You escaped!</h1><p>The chimp climbed after you, but you made it away.</p><button id="replayChimp" type="button">PLAY AGAIN</button><button id="chooseOther" type="button">CHANGE MAP</button></div>
+    </section>
+  </main>
 </body>
 </html>
