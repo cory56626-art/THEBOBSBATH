@@ -6,6 +6,10 @@
 
 Open the [drawing page](https://cory56626-art.github.io/THEBOBSBATH/draw/) to sketch with a mouse, finger, or stylus. It has a pen, marker, eraser, colors, undo/redo, automatic local saving, and PNG download. It is a static GitHub Pages page in `draw/`.
 
+## Noomi Flip Lab
+
+Play the [NoomiClone-inspired physics flipping game](https://cory56626-art.github.io/THEBOBSBATH/noomiclone/) on GitHub Pages. Six free-play maps have no goal or finish line; experiment with bars, rooftop gaps, trampolines, and more. The seventh map, Chimp Chase, ends when you escape. Tap **AI MODE** to watch an acrobat traverse the selected map and chain tricks automatically. Manual play works with keyboard or on-screen touch controls. All graphics, code, and gameplay are original; this is an unofficial fan tribute.
+
 ## Veilguard — original 3D tower defense
 
 Play at [THEBOBSBATH/veilguard/](https://cory56626-art.github.io/THEBOBSBATH/veilguard/). Three solo modes, six original animated towers with five upgrade levels each, enemy traits, target priorities, wave income, persistent coins/EXP, and local tower unlocks. Everything runs on GitHub Pages without a backend or build step. See [veilguard/README.md](veilguard/README.md) for controls and development notes.
