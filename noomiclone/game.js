@@ -20,7 +20,7 @@
       ground:lines([0,2370,599],[830,950,525],[1560,1700,520]),bars:rails([210,350],[490,340],[775,355],[1070,335],[1360,353],[1660,337],[1950,351],[2210,341]),tramps:mats([1300,100,599]),blocks:[655,1180,1790,2100]},
     {id:'neon',name:'Neon Underpass',hint:'nighttime swing',sky:['#243b6f','#63558e'],floor:'#645775',edge:'#332d52',stone:'#b5b8c7',side:'#555a77',width:2330,night:true,
       ground:lines([0,530,599],[605,1170,599],[1240,1820,599],[1900,2330,599]),bars:rails([210,360],[500,338],[790,353],[1080,338],[1380,353],[1680,335],[1980,346],[2220,350]),tramps:mats([970,115,599],[1755,110,599]),blocks:[675,1490]},
-    {id:'canopy',name:'Canopy Run',hint:'bars in the trees',sky:['#6eaeb7','#d2e2c6'],floor:'#8c9772',edge:'#54664c',stone:'#dedbd0',side:'#819586',width:2320,jungle:true,
+    {id:'canopy',name:'Canopy Swing',hint:'bars in the trees',sky:['#6eaeb7','#d2e2c6'],floor:'#8c9772',edge:'#54664c',stone:'#dedbd0',side:'#819586',width:2320,jungle:true,
       ground:lines([0,555,599],[630,1180,580],[1250,1770,599],[1840,2320,570]),bars:rails([215,355],[510,335],[805,352],[1100,335],[1390,351],[1685,332],[1980,350],[2220,337]),tramps:mats([1540,125,599]),blocks:[680,1260,1850]},
     {id:'chimp',name:'Chimp Chase',hint:'escape at the far end',sky:['#6eacaa','#d0dfbc'],floor:'#aa7861',edge:'#65483f',stone:'#e0dcd0',side:'#869287',width:2500,jungle:true,chimp:true,
       ground:lines([0,900,599],[930,1650,570],[1680,2500,599]),bars:rails([210,355],[490,337],[775,352],[1060,333],[1345,348],[1630,330],[1920,352],[2205,334],[2400,350]),tramps:mats([1770,115,599]),blocks:[680,1230,1820,2290]}
@@ -68,7 +68,7 @@
     $('regrabs').textContent=p.regrabs+' regrab'+(p.regrabs===1?'':'s');
     $('mapCaption').textContent=map.name;
     $('grabButton').textContent=p.holding>=0?'let go':'grab';
-    if(map.chimp)$('chimpDistance').textContent=Math.max(0,Math.round(p.x-chimp.x))+'m';
+    if(map.chimp)$('chimpDistance').textContent=Math.max(0,Math.round(p.x-chimp.x))+' away';
   }
   function attach(i,first=false){
     const b=map.bars[i];
