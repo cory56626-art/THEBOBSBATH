@@ -151,7 +151,7 @@
     c.x+=dt*(c.climbing?66:dist>270?141:160);
     if(c.climbing){c.y=Math.max(support.y+70,c.y-175*dt);c.vy=0}
     else {c.vy+=G*.7*dt;c.y=Math.min(groundY,c.y+c.vy*dt);if(c.y>=groundY)c.vy=0}
-    if(dist<54&&Math.abs(c.y-p.y)<85){
+    if(dist<54&&Math.abs(c.y-p.y)<48){
       notice('the chimp caught you!',1.2);
       spawn(0,p.regrabs);
       if(ai)chimp.x=-260;
