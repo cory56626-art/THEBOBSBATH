@@ -53,7 +53,7 @@
       regrabs:keepCount,squat:0,wasTuck:false,lastSafe:b.x,flips:0,airFlips:0};
     p.x=b.x+Math.sin(p.theta)*p.len;p.y=b.y+Math.cos(p.theta)*p.len;
     camera=clamp(p.x-view*.40,0,Math.max(0,map.width-view));done=false;finishWait=0;
-    chimp={x:-130,y:565,phase:0,climbing:false};
+    chimp={x:-130,y:565,vy:0,phase:0,climbing:false,supportX:null};
     $('escaped').hidden=true;$('chimpWarning').hidden=!map.chimp;
     updateLabels();
   }
@@ -141,11 +141,16 @@
   function updateChimp(dt){
     const c=chimp;c.phase+=dt*8;
     const dist=p.x-c.x;
-    c.x+=dt*(dist>270?135:155);
-    const nearest=map.bars.reduce((a,b)=>Math.abs(b.x-c.x)<Math.abs(a.x-c.x)?b:a);
-    const desiredY=clamp(nearest.y+95,390,530);
-    c.climbing=Math.abs(desiredY-c.y)>18||p.y<c.y-75;
-    c.y=lerp(c.y,Math.min(desiredY,p.y+55),clamp(dt*2.9,0,1));
+    const support=map.bars.reduce((a,b)=>Math.abs(b.x+53-c.x)<Math.abs(a.x+53-c.x)?b:a);
+    const supportX=support.x+53;
+    const floor=floorBelow(c.x)||{y:599};
+    const groundY=floor.y-25;
+    const nearPillar=Math.abs(supportX-c.x)<47;
+    c.climbing=nearPillar&&c.y>support.y+72;
+    c.supportX=nearPillar?supportX:null;
+    c.x+=dt*(c.climbing?66:dist>270?141:160);
+    if(c.climbing){c.y=Math.max(support.y+70,c.y-175*dt);c.vy=0}
+    else {c.vy+=G*.7*dt;c.y=Math.min(groundY,c.y+c.vy*dt);if(c.y>=groundY)c.vy=0}
     if(dist<54&&Math.abs(c.y-p.y)<85){
       notice('the chimp caught you!',1.2);
       spawn(0,p.regrabs);
@@ -213,8 +218,9 @@
       p.x+=p.vx*dt;
       p.x=clamp(p.x,22,map.width-12);
       if(p.grounded){
-        const f=floorBelow(p.x);
-        if(f&&Math.abs(f.y-(p.y+40))<18)p.y=f.y-40;
+        const foot=p.y+40;
+        const f=map.ground.find(f=>p.x>=f.a&&p.x<=f.b&&Math.abs(f.y-foot)<18);
+        if(f)p.y=f.y-40;
         else{p.grounded=false;p.vy=0;p.airTime=0;p.airAngle=0}
       }
       if(!p.grounded){
@@ -373,6 +379,10 @@
   function drawChimp(){
     if(!map.chimp||chimp.x<camera-80||chimp.x>camera+view+80)return;
     const c=chimp,s=Math.sin(c.phase)*13;
+    if(c.climbing&&c.supportX!==null){
+      limb(c.x-12,c.y-23,c.supportX-5,c.y-57,10,'#342c26','#776858');
+      limb(c.x+8,c.y-20,c.supportX-5,c.y-34,10,'#342c26','#806c5b');
+    }
     ctx.save();ctx.translate(c.x,c.y);
     ctx.fillStyle='#302a24';ctx.beginPath();ctx.ellipse(0,-6,25,18,c.climbing?-.55:0,0,TAU);ctx.fill();
     limb(-13,1,-30+s,19,14,'#302823','#736457');
