@@ -280,7 +280,6 @@ function initUI() {
   bindHold('arch', 'arch'); bindHold('tuck', 'tuck'); bindHold('release', 'release');
   $('ai').addEventListener('click', () => {
     ai = !ai; $('ai').setAttribute('aria-pressed', String(ai)); $('ai').querySelector('b').textContent = ai ? 'ON' : 'OFF';
-    if (!ai) sim.motors[1].arch = sim.motors[5].arch = -1.05;
     controller = new GymnastAI(); toast(ai ? 'AI MODE' : 'YOUR TURN');
   });
   $('reset').addEventListener('click', () => setMap(current));

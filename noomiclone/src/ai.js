@@ -1,52 +1,93 @@
-// Brachiation controller: read hand/bar geometry and swing velocity, then
-// choose finite-torque joint targets and grip states. It never moves a body.
+// The AI presses exactly the same three controls as a player: arch, tuck,
+// and the shared let-go button. A forecast only simulates those inputs.
 export class GymnastAI {
-  constructor() { this.tick = 0; this.lastRelease = -200; this.bestBar = -Infinity; this.gait = 0; this.stalled = 0; }
+  constructor() {
+    this.tick = 0;
+    this.lastProbe = -100;
+    this.lastProgress = 0;
+    this.bestBar = -Infinity;
+    this.flight = null;
+  }
+
   next(sim) {
     const p = sim.snapshot();
-    let grips = sim.grips;
-    const lead = Math.max(...grips.map(g => g.bar.x), sim.map.bars[0].x);
-    if (lead > this.bestBar + .1) { this.bestBar = lead; this.stalled = 0; }
-    else if (++this.stalled > 280) { this.gait = (this.gait + 1) % 4; this.stalled = 0; }
-    const next = sim.barBodies.find(b => b.x > lead + .1);
-    const trailing = grips.find(g => g.bar.x < lead - .1);
-    if (trailing) {
-      sim.releaseArm(trailing.arm, Infinity);
-      this.lastRelease = this.tick;
-    } else if (next && grips.length === 2 && this.tick - this.lastRelease > 24 &&
-      p.x > lead + .13 && p.vx > .12) {
-      // One support hand stays on the rail while the other reaches forward.
-      sim.releaseArm(grips[0].arm, Infinity);
-      this.lastRelease = this.tick;
+    const held = sim.grips[0]?.bar;
+    if (held && held.x > this.bestBar + .1) {
+      this.bestBar = held.x;
+      this.lastProgress = this.tick;
+      this.flight = null;
     }
-    grips = sim.grips;
-    const anchorX = grips[0]?.bar.x ?? lead;
-    const dx = p.x - anchorX;
-    const pose = this.gait === 0 ? (dx > 0 ? 'tuck' : 'arch')
-      : this.gait === 1 ? (dx > 0 ? 'arch' : 'tuck')
-      : this.gait === 2 ? (p.vx > .05 && dx < .15 ? 'tuck' : 'arch')
-      : (this.tick % 120 < 60 ? 'tuck' : 'arch');
-    const q = sim.torso.body.rotation();
-    const torsoAngle = Math.atan2(2 * (q.w * q.z + q.x * q.y),
-      1 - 2 * (q.y * q.y + q.z * q.z));
-    const torso = sim.torso.body.translation();
-    const shoulders = sim.arms.map(arm => {
-      if (grips.some(g => g.arm === arm)) {
-        if (this.gait === 0) return { shoulder: p.vx > 0 ? .75 : -1.05, elbow: 0, force: 60 };
-        if (this.gait === 1) return { shoulder: p.vx > 0 ? -1.05 : .75, elbow: 0, force: 60 };
-        if (this.gait === 2) return { shoulder: 0, elbow: 0, force: 60 };
-        return { shoulder: 0, elbow: 0, force: 0 };
+    if (this.flight) {
+      const f = this.flight;
+      const elapsed = this.tick - f.started;
+      const pose = f.style === 'fold' && elapsed < 18 ? 'tuck' : f.style === 'tuck' ? 'tuck' : 'arch';
+      if (elapsed > f.closeAt + 20 || held) this.flight = null;
+      else { this.tick++; return { pose, release: elapsed < f.closeAt }; }
+    }
+    const dx = p.x - (held?.x ?? this.bestBar);
+    const stalled = this.tick - this.lastProgress;
+    // The same arch/tuck muscles pump the swing. Changing phase can escape a
+    // low-amplitude orbit without moving or accelerating a body directly.
+    const pose = stalled < 250 ? (dx > 0 ? 'tuck' : 'arch')
+      : stalled < 650 ? (p.vx > 0 ? 'arch' : 'tuck')
+      : (this.tick % 140 < 70 ? 'tuck' : 'arch');
+    if (held && p.vx > .35 && dx > .16 && this.tick - this.lastProbe >= 12) {
+      this.lastProbe = this.tick;
+      const forecast = sim.barBodies.some(b => b.x > held.x + .1)
+        ? this.forecast(sim, held.x)
+        : sim.map.chimp ? this.forecastEscape(sim) : null;
+      if (forecast) {
+        this.flight = { ...forecast, started: this.tick };
+        this.tick++;
+        return { pose: forecast.style === 'fold' || forecast.style === 'tuck' ? 'tuck' : 'arch', release: true };
       }
-      const target = next ?? sim.barBodies.find(b => b.x >= anchorX);
-      if (!target) return null;
-      const sx = torso.x - .31 * Math.sin(torsoAngle);
-      const sy = torso.y + .31 * Math.cos(torsoAngle);
-      let angle = Math.atan2(-(target.x - sx), target.y - sy) - torsoAngle;
-      while (angle > Math.PI) angle -= 2 * Math.PI;
-      while (angle < -Math.PI) angle += 2 * Math.PI;
-      return { shoulder: Math.max(-1.25, Math.min(1.25, angle)), elbow: -.1 };
-    });
+    }
     this.tick++;
-    return { pose, release: false, arms: shoulders };
+    return { pose, release: false };
+  }
+
+  forecast(sim, fromX) {
+    for (const style of ['arch', 'fold', 'tuck']) {
+      const trial = sim.clone();
+      let closeAt = -1, result = null;
+      for (let t = 0; t < 105; t++) {
+        const pose = style === 'fold' && t < 18 ? 'tuck' : style === 'tuck' ? 'tuck' : 'arch';
+        if (closeAt < 0 && t >= 4) {
+          for (const bar of trial.barBodies) {
+            if (bar.x <= fromX + .1) continue;
+            const maxDistance = Math.max(...trial.arms.map(arm => {
+              const hand = trial.handPoint(arm);
+              return Math.hypot(hand.x - bar.x, hand.y - bar.y,
+                Math.max(0, Math.abs(hand.z) - 1.44));
+            }));
+            if (maxDistance < .28) { closeAt = t; break; }
+          }
+        }
+        trial.step({ pose, release: closeAt < 0 });
+        if (trial.grips[0]?.bar.x > fromX + .1) {
+          result = { style, closeAt, barX: trial.grips[0].bar.x };
+          break;
+        }
+        if (trial.snapshot().y < .8) break;
+      }
+      trial.dispose();
+      if (result) return result;
+    }
+    return null;
+  }
+
+  forecastEscape(sim) {
+    for (const style of ['arch', 'tuck']) {
+      const trial = sim.clone();
+      let result = null;
+      for (let t = 0; t < 130; t++) {
+        trial.step({ pose: style, release: true });
+        if (trial.escaped && !trial.caught) { result = { style, closeAt: 130 }; break; }
+        if (trial.caught || trial.snapshot().y < .5) break;
+      }
+      trial.dispose();
+      if (result) return result;
+    }
+    return null;
   }
 }

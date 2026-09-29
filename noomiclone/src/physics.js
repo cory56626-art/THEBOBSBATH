@@ -83,6 +83,44 @@ export class Simulation {
     if (map.chimp) this.createChimp();
   }
   dispose() { this.world.free(); }
+  clone() {
+    // A disposable copy lets AI test button presses against the same physics.
+    // It cannot change the live world or grant itself extra controls.
+    const copy = Object.create(Simulation.prototype);
+    copy.map = this.map;
+    copy.world = RAPIER.World.restoreSnapshot(this.world.takeSnapshot());
+    const partMap = new Map();
+    copy.bodies = this.bodies.map(part => {
+      const cloned = { name: part.name, body: copy.world.getRigidBody(part.body.handle),
+        collider: copy.world.getCollider(part.collider.handle) };
+      partMap.set(part, cloned);
+      return cloned;
+    });
+    copy.barBodies = this.barBodies.map(bar => ({ ...bar, body: copy.world.getRigidBody(bar.body.handle) }));
+    const barMap = new Map(this.barBodies.map((bar, i) => [bar, copy.barBodies[i]]));
+    const copyLimb = limb => {
+      const cloned = { ...limb };
+      for (const name of ['upper', 'fore', 'thigh', 'shin'])
+        if (limb[name]) cloned[name] = partMap.get(limb[name]);
+      for (const name of ['elbow', 'hip', 'knee'])
+        if (limb[name]) cloned[name] = copy.world.getImpulseJoint(limb[name].handle);
+      if (limb.blockedBar) cloned.blockedBar = barMap.get(limb.blockedBar);
+      return cloned;
+    };
+    copy.arms = this.arms.map(copyLimb);
+    copy.legs = this.legs.map(copyLimb);
+    copy.torso = partMap.get(this.torso);
+    copy.motors = this.motors.map(m => ({ ...m, joint: copy.world.getImpulseJoint(m.joint.handle) }));
+    copy.grips = this.grips.map(g => ({ arm: copy.arms[this.arms.indexOf(g.arm)],
+      bar: barMap.get(g.bar), joint: copy.world.getImpulseJoint(g.joint.handle) }));
+    copy.chimp = this.chimp ? copy.world.getRigidBody(this.chimp.handle) : null;
+    copy.chimpClimb = this.chimpClimb ? { bar: barMap.get(this.chimpClimb.bar),
+      joint: copy.world.getImpulseJoint(this.chimpClimb.joint.handle) } : null;
+    for (const key of ['pose', 'grabOpen', 'regrabs', 'flips', 'rotationSum',
+      'lastAngle', 'clock', 'caught', 'escaped']) copy[key] = this[key];
+    copy.events = [];
+    return copy;
+  }
   body(name, x, y, z, shape, mass, material = {}) {
     const body = this.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic()
       .setTranslation(x, y, z).setLinearDamping(.035).setAngularDamping(.11)
@@ -185,54 +223,50 @@ export class Simulation {
     return V(p.x + v.x, p.y + v.y, p.z + v.z);
   }
   gripNearest(initial = false) {
-    if (this.grabOpen) return false;
-    let grabbed = false;
-    for (const arm of this.arms) {
-      if (this.grips.some(g => g.arm === arm)) continue;
-      const hand = this.handPoint(arm);
-      let target = null, best = initial ? .25 : .23;
-      for (const bar of this.barBodies) {
+    if (this.grabOpen || this.grips.length) return false;
+    const hands = this.arms.map(arm => this.handPoint(arm));
+    let target = null, best = initial ? .25 : .29;
+    for (const bar of this.barBodies) {
+      const contacts = hands.map((hand, i) => {
         const z = Math.max(-1.44, Math.min(1.44, hand.z));
         const d = Math.hypot(hand.x - bar.x, hand.y - bar.y, hand.z - z);
+        const arm = this.arms[i];
         if (arm.blockedBar === bar) {
-          // A hand must move away before it may close on the same rail again.
-          // A timeout alone caused a surprise snap while the hand was falling.
-          if (this.clock < arm.blockedUntil || d < .48) continue;
+          if (this.clock < arm.blockedUntil || d < .48) return { d: Infinity, z };
           arm.blockedBar = null;
         }
-        if (d < best) { best = d; target = { bar, z }; }
-      }
-      if (target) {
-        // The hinge belongs to the fingertip, never to an invented point
-        // above the hand; capture is limited to the hand's own radius.
-        const anchor = V(0, .30, 0);
-        const data = RAPIER.JointData.spring(0, 2600, 95, anchor, V(0, 0, target.z));
-        const joint = this.world.createImpulseJoint(data, arm.fore.body, target.bar.body, true);
-        joint.setContactsEnabled(false);
-        this.grips.push({ arm, bar: target.bar, joint });
-        grabbed = true;
-      }
+        return { d, z };
+      });
+      const distance = Math.max(...contacts.map(c => c.d));
+      if (distance < best) { best = distance; target = { bar, contacts }; }
     }
-    if (grabbed && !initial) { this.regrabs++; this.events.push('regrab'); }
-    return grabbed;
+    if (!target) return false;
+    // Both hands close on one rail in the same physics step. There is no
+    // single-arm traversal mode or independent AI-only grip operation.
+    this.arms.forEach((arm, i) => {
+      const data = RAPIER.JointData.spring(0, 2600, 95, V(0, .30, 0),
+        V(0, 0, target.contacts[i].z));
+      const joint = this.world.createImpulseJoint(data, arm.fore.body, target.bar.body, true);
+      joint.setContactsEnabled(false);
+      this.grips.push({ arm, bar: target.bar, joint });
+    });
+    if (!initial) { this.regrabs++; this.events.push('regrab'); }
+    return true;
   }
   release() {
     this.grabOpen = true;
-    for (const arm of this.arms) this.releaseArm(arm);
-  }
-  releaseArm(arm, cooldown = .12) {
-    const index = this.grips.findIndex(g => g.arm === arm);
-    if (index < 0) return;
-    const [grip] = this.grips.splice(index, 1);
-    arm.blockedBar = grip.bar;
-    arm.blockedUntil = this.clock + cooldown;
-    this.world.removeImpulseJoint(grip.joint, true);
+    for (const grip of this.grips) {
+      grip.arm.blockedBar = grip.bar;
+      grip.arm.blockedUntil = this.clock + .12;
+      this.world.removeImpulseJoint(grip.joint, true);
+    }
+    this.grips.length = 0;
   }
   closeHands() { this.grabOpen = false; this.gripNearest(); }
   setPose(pose) {
     this.pose = pose;
     this.motors.forEach(({ joint, maxForce, arch, tuck }) => {
-      joint.configureMotorPosition(pose === 'tuck' ? tuck : pose === 'arch' ? arch : 0, 56, 9);
+      joint.configureMotorPosition(pose === 'tuck' ? tuck : pose === 'arch' ? arch : 0, 100, 9);
       joint.setMotorMaxForce(pose === 'loose' ? 0 : maxForce);
     });
   }
@@ -280,14 +314,6 @@ export class Simulation {
   step(input) {
     this.clock += DT;
     this.setPose(input.pose);
-    if (input.arms) input.arms.forEach((target, i) => {
-      if (!target) return;
-      const shoulder = this.motors[1 + i * 4], elbow = this.motors[2 + i * 4];
-      shoulder.joint.configureMotorPosition(target.shoulder, 60, 11);
-      shoulder.joint.setMotorMaxForce(target.force ?? shoulder.maxForce);
-      elbow.joint.configureMotorPosition(target.elbow ?? 0, 48, 9);
-      elbow.joint.setMotorMaxForce(target.force ?? elbow.maxForce);
-    });
     if (input.release && !this.grabOpen) this.release();
     if (!input.release && this.grabOpen) this.closeHands();
     if (!this.grabOpen) this.gripNearest();
