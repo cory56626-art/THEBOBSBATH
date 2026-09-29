@@ -8,7 +8,7 @@ Open the [drawing page](https://cory56626-art.github.io/THEBOBSBATH/draw/) to sk
 
 ## Noomi Flip Lab
 
-Play the [NoomiClone-inspired physics flipping game](https://cory56626-art.github.io/THEBOBSBATH/noomiclone/) on GitHub Pages. Six free-play maps have no goal or finish line; experiment with bars, rooftop gaps, trampolines, and more. The seventh map, Chimp Chase, ends when you escape. Hold **Arch** and **Tuck** to control the body and build swing momentum, then release and regrab bars. There is no run control. Tap **AI MODE** to watch an acrobat swing across the selected map and chain flips automatically. Keyboard and touch controls are included. All graphics, code, and gameplay are original; this is an unofficial fan tribute.
+Play the [3D physics flipping game](https://cory56626-art.github.io/THEBOBSBATH/noomiclone/) on GitHub Pages. A jointed gymnast moves only through gravity, contact, grip constraints, and Arch/Tuck joint motors. Let Go opens both hands; releasing it grabs a bar only when a hand reaches it. Falling leaves the body on the ground until Reset. Six maps are open playgrounds, while Chimp Chase is the only one with an escape. AI mode uses the same physics controls for swinging, regrabs, and flips. See [the game README](noomiclone/README.md) for controls and build details.
 
 ## Veilguard — original 3D tower defense
 
