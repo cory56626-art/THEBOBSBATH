@@ -8,13 +8,7 @@ const keys = new Set();
 let sim, stage, current = MAPS[0], ai = false, controller = new GymnastAI();
 let paused = false, last = 0, accumulator = 0, cameraMode = 0, toastTimer = 0;
 const mapList = $('mapList');
-const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
-renderer.setSize(innerWidth, innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-$('game').prepend(renderer.domElement);
+let renderer;
 
 class Stage {
   constructor(map, sim) {
@@ -37,7 +31,10 @@ class Stage {
       torso: new THREE.MeshStandardMaterial({ color: 0x7b8889, roughness: .85 }),
       joint: new THREE.MeshStandardMaterial({ color: 0x5c686d, roughness: .83 }),
       spring: new THREE.MeshStandardMaterial({ color: 0xe5ba6c, roughness: .55, metalness: .18 }),
-      rubber: new THREE.MeshStandardMaterial({ color: 0x477b7b, roughness: .83 })
+      rubber: new THREE.MeshStandardMaterial({ color: 0x477b7b, roughness: .83 }),
+      branch: new THREE.MeshStandardMaterial({ color: 0x796956, roughness: 1 }),
+      roofRail: new THREE.MeshStandardMaterial({ color: 0x394c58, roughness: .65, metalness: .35 }),
+      neonRail: new THREE.MeshStandardMaterial({ color: 0x6de0dd, emissive: 0x2ecacc, emissiveIntensity: 2.2 })
     };
     this.boxGeometry = new THREE.BoxGeometry(1, 1, 1);
     this.ballGeometry = new THREE.SphereGeometry(1, 16, 12);
@@ -81,13 +78,26 @@ class Stage {
       this.sphere(x - .7, y + .08, z, .8, .20, .42, cloud);
     }
     if (grove) {
-      const bark = new THREE.MeshStandardMaterial({ color: 0x766c59, roughness: 1 });
+      const bark = this.pal.branch;
       const leaf = new THREE.MeshStandardMaterial({ color: 0x628476, roughness: 1 });
       for (let x = -2; x < 23; x += 3.4) for (const side of [-1, 1]) {
         const z = side * 4.3;
         this.box(x, 2.4, z, .42, 4.8, .45, bark);
         this.sphere(x, 5.2, z, 1.25, .8, 1.1, leaf);
         this.sphere(x + .7, 4.9, z + .25, .9, .65, .8, leaf);
+      }
+    }
+    if (this.map.id === 'roof') {
+      for (let x = -5; x < 21; x += 2.3) {
+        const h = 2.5 + ((Math.round(x * 7) % 5 + 5) % 5) * .85;
+        this.box(x, h / 2 - 1.4, -8.5, 1.9, h, 1.8, this.pal.edge, false);
+        this.box(x, h - 1.35, -8.5, 2.05, .12, 1.95, this.pal.cap, false);
+      }
+    }
+    if (this.map.id === 'gym') {
+      for (let x = -2; x < 14; x += 3.5) {
+        this.box(x, 2.6, -5.6, .5, 5.2, .45, this.pal.stone, false);
+        this.box(x + 1.75, 5.25, -5.6, 3.5, .28, .45, this.pal.cap, false);
       }
     }
   }
@@ -107,18 +117,21 @@ class Stage {
       this.box(x, .22, 0, w, .09, 2.4, rubber);
       for (let k = -2; k <= 2; k++) this.box(x + k * w / 7, .275, 0, .025, .018, 2.42, spring, false);
     }
-    const glow = new THREE.MeshStandardMaterial({ color: 0x6de0dd, emissive: 0x2ecacc, emissiveIntensity: 2.2 });
+    const barMaterial = this.map.theme === 'night' ? this.pal.neonRail
+      : this.map.theme === 'grove' ? this.pal.branch
+      : this.map.id === 'roof' ? this.pal.roofRail : cap;
     this.map.bars.forEach((bar, i) => {
       if (i % 3 === 0 || i === this.map.bars.length - 1)
         for (const z of [-1.48, 1.48]) {
           this.box(bar.x, bar.y / 2, z, .24, bar.y, .24, stone);
           this.box(bar.x, bar.y + .05, z, .38, .20, .36, cap);
         }
-      this.box(bar.x, bar.y, 0, .19, .19, 3.10, this.map.theme === 'night' ? glow : cap);
-      this.box(bar.x, bar.y + .09, 0, .28, .08, 3.2, stone);
+      this.box(bar.x, bar.y, 0, .19, .19, 3.10, barMaterial);
+      this.box(bar.x, bar.y + .09, 0, .28, .08, 3.2,
+        this.map.theme === 'grove' ? this.pal.branch : stone);
     });
     if (this.map.theme === 'night') for (let x = 0; x < 20; x += 3)
-      this.box(x, .23, -3.2, 1.8, .06, .08, glow, false);
+      this.box(x, .23, -3.2, 1.8, .06, .08, this.pal.neonRail, false);
     if (this.map.chimp) {
       const marker = new THREE.MeshStandardMaterial({ color: 0xceb08a, roughness: .9 });
       const x = this.map.bars.at(-1).x + 1.45;
@@ -257,7 +270,7 @@ function bindHold(id, action) {
 }
 function initUI() {
   for (const m of MAPS) {
-    const button = document.createElement('button'); button.type = 'button'; button.className = 'map-choice';
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'map-choice map-' + m.id;
     button.style.setProperty('--a', m.theme === 'night' ? '#29385d' : '#51afe0');
     button.style.setProperty('--b', m.theme === 'grove' ? '#b7d1be' : '#bce4ee');
     button.style.setProperty('--floor', m.theme === 'grove' ? '#899a72' : '#d1685b');
@@ -294,6 +307,13 @@ function initUI() {
 }
 
 try {
+  renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  $('game').prepend(renderer.domElement);
   await initializePhysics();
   initUI();
   const hash = location.hash.slice(1);
@@ -302,5 +322,7 @@ try {
   requestAnimationFrame(frame);
 } catch (error) {
   console.error(error);
-  $('loading').textContent = 'Unable to start 3D physics. Reload to try again.';
+  $('loading').textContent = /WebGL/i.test(String(error))
+    ? 'This browser cannot start WebGL. Enable graphics acceleration to play the 3D game.'
+    : 'Unable to start 3D physics. Reload to try again.';
 }

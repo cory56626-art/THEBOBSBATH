@@ -11,29 +11,47 @@ const S = RAPIER.ColliderDesc;
 const spaced = (count, step, y, variation = []) => Array.from({ length: count }, (_, i) => ({
   x: i * step, y: y + (variation[i] || 0), z: 0
 }));
+const route = points => points.map(([x, y]) => ({ x, y, z: 0 }));
 
 export const MAPS = [
   { id: 'classic', name: 'Classic Bars', detail: 'the open concrete park', theme: 'sky',
-    bars: spaced(20, .90, 5.12, [0, -.12, .10, 0, -.18, .10, 0, .05, -.12, 0, .08, 0]),
-    floor: [[-3, 23, 0]], blocks: [[5.8, .75, .75], [13.8, .8, 1.0]], springs: [] },
-  { id: 'roof', name: 'Rooftop Lines', detail: 'ledges, gaps, and long shadows', theme: 'sunset',
-    bars: spaced(20, .90, 5.12, [0, 0, -.16, -.20, .12, .16, 0, -.1, .08, .15, -.14, 0]),
-    floor: [[-3, 5.4, 0], [6.1, 12.9, .55], [13.7, 23, .25]], blocks: [[8.2, .7, 1.1]], springs: [] },
-  { id: 'tramp', name: 'Trampoline Yard', detail: 'elastic landings and tumbling', theme: 'sky',
-    bars: spaced(20, .90, 5.12, [0, -.15, .04, -.2, 0, .18, -.1, .06, -.12, .12, 0, -.1]),
-    floor: [[-3, 23, 0]], blocks: [], springs: [[3.6, 1.35], [10.7, 1.4], [17.6, 1.35]] },
-  { id: 'gym', name: 'Concrete Gym', detail: 'pillars and raised platforms', theme: 'cloud',
-    bars: spaced(20, .90, 5.12, [0, -.1, .16, .12, -.1, 0, .17, .12, -.06, .08, 0, -.1]),
-    floor: [[-3, 23, 0]], blocks: [[4.6, .8, 1.2], [9.9, 1.05, 1.65], [16.2, .7, 1.3]], springs: [] },
-  { id: 'neon', name: 'Neon Underpass', detail: 'glowing bars after dark', theme: 'night',
-    bars: spaced(20, .90, 5.12, [0, .1, -.05, .12, -.08, 0, .1, -.12, .1, 0, -.1, 0]),
-    floor: [[-3, 23, 0]], blocks: [[7.3, .7, .75], [15, .75, .8]], springs: [[11.7, 1.35]] },
-  { id: 'grove', name: 'Canopy Grove', detail: 'swing under the trees', theme: 'grove',
-    bars: spaced(20, .90, 5.12, [0, -.12, .14, 0, .08, -.08, .16, .05, -.15, .1, 0, .08]),
-    floor: [[-3, 23, 0]], blocks: [[9.4, .6, .75]], springs: [[14.9, 1.3]] },
-  { id: 'chimp', name: 'Chimp Chase', detail: 'the chimp climbs after you', theme: 'grove', chimp: true,
-    bars: spaced(22, .88, 5.12, [0, -.08, .1, -.16, .10, -.08, .12, 0, -.1, .08, -.16, .1, 0]),
-    floor: [[-3, 25, 0]], blocks: [[7.6, .6, .7], [15.4, .7, .8]], springs: [[18.4, 1.25]] }
+    bars: spaced(17, .86, 5.12),
+    floor: [[-3, 17, 0]], blocks: [], springs: [] },
+  { id: 'roof', name: 'Rooftop Lines', detail: 'three roofs with open drops between them', theme: 'sunset',
+    bars: route([[0,5.12],[.8,5.12],[1.6,5.20],[2.45,5.32],[3.35,5.48],
+      [4.25,5.48],[5.25,5.38],[6.15,5.22],[7,5.08],[7.85,5.08],
+      [8.75,5.23],[9.75,5.35],[10.65,5.35],[11.55,5.2],[12.5,5.12]]),
+    floor: [[-3, 3.4, 0], [4.55, 8.25, .65], [9.4, 15.5, 1.1]],
+    blocks: [[2.8, .45, .65], [7.25, .5, 1.2]], springs: [] },
+  { id: 'tramp', name: 'Trampoline Yard', detail: 'open gaps above three bounce beds', theme: 'sky',
+    bars: route([[0,5.12],[.8,5.06],[1.6,4.94],[2.5,4.82],
+      [3.65,4.55],[4.55,4.68],[5.4,4.96],[6.2,5.12],
+      [7.35,4.62],[8.25,4.72],[9.05,5.00],[9.9,5.12],
+      [11.1,4.60],[12,4.72],[12.9,5.04]]),
+    floor: [[-3, 16, 0]], blocks: [], springs: [[3.65, 1.65], [7.35, 1.65], [11.1, 1.65]] },
+  { id: 'gym', name: 'Concrete Gym', detail: 'climb the staggered high bars', theme: 'cloud',
+    bars: route([[0,5.12],[.75,5.15],[1.5,5.29],[2.25,5.46],[3.05,5.65],
+      [3.85,5.82],[4.65,5.99],[5.45,5.82],[6.3,5.56],
+      [7.2,5.32],[8.1,5.18],[9.05,5.45],[9.95,5.7],[10.85,5.9]]),
+    floor: [[-3, 14, 0]],
+    blocks: [[2.9, 1.1, 1.0], [5.6, 1.35, 1.75], [8.8, 1.2, 1.25]], springs: [] },
+  { id: 'neon', name: 'Neon Underpass', detail: 'low rails alternate with taller ones', theme: 'night',
+    bars: route([[0,5.12],[.75,4.96],[1.5,4.76],[2.25,4.72],[3.05,5.02],
+      [3.85,5.26],[4.65,5.3],[5.45,5.08],[6.25,4.78],
+      [7.05,4.66],[7.85,4.92],[8.65,5.2],[9.45,5.35],[10.25,5.08],[11.1,4.78]]),
+    floor: [[-3, 14, 0]], blocks: [[4.25, .9, .7], [9.75, .9, .85]], springs: [] },
+  { id: 'grove', name: 'Canopy Grove', detail: 'branch-height swings over uneven ground', theme: 'grove',
+    bars: route([[0,5.12],[.8,5.22],[1.6,5.4],[2.4,5.63],[3.2,5.88],
+      [4.05,6.1],[4.9,6.18],[5.75,6.02],[6.6,5.78],
+      [7.5,5.53],[8.4,5.31],[9.3,5.14],[10.2,5.3],[11.1,5.5]]),
+    floor: [[-3, 4.2, 0], [4.2, 8.6, -.45], [8.6, 14.5, .35]],
+    blocks: [[3.65, .55, .7], [9.15, .75, 1.1]], springs: [] },
+  { id: 'chimp', name: 'Chimp Chase', detail: 'scramble over broken rails before it catches you', theme: 'grove', chimp: true,
+    bars: route([[0,5.12],[.78,5.12],[1.55,5.22],[2.35,5.4],[3.15,5.35],
+      [4.0,5.12],[4.9,4.96],[5.8,5.13],[6.7,5.3],
+      [7.6,5.48],[8.5,5.3],[9.45,5.12],[10.4,4.9],
+      [11.35,5.1],[12.3,5.3],[13.25,5.18],[14.2,5.02]]),
+    floor: [[-16, 17.5, 0]], blocks: [[5.35, .75, .25], [10.9, .8, .30]], springs: [] }
 ];
 
 export async function initializePhysics() { await RAPIER.init(); }
@@ -112,9 +130,15 @@ export class Simulation {
   createRagdoll() {
     const x = this.map.bars[0].x, z = 0;
     this.torso = this.body('torso', x, 3.60, z, S.capsule(.31, .22), 3.6);
+    // The torso is kept in its front plane by rigid-body constraints; the
+    // articulated limbs are still free to react to joints and collisions.
+    this.torso.body.setEnabledTranslations(true, true, false, true);
+    this.torso.body.setEnabledRotations(false, false, true, true);
     const pelvis = this.body('pelvis', x, 3.02, z, S.capsule(.16, .20), 2.2);
     const head = this.body('head', x, 4.17, z, S.ball(.23), 1.15);
-    this.joint(this.torso, head, V(0, .33, 0), V(0, -.24, 0));
+    // A neck hinge permits nodding during a flip but cannot yaw around to face behind.
+    const neck = this.joint(this.torso, head, V(0, .33, 0), V(0, -.24, 0), 'revolute');
+    neck.setLimits(-.32, .32);
     const motors = [];
     const spine = this.joint(this.torso, pelvis, V(0, -.34, 0), V(0, .24, 0), 'revolute');
     spine.setLimits(-.7, .8); motors.push(this.motor(spine, 80, -.48, .67));
@@ -166,16 +190,23 @@ export class Simulation {
     for (const arm of this.arms) {
       if (this.grips.some(g => g.arm === arm)) continue;
       const hand = this.handPoint(arm);
-      let target = null, best = initial ? .25 : .32;
+      let target = null, best = initial ? .25 : .23;
       for (const bar of this.barBodies) {
-        if (arm.blockedBar === bar && this.clock < arm.blockedUntil) continue;
         const z = Math.max(-1.44, Math.min(1.44, hand.z));
         const d = Math.hypot(hand.x - bar.x, hand.y - bar.y, hand.z - z);
+        if (arm.blockedBar === bar) {
+          // A hand must move away before it may close on the same rail again.
+          // A timeout alone caused a surprise snap while the hand was falling.
+          if (this.clock < arm.blockedUntil || d < .48) continue;
+          arm.blockedBar = null;
+        }
         if (d < best) { best = d; target = { bar, z }; }
       }
       if (target) {
+        // The hinge belongs to the fingertip, never to an invented point
+        // above the hand; capture is limited to the hand's own radius.
         const anchor = V(0, .30, 0);
-        const data = RAPIER.JointData.spherical(anchor, V(0, 0, target.z));
+        const data = RAPIER.JointData.spring(0, 2600, 95, anchor, V(0, 0, target.z));
         const joint = this.world.createImpulseJoint(data, arm.fore.body, target.bar.body, true);
         joint.setContactsEnabled(false);
         this.grips.push({ arm, bar: target.bar, joint });
@@ -189,17 +220,16 @@ export class Simulation {
     this.grabOpen = true;
     for (const arm of this.arms) this.releaseArm(arm);
   }
-  releaseArm(arm) {
+  releaseArm(arm, cooldown = .12) {
     const index = this.grips.findIndex(g => g.arm === arm);
     if (index < 0) return;
     const [grip] = this.grips.splice(index, 1);
     arm.blockedBar = grip.bar;
-    arm.blockedUntil = this.clock + .72;
+    arm.blockedUntil = this.clock + cooldown;
     this.world.removeImpulseJoint(grip.joint, true);
   }
   closeHands() { this.grabOpen = false; this.gripNearest(); }
   setPose(pose) {
-    if (pose === this.pose) return;
     this.pose = pose;
     this.motors.forEach(({ joint, maxForce, arch, tuck }) => {
       joint.configureMotorPosition(pose === 'tuck' ? tuck : pose === 'arch' ? arch : 0, 56, 9);
@@ -208,7 +238,7 @@ export class Simulation {
   }
   createChimp() {
     const body = this.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic()
-      .setTranslation(-2.65, .46, 0).setLinearDamping(.32).setAngularDamping(.18).setCcdEnabled(true));
+      .setTranslation(-14, .46, 0).setLinearDamping(.8).setAngularDamping(35).setCcdEnabled(true));
     this.world.createCollider(S.ball(.42).setMass(5.5).setFriction(1.25)
       .setRestitution(.02).setCollisionGroups(CHIMP), body);
     this.chimp = body;
@@ -229,21 +259,35 @@ export class Simulation {
       const joint = this.world.createImpulseJoint(
         RAPIER.JointData.prismatic(anchor, V(), V(0, 1, 0)), climbBar.body, this.chimp, true);
       joint.setContactsEnabled(false);
-      joint.configureMotorVelocity(2.4, 15);
+      joint.configureMotorVelocity(1.8, 55);
       joint.setMotorMaxForce(1000);
       this.chimpClimb = { bar: climbBar, joint };
     }
     if (!this.chimpClimb && Math.abs(p.x - c.x) > .12) {
       // Rolling torque acts through ground friction; no position or velocity is assigned.
-      this.chimp.addTorque(V(0, 0, p.x > c.x ? -9 : 9), true);
+      this.chimp.addTorque(V(0, 0, p.x > c.x ? -.1 : .1), true);
     }
     const distance = Math.hypot(p.x - c.x, p.y - c.y, p.z - c.z);
-    if (distance < .77) { this.caught = true; this.events.push('caught'); }
+    // Any actual limb contact counts; waiting for torso overlap let the chimp
+    // lift the gymnast out of the rail instead of ending the chase.
+    const touchesLimb = this.bodies.some(part => {
+      const b = part.body.translation();
+      return Math.hypot(b.x - c.x, b.y - c.y, b.z - c.z) < .72;
+    });
+    if (distance < .82 || touchesLimb) { this.caught = true; this.events.push('caught'); }
     if (p.x > this.map.bars.at(-1).x + 1.45) { this.escaped = true; this.events.push('escaped'); }
   }
   step(input) {
     this.clock += DT;
     this.setPose(input.pose);
+    if (input.arms) input.arms.forEach((target, i) => {
+      if (!target) return;
+      const shoulder = this.motors[1 + i * 4], elbow = this.motors[2 + i * 4];
+      shoulder.joint.configureMotorPosition(target.shoulder, 60, 11);
+      shoulder.joint.setMotorMaxForce(target.force ?? shoulder.maxForce);
+      elbow.joint.configureMotorPosition(target.elbow ?? 0, 48, 9);
+      elbow.joint.setMotorMaxForce(target.force ?? elbow.maxForce);
+    });
     if (input.release && !this.grabOpen) this.release();
     if (!input.release && this.grabOpen) this.closeHands();
     if (!this.grabOpen) this.gripNearest();
