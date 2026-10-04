@@ -1,1 +1,61 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=wildwake/"><title>Wildwake — Wilderness Survival</title></head><body><p><a href="wildwake/">Play Wildwake</a></p><p><a href="backrooms.html">Play Still Here — Backrooms</a></p></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111b22" />
+  <meta name="description" content="Explore Meridian, an original 3D city game. Drive, walk, and encounter civilians, police, and hostile NPCs in a living coastal district." />
+  <meta property="og:title" content="Meridian — Open City" />
+  <meta property="og:description" content="A living coastal district. Driving, street encounters, and an original browser city simulation." />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <title>Meridian — Open City</title>
+  <script type="module" crossorigin src="./assets/index-BkqXVkf9.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CqP1aMYh.css">
+</head>
+<body>
+  <main id="game" aria-label="Meridian 3D city game">
+    <div id="viewport"></div>
+    <div class="film-grain" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+    <div id="damage-flash" aria-hidden="true"></div>
+
+    <header class="brand-bar">
+      <a class="wordmark" href="./" aria-label="Meridian home"><span class="brand-symbol">M</span> MERIDIAN<span class="wordmark-divider"></span><span class="wordmark-sub">OPEN CITY</span></a>
+      <div class="session-meta"><span class="live-dot"></span><span id="session-status">DISTRICT 01</span><button id="menu-button" class="icon-button" aria-label="Open pause menu" title="Pause / settings">☰</button></div>
+    </header>
+
+    <section id="intro" class="intro-overlay" aria-labelledby="intro-title">
+      <div class="intro-content">
+        <div class="eyebrow"><span></span> THE MERIDIAN DISTRICT</div>
+        <h1 id="intro-title">A city.<br /><em>Never still.</em></h1>
+        <p class="intro-description">Take the wheel. Walk the streets. Find your way through a coastal city where every encounter has consequences.</p>
+        <div class="intro-actions"><button id="start-button" class="primary-button" disabled><span id="start-label">Preparing the city</span><span aria-hidden="true">↗</span></button><button id="intro-help" class="text-button">How to play <span aria-hidden="true">↗</span></button></div>
+        <div class="intro-facts"><span><i></i> REAL-TIME 3D</span><span>NPC SIMULATION</span><span>NO ADS · NO ACCOUNT</span></div>
+        <p id="boot-error" class="boot-error" role="alert" hidden></p>
+      </div>
+      <div class="location-caption"><span>34° 03′ N / 118° 15′ W</span><strong>SOUTH WATERFRONT</strong><span>GOLDEN HOUR · 18:42</span></div>
+      <div class="intro-footer"><span>AN ORIGINAL BROWSER GAME</span><span>DRIVE. EXPLORE. RESPOND.</span></div>
+    </section>
+
+    <div id="hud" hidden>
+      <section class="objective-card" aria-label="Current objective"><div class="eyebrow"><span></span><span id="objective-tag">CITY DISPATCH</span></div><h2 id="objective-title">Reach Civic Square</h2><p id="objective-detail">Investigate the reported armed cell.</p><div class="objective-footer"><span id="objective-distance">120 M</span><span id="objective-stage">01 / 03</span></div></section>
+      <div class="wanted-panel" aria-label="Police wanted level"><span class="wanted-label" id="wanted-label">CITY STATUS</span><div id="wanted-stars" aria-hidden="true">☆☆☆☆☆</div><span id="dispatch-status">CLEAR</span></div>
+      <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+      <div id="crosshair" aria-hidden="true" hidden><span></span><span></span><span></span><span></span></div>
+      <div id="interaction-prompt" class="interaction-prompt" hidden><kbd>E</kbd><span>Enter vehicle</span></div>
+      <section class="telemetry" aria-label="Player status"><div class="health-row"><span>HEALTH</span><span id="health-value">100</span></div><div class="health-track"><i id="health-fill"></i></div><div class="vehicle-readout"><strong id="speed-value">0</strong><div><span id="speed-unit">KM/H</span><b id="gear-value">N</b></div><span class="mode-label" id="mode-label">SEDAN / RWD</span></div><div class="vehicle-health" id="vehicle-health">VEHICLE <span>100%</span></div><div class="ammo-readout" id="ammo-readout" hidden>AMMO <strong id="ammo-value">30 / 90</strong></div></section>
+      <section class="map-panel" aria-label="District minimap"><div class="map-heading"><span><i></i> SOUTH WATERFRONT</span><b>N ↑</b></div><canvas id="minimap" width="256" height="256" aria-label="Minimap showing roads, your position, police and hostiles"></canvas><div class="map-footer"><span id="population-status">CITY SIMULATION ACTIVE</span><span>M · MAP</span></div></section>
+      <div class="controls-strip" id="controls-strip"><span><kbd>W A S D</kbd> Drive</span><span><kbd>SPACE</kbd> Brake</span><span><kbd>E</kbd> Exit</span><span><kbd>C</kbd> Camera</span><span><kbd>H</kbd> Horn</span><span><kbd>ESC</kbd> Menu</span></div>
+      <div id="touch-controls" hidden><div class="touch-pad"><button data-key="KeyW" aria-label="Forward" class="touch-up">▲</button><button data-key="KeyA" aria-label="Left">◀</button><button data-key="KeyS" aria-label="Reverse or backward">▼</button><button data-key="KeyD" aria-label="Right">▶</button></div><div class="touch-actions"><button id="touch-interact">EXIT</button><button data-key="Space">BRAKE</button><button id="touch-fire" hidden>FIRE</button><button id="touch-camera">VIEW</button></div></div>
+    </div>
+
+    <section id="menu" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="menu-title" hidden>
+      <div class="menu-card"><div class="eyebrow"><span></span> TAKE A BREATHER</div><h2 id="menu-title">City paused.</h2><p id="menu-description">Your session is paused while this menu is open.</p><div class="settings-row"><label for="quality">Graphics</label><select id="quality"><option value="high">High</option><option value="low">Performance</option></select></div><div class="settings-row"><label for="audio-toggle">City audio</label><input id="audio-toggle" type="checkbox" checked /></div><div class="menu-actions"><button id="resume-button" class="primary-button">Back to the city <span>↗</span></button><button id="help-button" class="secondary-button">Controls &amp; objectives</button><button id="reset-button" class="text-button">Restart session</button></div><div class="menu-note">Single-player · Everything runs in your browser</div></div>
+    </section>
+
+    <section id="help" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden><div class="help-card"><div class="eyebrow"><span></span> FIELD GUIDE</div><h2 id="help-title">Know the streets.</h2><p>Drive to Civic Square, get out, and stop the hostile cell. You can also explore the district freely.</p><div class="help-grid"><div><h3>Behind the wheel</h3><p><kbd>W / S</kbd> Accelerate / reverse<br /><kbd>A / D</kbd> Steer<br /><kbd>SPACE</kbd> Handbrake<br /><kbd>E</kbd> Exit vehicle<br /><kbd>H</kbd> Horn · <kbd>C</kbd> Camera</p></div><div><h3>On the street</h3><p><kbd>W A S D</kbd> Walk · <kbd>SHIFT</kbd> Sprint<br />Drag the scene to look around<br />Hold right mouse to aim<br />Left click or <kbd>F</kbd> to fire<br /><kbd>R</kbd> Reload · <kbd>E</kbd> Enter car</p></div><div><h3>City behavior</h3><p>Civilians follow sidewalks and flee danger. Police investigate gunfire and pursue you for crimes. Hostiles attack nearby targets. Buildings block line of sight.</p></div><div><h3>Good to know</h3><p><kbd>M</kbd> Expand map · <kbd>ESC</kbd> Pause<br />Avoid civilians and traffic. Break police line of sight to lose your wanted level. Reset a stuck vehicle from the pause menu.</p></div></div><p class="mobile-help">On touch screens, use the on-screen buttons. Drag the upper part of the scene to aim; FIRE shoots at the center marker.</p><button id="close-help" class="primary-button">Got it <span>↗</span></button></div></section>
+    <section id="game-over" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="game-over-title" hidden><div class="menu-card"><div class="eyebrow"><span></span> END OF SESSION</div><h2 id="game-over-title">Down, not out.</h2><p>Return to the waterfront with a fresh vehicle and a new scenario.</p><button id="respawn-button" class="primary-button">Start again <span>↗</span></button></div></section>
+    <div id="loading" class="loading-indicator" role="status"><span></span> BUILDING YOUR CITY</div>
+  </main>
+</body>
+</html>
