@@ -1,53 +1,49 @@
-# STILL HERE — Backrooms Survival
+# Meridian — Open City
 
-**Play:** https://cory56626-art.github.io/THEBOBSBATH/
+An original single-player 3D city game that runs entirely in the browser. No accounts, ads, paid APIs, or runtime server. The game uses procedural architecture and materials, metre-scale vehicles and people, and deterministic NPC state machines.
 
-## Draw
+## Play
 
-Open the [drawing page](https://cory56626-art.github.io/THEBOBSBATH/draw/) to sketch with a mouse, finger, or stylus. It has a pen, marker, eraser, colors, undo/redo, automatic local saving, and PNG download. It is a static GitHub Pages page in `draw/`.
+[Open the game on GitHub Pages](https://cory56626-art.github.io/THEBOBSBATH/). Click **Enter the city**. A desktop keyboard and mouse gives the best experience; touch controls are available on phones. A current WebGL-capable browser is required. Use **Performance** graphics in the pause menu for slower devices.
 
-## Noomi Flip Lab
+| Action | Control |
+| --- | --- |
+| Drive / walk | W A S D or arrow keys |
+| Brake | Space |
+| Exit / enter your car | E (stop the car first) |
+| Sprint on foot | Shift |
+| Look around | Drag the scene |
+| Aim | Hold right mouse |
+| Fire on foot | Left click or F |
+| Reload | R |
+| Camera perspective | C |
+| Horn | H |
+| Expand district map | M |
+| Pause / resume | Escape |
 
-Play the [3D physics flipping game](https://cory56626-art.github.io/THEBOBSBATH/noomiclone/) on GitHub Pages. A jointed gymnast moves only through gravity, contact, grip constraints, and Arch/Tuck joint motors. Let Go opens both hands; releasing it grabs a bar only when a hand reaches it. Falling leaves the body on the ground until Reset. Six maps are open playgrounds, while Chimp Chase is the only one with an escape. AI mode uses the same physics controls for swinging, regrabs, and flips. See [the game README](noomiclone/README.md) for controls and build details.
+Drive toward Civic Square, exit your car, and respond to the armed hostile cell. Protect civilians, clear the square, and drive away to finish the response. Afterward, explore freely. Police investigate gunfire and pursue crimes; break line of sight to lose a wanted level. Hostiles engage nearby player/officer threats. Civilians walk sidewalks and flee nearby danger. Traffic follows lane circuits and yields to obstacles. Buildings obstruct movement, sight, and gunfire.
 
-## Veilguard — original 3D tower defense
+Health regenerates slowly when threats and police alerts have cleared. Return to your car to replenish reserve ammunition. Use **Restart session** to recover from a disabled vehicle or begin a new scenario. Session state is reset on refresh; graphics and sound preferences are stored locally when browser storage is available.
 
-Play at [THEBOBSBATH/veilguard/](https://cory56626-art.github.io/THEBOBSBATH/veilguard/). Three solo modes, six original animated towers with five upgrade levels each, enemy traits, target priorities, wave income, persistent coins/EXP, and local tower unlocks. Everything runs on GitHub Pages without a backend or build step. See [veilguard/README.md](veilguard/README.md) for controls and development notes.
+## Scope
 
-A first-person, fully 3D survival game for desktop and touch devices. Scavenge during the day, build a shelter, and survive increasingly dangerous nights.
+This is a compact browser prototype of a city action game, with procedural graphics and rule-based NPC AI. It has one district, one player vehicle, one scenario, and free roam. Collision is approximated with ground-plane boxes/circles; NPC driving and walking use navigation graphs and lane routes. Device/browser performance varies.
 
-- 130 × 130 meter seeded maze with loops, furniture, textured walls, ceiling fixtures, and five secret areas: the chair assembly, pool annex, records office, conservatory, and replica home.
-- Food, water, stamina, healing, scavenging, jump, sprint, flashlight, shove, recoverable downed teammates, and supply restocks at dawn.
-- Place, rotate, and dismantle barricades and work lights. Entities break barricades and slow near lights.
-- Stalkers, light-sensitive Watchers, and Still Lifes: distorted copies of player avatars that echo recent radio messages.
-- Three optional tactical bots: Mira (scout), Dex (builder), and Sol (medic). They navigate, gather and share supplies, build, heal, rescue, and follow natural-language survival commands. Their contextual dialogue is local and rule-based, not a remotely hosted language model. Optional spoken replies use browser speech synthesis.
-- Private, host-authoritative multiplayer for up to four human players plus three bots. Invite codes and links, late joining, synchronized supplies, building, chat, characters, enemies, and day/night state. PeerJS Cloud supplies signaling; WebRTC carries game data. No account or API key is needed. The host must keep the game open. Restrictive networks or signaling outages may prevent internet connections; same-device tabs can connect through BroadcastChannel.
-- Three difficulty settings, touch joystick and look controls, graphics/audio settings, a field map, and local personal records.
+## Development
 
-## Controls
+Requires Node 20.19+ or 22.12+.
 
-| Action | Desktop | Touch |
-|---|---|---|
-| Move / look | WASD / mouse (or drag) | Left joystick / drag right side |
-| Sprint / jump | Shift / Space | RUN / JUMP |
-| Collect / revive | E | USE |
-| Shove | Left click | PUSH |
-| Food / water / medkit | 1 / 2 / 3 | Inventory buttons |
-| Flashlight | F | Light button |
-| Build / rotate / dismantle | B / R / X | Build / Rotate / dismantle button |
-| Team radio / map | T / M | Radio / Map |
-| Pause | Escape | Pause button |
+```sh
+npm ci
+npm run dev
+npm test
+npm run build
+```
 
-## Running and development
+The production build goes into `docs/` with relative asset paths for GitHub Pages project hosting. Dependencies are bundled locally; gameplay does not depend on a CDN. The source branch is `game/meridian-city` in `cory56626-art/THEBOBSBATH`.
 
-All runtime files are static and included in this repository. Serve the repository root with any HTTP server, for example `python3 -m http.server 8080`. GitHub Actions publishes `main` to GitHub Pages. No build step is needed.
+Browser verification uses Playwright with Chromium. The development-only `?debug=1` query enables controlled test scenarios; the normal URL exposes only read-only diagnostic snapshots. There are no network administration or privileged APIs.
 
-Code lives in `backrooms/`: `world.js` generates the collision map and navigation grid; `sim.js` owns game rules and bot planning; `models.js` constructs all 3D geometry; `network.js` manages lobbies and connections; `game.js` renders the game and handles input/UI. Vendor libraries are pinned and included with their licenses.
+## Credits
 
-The previous painting app remains at [paint.html](paint.html).
-
-## References
-
-The survival loop is inspired by [3008 by uglyburger0](https://www.roblox.com/games/2768379856/3008). The fictional setting and distorted-copy idea are inspired by the Backrooms and Kane Pixels’ work, including [Backrooms — Found Footage #3](https://www.youtube.com/watch?v=acdYs9tPLko). Still Life behavior here is an original gameplay adaptation, not a claim about definitive canon. This is an unofficial fan game with original procedural geometry and audio; it does not include film footage or Roblox assets.
-
-[Three.js](https://threejs.org/) and [PeerJS](https://peerjs.com/) are MIT licensed. See `backrooms/vendor/LICENSES.txt`.
+City, actor meshes, textures, audio, interface, and simulation are authored procedurally for this project. Three.js is distributed under the MIT license; its license is included in `public/THIRD_PARTY.txt` and the published site. Vite is used to build the site. See `LICENSE` for this project's source license.
