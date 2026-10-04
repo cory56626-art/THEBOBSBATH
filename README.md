@@ -42,7 +42,24 @@ npm run build
 
 The production build goes into `docs/` with relative asset paths for GitHub Pages project hosting. Dependencies are bundled locally; gameplay does not depend on a CDN. The source branch is `game/meridian-city` in `cory56626-art/THEBOBSBATH`.
 
-Browser verification uses Playwright with Chromium. The development-only `?debug=1` query enables controlled test scenarios; the normal URL exposes only read-only diagnostic snapshots. There are no network administration or privileged APIs.
+Browser verification uses Playwright with Chromium. The optional `?debug=1` query enables controlled test scenarios; the normal URL exposes only read-only diagnostic snapshots. There are no network administration or privileged APIs.
+
+The final production build passed all three browser flows: desktop driving, braking, walking, camera changes, shooting/reloading, pause/resume and restart; civilian panic, police pursuit/wanted escalation, building-blocked gunfire, mission completion and respawn; and phone touch controls in portrait and landscape. The browser run reported no console errors, page exceptions, or failed asset requests.
+
+To repeat the production checks, keep the preview server running in one terminal:
+
+```sh
+npm run build
+npm run preview -- --port 4173
+```
+
+Then run in another terminal:
+
+```sh
+GAME_BASE_URL=http://127.0.0.1:4173/ npm run test:e2e
+```
+
+The test configuration uses system Chromium at `/usr/bin/chromium` with software WebGL rendering. Set `CHROMIUM_PATH` to another Chromium executable if needed. For a live project page, set `GAME_BASE_URL` to its full URL with a trailing slash.
 
 ## Credits
 
