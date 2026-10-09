@@ -1,3 +1,11 @@
+# LATCH — The Appeals Desk
+
+[Play the appeals game](https://cory56626-art.github.io/THEBOBSBATH/appeals/)
+
+Investigate 25 fictional ban appeals over five increasingly difficult shifts. Retrieve original evidence, pin findings, and decide whether to restore an account, uphold a ban, or escalate the case. Includes career and practice modes, autosave, investigation notes, explained audits, and desktop/touch controls. [Source, controls, and tests](appeals/README.md).
+
+---
+
 # Meridian — Open City
 
 [Play the game](https://cory56626-art.github.io/THEBOBSBATH/)
