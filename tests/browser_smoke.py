@@ -7,6 +7,7 @@ The test intentionally observes real animation frames and clicks the public UI.
 
 import json
 import os
+import sys
 from pathlib import Path
 
 from PIL import Image, ImageStat
@@ -132,6 +133,22 @@ def terminal_flows(page):
     return outcomes
 
 
+def quality_controls(page):
+    states = {}
+    for mode, cap, shadows in [("low", .7, False), ("high", 2, True), ("auto", 1, True)]:
+        page.locator("#quality").select_option(mode)
+        state = page.evaluate("""() => ({ selected: window.bobsBath.renderer.quality,
+          ratio: window.bobsBath.renderer.renderer.getPixelRatio(),
+          shadows: window.bobsBath.renderer.renderer.shadowMap.enabled,
+          deviceRatio: devicePixelRatio, width: innerWidth })""")
+        expected_cap = 1.25 if mode == "auto" and state["width"] < 760 else cap
+        check(state["selected"] == mode, f"Graphics selection did not apply: {mode}")
+        check(abs(state["ratio"] - min(state["deviceRatio"], expected_cap)) < .01, f"Incorrect {mode} drawing resolution: {state}")
+        check(state["shadows"] == shadows, f"Incorrect {mode} shadows: {state}")
+        states[mode] = state
+    return states
+
+
 def desktop(browser):
     errors = []
     page = browser.new_page(viewport={"width": 1280, "height": 720}, device_scale_factor=1)
@@ -175,6 +192,7 @@ def desktop(browser):
     page.locator("#help-button").click()
     check(page.locator("#help").is_visible(), "Field guide did not open")
     check(page.evaluate("window.bobsBath.paused"), "Field guide did not pause")
+    graphics = quality_controls(page)
     page.keyboard.press("Escape")
     check(page.locator("#help").is_hidden(), "Escape did not close field guide")
     check(page.evaluate("window.bobsBath.paused"), "Closing guide changed previously paused state")
@@ -216,7 +234,7 @@ def desktop(browser):
     print("Natural escaped/lost result dialogs passed.", flush=True)
     check(not errors, f"Desktop browser errors: {errors}")
     page.close()
-    return {"webgl": gl, "one_x_elapsed": one_x, "four_x_elapsed": four_x, "intro_screenshot": intro_shot, "screenshot": desktop_shot, "terminal": terminal, "errors": errors}
+    return {"webgl": gl, "one_x_elapsed": one_x, "four_x_elapsed": four_x, "intro_screenshot": intro_shot, "screenshot": desktop_shot, "terminal": terminal, "graphics": graphics, "errors": errors}
 
 
 def mobile(browser):
@@ -274,10 +292,32 @@ def old_paths(browser):
     return paths
 
 
-with sync_playwright() as p:
-    browser = p.chromium.launch(executable_path=os.environ.get("CHROMIUM", "/usr/bin/chromium"), headless=True,
-                                args=["--no-sandbox", "--enable-unsafe-swiftshader", "--use-angle=swiftshader", "--disable-dev-shm-usage"])
-    report = {"base_url": BASE, "desktop": desktop(browser), "mobile": mobile(browser), "preserved_paths": old_paths(browser)}
-    browser.close()
-    (SHOTS / "bobs-browser-report.json").write_text(json.dumps(report, indent=2) + "\n")
-    print(json.dumps(report, indent=2))
+def main():
+    with sync_playwright() as p:
+        browser = p.chromium.launch(executable_path=os.environ.get("CHROMIUM", "/usr/bin/chromium"), headless=True,
+                                    args=["--no-sandbox", "--enable-unsafe-swiftshader", "--use-angle=swiftshader", "--disable-dev-shm-usage"])
+        if "--quality-only" in sys.argv:
+            page = browser.new_page(viewport={"width": 1280, "height": 720}, device_scale_factor=1)
+            errors = []
+            record_failures(page, errors)
+            ready(page)
+            page.locator("#help-button").click()
+            report = {"base_url": BASE, "graphics": quality_controls(page)}
+            page.locator("#close-help").click()
+            page.locator("#start-button").click()
+            page.wait_for_function("window.bobsBath.simulation.time > .2")
+            page.locator("#pause-button").click()
+            screenshot(page, "bobs-final-desktop.png")
+            check(not errors, f"Graphics browser errors: {errors}")
+            report["errors"] = errors
+            report_name = "bobs-graphics-report.json"
+        else:
+            report = {"base_url": BASE, "desktop": desktop(browser), "mobile": mobile(browser), "preserved_paths": old_paths(browser)}
+            report_name = "bobs-browser-report.json"
+        browser.close()
+        (SHOTS / report_name).write_text(json.dumps(report, indent=2) + "\n")
+        print(json.dumps(report, indent=2))
+
+
+if __name__ == "__main__":
+    main()
