@@ -1,61 +1,53 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#111b22" />
-  <meta name="description" content="Explore Meridian, an original 3D city game. Drive, walk, and encounter civilians, police, and hostile NPCs in a living coastal district." />
-  <meta property="og:title" content="Meridian — Open City" />
-  <meta property="og:description" content="A living coastal district. Driving, street encounters, and an original browser city simulation." />
-  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-  <title>Meridian — Open City</title>
-  <script type="module" crossorigin src="./assets/index-BkqXVkf9.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CqP1aMYh.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#131718">
+  <meta name="description" content="Watch a survivor outthink a monster in a sprawling 3D house. A spectator horror simulation driven by sight, sound, and fading memory.">
+  <meta property="og:title" content="Bob's Bath — The house is listening">
+  <meta property="og:description" content="One survivor. Three lives. A monster that hunts by sight, sound, and memory. Watch the story unfold in 3D.">
+  <title>Bob's Bath — House Observatory</title>
+  <link rel="icon" href="./house/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./house/style.css">
+  <script type="module" src="./house/main.js"></script>
 </head>
 <body>
-  <main id="game" aria-label="Meridian 3D city game">
-    <div id="viewport"></div>
-    <div class="film-grain" aria-hidden="true"></div>
+  <main id="app">
+    <div id="scene" aria-label="Interactive 3D house. Drag to orbit the camera and scroll to zoom."></div>
     <div class="vignette" aria-hidden="true"></div>
-    <div id="damage-flash" aria-hidden="true"></div>
-
-    <header class="brand-bar">
-      <a class="wordmark" href="./" aria-label="Meridian home"><span class="brand-symbol">M</span> MERIDIAN<span class="wordmark-divider"></span><span class="wordmark-sub">OPEN CITY</span></a>
-      <div class="session-meta"><span class="live-dot"></span><span id="session-status">DISTRICT 01</span><button id="menu-button" class="icon-button" aria-label="Open pause menu" title="Pause / settings">☰</button></div>
+    <header class="topbar">
+      <a href="./" class="brand" aria-label="Bob's Bath home"><svg viewBox="0 0 32 36" fill="none" aria-hidden="true"><path d="M4 33V9L16 2l12 7v24H4Z" stroke="currentColor" stroke-width="1.5"/><path d="M11 33V15h10v18M18 24h1" stroke="currentColor" stroke-width="1.5"/></svg><span>BOB’S BATH<small>HOUSE OBSERVATORY</small></span></a>
+      <div class="top-meta"><span class="live-indicator" id="live-indicator"></span><span id="live-label">AWAITING OBSERVATION</span><button id="sound-button" class="icon-button" aria-label="Enable house audio" aria-pressed="false" title="Enable house audio">♪</button><button id="help-button" class="icon-button" aria-label="Open field guide" title="Field guide">?</button><button id="fullscreen-button" class="icon-button desktop-only" aria-label="Toggle fullscreen" title="Fullscreen">⛶</button></div>
     </header>
 
-    <section id="intro" class="intro-overlay" aria-labelledby="intro-title">
-      <div class="intro-content">
-        <div class="eyebrow"><span></span> THE MERIDIAN DISTRICT</div>
-        <h1 id="intro-title">A city.<br /><em>Never still.</em></h1>
-        <p class="intro-description">Take the wheel. Walk the streets. Find your way through a coastal city where every encounter has consequences.</p>
-        <div class="intro-actions"><button id="start-button" class="primary-button" disabled><span id="start-label">Preparing the city</span><span aria-hidden="true">↗</span></button><button id="intro-help" class="text-button">How to play <span aria-hidden="true">↗</span></button></div>
-        <div class="intro-facts"><span><i></i> REAL-TIME 3D</span><span>NPC SIMULATION</span><span>NO ADS · NO ACCOUNT</span></div>
-        <p id="boot-error" class="boot-error" role="alert" hidden></p>
-      </div>
-      <div class="location-caption"><span>34° 03′ N / 118° 15′ W</span><strong>SOUTH WATERFRONT</strong><span>GOLDEN HOUR · 18:42</span></div>
-      <div class="intro-footer"><span>AN ORIGINAL BROWSER GAME</span><span>DRIVE. EXPLORE. RESPOND.</span></div>
+    <section id="intro" class="intro" aria-labelledby="intro-title">
+      <div class="eyebrow"><span class="tiny-line"></span> AN AUTONOMOUS HORROR SIMULATION</div>
+      <h1 id="intro-title">The house<br>is <em>listening.</em></h1>
+      <p>One survivor. Three lives.<br>A hunter that remembers — until it doesn’t.</p>
+      <button id="start-button" class="primary-button" disabled><span id="start-label">Preparing the house</span><span aria-hidden="true"><svg viewBox="0 0 20 20" width="17" height="17" fill="none"><path d="M4 16 16 4M5 4h11v11" stroke="currentColor" stroke-width="1.5"/></svg></span></button>
+      <div class="intro-note"><span class="small-dot"></span> YOU WATCH. THEY DECIDE.</div>
+      <div class="intro-facts"><div><b id="room-count">16</b><span>ROOMS</span></div><div><b>03</b><span>CHANCES</span></div><div><b>∞</b><span>POSSIBILITIES</span></div></div>
+      <p id="boot-error" class="boot-error" role="alert" hidden></p>
     </section>
+    <div id="intro-caption" class="intro-caption"><span>THE RESIDENCE</span><strong>Something is moving<br>in the west wing.</strong><span>DRAG TO EXPLORE · SCROLL TO ZOOM</span></div>
 
-    <div id="hud" hidden>
-      <section class="objective-card" aria-label="Current objective"><div class="eyebrow"><span></span><span id="objective-tag">CITY DISPATCH</span></div><h2 id="objective-title">Reach Civic Square</h2><p id="objective-detail">Investigate the reported armed cell.</p><div class="objective-footer"><span id="objective-distance">120 M</span><span id="objective-stage">01 / 03</span></div></section>
-      <div class="wanted-panel" aria-label="Police wanted level"><span class="wanted-label" id="wanted-label">CITY STATUS</span><div id="wanted-stars" aria-hidden="true">☆☆☆☆☆</div><span id="dispatch-status">CLEAR</span></div>
-      <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-      <div id="crosshair" aria-hidden="true" hidden><span></span><span></span><span></span><span></span></div>
-      <div id="interaction-prompt" class="interaction-prompt" hidden><kbd>E</kbd><span>Enter vehicle</span></div>
-      <section class="telemetry" aria-label="Player status"><div class="health-row"><span>HEALTH</span><span id="health-value">100</span></div><div class="health-track"><i id="health-fill"></i></div><div class="vehicle-readout"><strong id="speed-value">0</strong><div><span id="speed-unit">KM/H</span><b id="gear-value">N</b></div><span class="mode-label" id="mode-label">SEDAN / RWD</span></div><div class="vehicle-health" id="vehicle-health">VEHICLE <span>100%</span></div><div class="ammo-readout" id="ammo-readout" hidden>AMMO <strong id="ammo-value">30 / 90</strong></div></section>
-      <section class="map-panel" aria-label="District minimap"><div class="map-heading"><span><i></i> SOUTH WATERFRONT</span><b>N ↑</b></div><canvas id="minimap" width="256" height="256" aria-label="Minimap showing roads, your position, police and hostiles"></canvas><div class="map-footer"><span id="population-status">CITY SIMULATION ACTIVE</span><span>M · MAP</span></div></section>
-      <div class="controls-strip" id="controls-strip"><span><kbd>W A S D</kbd> Drive</span><span><kbd>SPACE</kbd> Brake</span><span><kbd>E</kbd> Exit</span><span><kbd>C</kbd> Camera</span><span><kbd>H</kbd> Horn</span><span><kbd>ESC</kbd> Menu</span></div>
-      <div id="touch-controls" hidden><div class="touch-pad"><button data-key="KeyW" aria-label="Forward" class="touch-up">▲</button><button data-key="KeyA" aria-label="Left">◀</button><button data-key="KeyS" aria-label="Reverse or backward">▼</button><button data-key="KeyD" aria-label="Right">▶</button></div><div class="touch-actions"><button id="touch-interact">EXIT</button><button data-key="Space">BRAKE</button><button id="touch-fire" hidden>FIRE</button><button id="touch-camera">VIEW</button></div></div>
+    <div id="session" hidden>
+      <section class="session-heading" aria-label="Observation status"><div class="eyebrow"><span class="tiny-line"></span> LIVE OBSERVATION <span id="seed-label">001</span></div><h1>Every sound<br>leaves a trace.</h1><div class="observation-clock"><span id="clock">00:00</span><i></i><span id="session-message">Searching for a way out</span></div></section>
+      <aside class="inspector" aria-label="NPC status and house map">
+        <section class="survivor-card"><div class="card-heading"><span class="actor-dot survivor-dot"></span><h2>THE SURVIVOR</h2><span id="lives" class="lives" aria-label="3 lives remaining">● ● ●</span></div><strong id="survivor-state">Finding a way out</strong><p id="survivor-detail">Three objects. One locked exit.</p><div class="items" id="items" aria-label="Escape items"></div></section>
+        <section class="hunter-card"><div class="card-heading"><span class="actor-dot hunter-dot"></span><h2>THE RESIDENT</h2><span class="card-index">02</span></div><strong id="monster-state">Patrolling</strong><p id="monster-detail">Listening for a reason to move.</p><div class="memory-label"><span>MEMORY TRACE</span><span id="memory-value">NO TRACE</span></div><div class="memory-track"><i id="memory-fill"></i></div></section>
+        <section class="map-card"><div class="card-heading"><h2>FLOOR PLAN</h2><span class="card-index">N ↑</span></div><canvas id="minimap" width="480" height="400" aria-label="Floor plan showing the survivor, monster, and escape items"></canvas><div class="map-key"><span><i class="survivor-dot"></i>Survivor</span><span><i class="hunter-dot"></i>Resident</span><span><i class="item-dot"></i>Object</span></div></section>
+        <section class="event-card"><div class="card-heading"><h2>HOUSE JOURNAL</h2><span class="card-index" id="event-count">00</span></div><ol id="journal" aria-label="Recent simulation events"></ol></section>
+      </aside>
+      <div class="camera-toolbar" role="group" aria-label="Camera and simulation controls"><div class="camera-tabs" role="group" aria-label="Camera view"><button data-camera="overview" class="active" aria-pressed="true">House</button><button data-camera="survivor" aria-pressed="false">Survivor</button><button data-camera="monster" aria-pressed="false">Resident</button></div><span class="toolbar-divider"></span><button id="pause-button" class="control-button" aria-label="Pause simulation" title="Pause (Space)">II</button><label class="speed-control" for="speed"><span class="sr-only">Simulation speed</span><select id="speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></label><button id="perception-button" class="control-button perception-button" aria-pressed="false" title="Show what the monster can see and remember (V)">Senses</button><button id="restart-button" class="control-button" title="New observation" aria-label="Restart with a new house observation">↻</button></div>
+      <div class="viewport-note" id="viewport-note">DRAG TO ORBIT <span>·</span> SCROLL TO ZOOM</div>
     </div>
+    <footer class="bottom-line"><span>A HOUSE WITH A MEMORY.</span><span id="footer-right">REAL-TIME 3D · ORIGINAL NPC SIMULATION</span></footer>
 
-    <section id="menu" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="menu-title" hidden>
-      <div class="menu-card"><div class="eyebrow"><span></span> TAKE A BREATHER</div><h2 id="menu-title">City paused.</h2><p id="menu-description">Your session is paused while this menu is open.</p><div class="settings-row"><label for="quality">Graphics</label><select id="quality"><option value="high">High</option><option value="low">Performance</option></select></div><div class="settings-row"><label for="audio-toggle">City audio</label><input id="audio-toggle" type="checkbox" checked /></div><div class="menu-actions"><button id="resume-button" class="primary-button">Back to the city <span>↗</span></button><button id="help-button" class="secondary-button">Controls &amp; objectives</button><button id="reset-button" class="text-button">Restart session</button></div><div class="menu-note">Single-player · Everything runs in your browser</div></div>
-    </section>
-
-    <section id="help" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden><div class="help-card"><div class="eyebrow"><span></span> FIELD GUIDE</div><h2 id="help-title">Know the streets.</h2><p>Drive to Civic Square, get out, and stop the hostile cell. You can also explore the district freely.</p><div class="help-grid"><div><h3>Behind the wheel</h3><p><kbd>W / S</kbd> Accelerate / reverse<br /><kbd>A / D</kbd> Steer<br /><kbd>SPACE</kbd> Handbrake<br /><kbd>E</kbd> Exit vehicle<br /><kbd>H</kbd> Horn · <kbd>C</kbd> Camera</p></div><div><h3>On the street</h3><p><kbd>W A S D</kbd> Walk · <kbd>SHIFT</kbd> Sprint<br />Drag the scene to look around<br />Hold right mouse to aim<br />Left click or <kbd>F</kbd> to fire<br /><kbd>R</kbd> Reload · <kbd>E</kbd> Enter car</p></div><div><h3>City behavior</h3><p>Civilians follow sidewalks and flee danger. Police investigate gunfire and pursue you for crimes. Hostiles attack nearby targets. Buildings block line of sight.</p></div><div><h3>Good to know</h3><p><kbd>M</kbd> Expand map · <kbd>ESC</kbd> Pause<br />Avoid civilians and traffic. Break police line of sight to lose your wanted level. Reset a stuck vehicle from the pause menu.</p></div></div><p class="mobile-help">On touch screens, use the on-screen buttons. Drag the upper part of the scene to aim; FIRE shoots at the center marker.</p><button id="close-help" class="primary-button">Got it <span>↗</span></button></div></section>
-    <section id="game-over" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="game-over-title" hidden><div class="menu-card"><div class="eyebrow"><span></span> END OF SESSION</div><h2 id="game-over-title">Down, not out.</h2><p>Return to the waterfront with a fresh vehicle and a new scenario.</p><button id="respawn-button" class="primary-button">Start again <span>↗</span></button></div></section>
-    <div id="loading" class="loading-indicator" role="status"><span></span> BUILDING YOUR CITY</div>
+    <section id="result" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="result-title" hidden><div class="modal-card result-card"><div class="eyebrow"><span class="tiny-line"></span> OBSERVATION COMPLETE</div><h2 id="result-title">The door opened.</h2><p id="result-description"></p><div class="result-stats" id="result-stats"></div><button id="again-button" class="primary-button">Watch another attempt <span aria-hidden="true"><svg viewBox="0 0 20 20" width="17" height="17" fill="none"><path d="M4 16 16 4M5 4h11v11" stroke="currentColor" stroke-width="1.5"/></svg></span></button><button id="inspect-button" class="text-button">Stay and inspect the house</button></div></section>
+    <section id="help" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden><div class="modal-card help-card"><div class="eyebrow"><span class="tiny-line"></span> FIELD GUIDE</div><h2 id="help-title">A thinking hunter.<br>A chance to escape.</h2><p>You’re an observer. Both characters act on their own. The survivor searches for three escape objects, then unlocks the front door. Being caught costs a life; found objects stay collected.</p><div class="guide-grid"><div><h3>What the resident knows</h3><p>It sees within a forward cone. Walls and furniture block its view. Footsteps, picking up objects, and dropped objects can draw it to a sound. It searches nearby closets and beds, and its memory of a lost chase fades.</p></div><div><h3>How the survivor escapes</h3><p>It chooses routes, runs from danger, breaks sight at corners, and hides in closets or under beds. Hiding works best when the monster didn’t see it happen. Three lives give it a difficult but possible way out.</p></div><div><h3>Your camera</h3><p>Drag to orbit. Scroll or pinch to zoom. Follow either character using the camera buttons. “Senses” reveals the resident’s sight cone and remembered location.</p></div><div><h3>Your controls</h3><p><kbd>SPACE</kbd> pause / resume<br><kbd>C</kbd> cycle cameras · <kbd>V</kbd> senses<br>Use 1×, 2×, or 4× speed, or ↻ for a fresh attempt. Touch controls work the same way.</p></div></div><div class="settings-row"><label for="difficulty">Next observation</label><select id="difficulty"><option value="balanced">Balanced hunt</option><option value="relentless">Relentless hunter</option><option value="patient">Patient hunter</option></select></div><div class="settings-row"><label for="quality">Graphics</label><select id="quality"><option value="auto">Automatic</option><option value="low">Performance</option><option value="high">High quality</option></select></div><button id="close-help" class="primary-button">Back to the house <span aria-hidden="true"><svg viewBox="0 0 20 20" width="17" height="17" fill="none"><path d="M4 16 16 4M5 4h11v11" stroke="currentColor" stroke-width="1.5"/></svg></span></button></div></section>
+    <noscript><div class="no-script">This 3D game needs JavaScript enabled. All gameplay runs locally in your browser.</div></noscript>
   </main>
 </body>
 </html>
