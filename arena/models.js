@@ -366,8 +366,83 @@ function ultronLimb(g,part,s){
   if(lower&&!arm){box(g,M.gun,[0,-.41,.16],[.65,.2,.78]);box(g,M.silver,[0,-.37,.38],[.66,.17,.58]);for(let i=0;i<3;i++)box(g,M.gun,[(i-1)*.17,-.35,.67],[.035,.1,.025]);}
 }
 
+// Titan Breaker retains the heavy exoskeleton construction, with its own
+// titanium palette and independently animated equipment rather than recoloring
+// shared materials used by Hulkbuster.
+const TITAN={
+  plate:mat(0x555e65,.83,.32),raised:mat(0x7f898f,.85,.27),deep:mat(0x30383f,.79,.4),
+  trim:mat(0x9ca6ab,.87,.26),darkTrim:mat(0x48525a,.82,.34),
+  cyan:mat(0xa7f5ff,.35,.2,{emissive:0x44d6f0,emissiveIntensity:3.4}),
+  exhaust:mat(0xff563d,.3,.25,{emissive:0xf82713,emissiveIntensity:2.6}),
+  flame:mat(0xff8a54,.1,.3,{emissive:0xff2c0d,emissiveIntensity:4.1}),
+};
+function titanThruster(group,position,radius=.12,direction=[0,0,-1]){
+  const point=new THREE.Vector3(...position),axis=new THREE.Vector3(...direction).normalize();
+  const basis=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis);
+  const nozzle=cyl(group,M.gun,position,[radius*1.45,.11,radius*1.45]);nozzle.quaternion.copy(basis);
+  const inner=cyl(group,TITAN.exhaust,point.clone().addScaledVector(axis,.075).toArray(),[radius,.025,radius]);inner.quaternion.copy(basis);
+  const jet=new THREE.Group();jet.name='titan-red-thruster';jet.position.copy(point);jet.quaternion.copy(basis);
+  ell(jet,TITAN.flame,[0,.26,0],[radius*.85,.32,radius*.85]);
+  ell(jet,TITAN.exhaust,[0,.53,0],[radius*.43,.26,radius*.43]);
+  mergePart(jet);jet.visible=false;jet.userData.activation='visible';group.add(jet);return jet;
+}
+function titanPart(group,name,side){
+  if(name==='torso')busterTorso(group);else if(name==='head')busterHead(group);
+  else if(name.includes('Arm')||name.includes('forearm'))busterArm(group,name.includes('forearm'),side);
+  else busterLeg(group,name.includes('shin'),side);
+  const replacements=new Map([[M.red,TITAN.plate],[M.redLight,TITAN.raised],[M.redDark,TITAN.deep],[M.gold,TITAN.trim],[M.goldDark,TITAN.darkTrim],[M.blue,TITAN.cyan]]);
+  group.traverse(o=>{if(o.isMesh&&replacements.has(o.material))o.material=replacements.get(o.material);});
+  const missileFlaps=[],redThrusters=[];
+  if(name==='torso'){
+    // Overlapping breastplates, reinforced lower ribs and the exposed cyan core.
+    for(const sign of [-1,1]){
+      panel(group,TITAN.raised,[[sign*.12,.34],[sign*.49,.36],[sign*.57,.13],[sign*.31,.03],[sign*.14,.08]],.055,[0,0,.405]);
+      box(group,TITAN.deep,[sign*.43,-.16,.11],[.15,.37,.59],[0,0,sign*.13]);
+      for(let i=0;i<4;i++)box(group,M.black,[sign*.39,-.06-i*.065,.455],[.16,.028,.03],[0,0,sign*.12]);
+      box(group,TITAN.plate,[sign*.27,.22,-.455],[.29,.42,.16]);
+      redThrusters.push(titanThruster(group,[sign*.27,.15,-.56],.105));
+    }
+    ring(group,TITAN.trim,[0,.14,.53],.14,.024);light(group,[0,.14,.555],.10);
+    for(const sign of [-1,1])box(group,TITAN.cyan,[sign*.16,-.33,.46],[.075,.025,.02]);
+  }
+  if(name.startsWith('upperArm')){
+    // Elbow thrust ports sit behind the armored joint.
+    box(group,TITAN.deep,[0,-.3,-.33],[.46,.25,.24]);
+    redThrusters.push(titanThruster(group,[0,-.29,-.48],.085));
+    for(let i=0;i<3;i++)box(group,M.gun,[side*.48,.4-i*.08,.04],[.028,.04,.32]);
+  }
+  if(name.startsWith('forearm')){
+    // Fifteen recessed missile tubes per arm: three columns by five rows.
+    box(group,TITAN.deep,[0,.055,.52],[.79,.68,.09]);
+    for(let row=0;row<5;row++)for(let col=0;col<3;col++){
+      const x=(col-1)*.215,y=.31-row*.13;
+      cyl(group,M.black,[x,y,.59],[.066,.034,.066],[Math.PI/2,0,0]);
+      cyl(group,TITAN.trim,[x,y,.615],[.042,.025,.042],[Math.PI/2,0,0]);
+      cyl(group,TITAN.exhaust,[x,y,.632],[.014,.008,.014],[Math.PI/2,0,0]);
+    }
+    const flap=new THREE.Group();flap.name='titan-missile-bay-flap';flap.position.set(0,.4,.665);
+    box(flap,TITAN.plate,[0,-.34,0],[.81,.7,.065]);
+    box(flap,TITAN.raised,[0,-.32,.044],[.63,.48,.035]);
+    for(const x of [-.27,.27])rod(flap,M.gun,[x,-.62,.065],[x,-.08,.065],.014);
+    box(flap,TITAN.cyan,[0,-.15,.07],[.22,.022,.014]);mergePart(flap);
+    flap.userData.capacity=15;flap.userData.closedAngle=0;flap.userData.openAngle=-1.45;
+    group.add(flap);missileFlaps.push(flap);
+    // Short armored wrist shield; it does not cover the opening bay.
+    box(group,TITAN.deep,[side*.47,-.23,.09],[.13,.4,.55],[0,0,-side*.12]);
+    panel(group,TITAN.raised,[[side*.39,-.02],[side*.64,-.1],[side*.61,-.48],[side*.42,-.42]],.08,[0,0,.27]);
+    redThrusters.push(titanThruster(group,[side*.25,.22,-.44],.075));
+  }
+  if(name.startsWith('shin')){
+    for(const sign of [-1,1])box(group,TITAN.raised,[sign*.35,.02,.02],[.17,.68,.7],[0,0,-sign*.03]);
+    box(group,M.black,[0,-.37,.79],[.77,.14,.04]);
+    for(let i=0;i<6;i++)box(group,TITAN.trim,[(i-2.5)*.118,-.365,.82],[.035,.13,.025]);
+    box(group,TITAN.plate,[0,.34,.43],[.73,.18,.16]);
+  }
+  return {missileFlaps,redThrusters};
+}
+
 function addRemovableArmor(group,type,name){
-  if((type!=='buster'&&type!=='ultron')||name==='head')return [];
+  if((type!=='buster'&&type!=='ultron'&&type!=='titan')||name==='head')return [];
   const plates=[];
   const torso=name==='torso',arm=name.includes('Arm'),lower=name.includes('forearm');
   const z=torso?.505:arm?.585:lower?.515:.5;
@@ -377,15 +452,107 @@ function addRemovableArmor(group,type,name){
     box(group,M.black,[side*x,y,z-.01],[torso?.17:.13,.28,.025]);
     for(let i=0;i<3;i++)rod(group,M.steel,[side*x-.045,y-.09+i*.07,z+.009],[side*x+.045,y-.06+i*.07,z+.009],.008);
     const outer=new THREE.Group();outer.position.set(side*x,y,z+.018);
-    box(outer,type==='buster'?M.redLight:M.silver,[0,0,0],[torso?.19:.15,.31,.045],[0,0,-side*.08]);
+    box(outer,type==='titan'?TITAN.raised:type==='buster'?M.redLight:M.silver,[0,0,0],[torso?.19:.15,.31,.045],[0,0,-side*.08]);
     fasten(outer,[[-.045,.11,.027],[.045,-.11,.027]]);mergePart(outer);group.add(outer);plates.push(outer);
   }
   return plates;
 }
 
+// Movie-inspired additions, kept in the same per-body batching pipeline.
+const NEW={
+  red:mat(0x8e1925,.12,.4),darkRed:mat(0x42121c,.12,.45),vein:mat(0x1e161c,.1,.4),
+  rock:mat(0xbf7136,0,.94),rockLight:mat(0xd88a46,0,.9),rockDark:mat(0x784226,0,1),
+  yellow:mat(0xc8a52b,.12,.6),blue:mat(0x162d49,.12,.58),leather:mat(0x362e22,.08,.75),
+  skin:mat(0xba8c68,0,.75),hair:mat(0x30251d,0,.9),claw:mat(0xb6c2c9,.9,.2),redBelt:mat(0x8f2824,.2,.6)
+};
+const rockGeometry=new THREE.DodecahedronGeometry(1,0);
+function carnagePart(g,name,s){
+  if(name==='torso')muscleTorso(g,true);else if(name==='head')venomHead(g);
+  else if(name.includes('Arm')||name.includes('forearm'))organicArm(g,name.includes('forearm'),s,true);
+  else organicLeg(g,name.includes('shin'),s,true);
+  g.traverse(o=>{if(!o.isMesh)return;if(o.material===M.venom)o.material=NEW.red;else if(o.material===M.sinew)o.material=NEW.darkRed;else if(o.material===M.vein)o.material=NEW.vein;});
+  if(name==='torso')for(const side of [-1,1])for(let i=0;i<3;i++){
+    const points=[[side*.3,.3-i*.2,-.2],[side*(.7+i*.08),.5-i*.23,-.27],[side*(.82+i*.08),.82-i*.25,-.21]];
+    rod(g,NEW.red,points[0],points[1],.055);rod(g,NEW.darkRed,points[1],points[2],.03);
+  }
+  if(name.startsWith('forearm'))for(let i=0;i<3;i++)panel(g,i%2?NEW.red:NEW.vein,[[-.07,-.4],[.07,-.4],[.02,-1.05]],.035,[(i-1)*.14,0,.24]);
+}
+function rockSurface(g,radii,center=[0,0,0],rows=5,columns=9){
+  ell(g,NEW.rockDark,center,radii);
+  for(let row=0;row<rows;row++){
+    const latitude=-Math.PI*.42+(row+.5)/rows*Math.PI*.84;
+    for(let col=0;col<columns;col++){
+      const angle=(col+(row%2)*.5)/columns*Math.PI*2;
+      const x=Math.cos(latitude)*Math.sin(angle),y=Math.sin(latitude),z=Math.cos(latitude)*Math.cos(angle);
+      const mesh=add(g,rockGeometry,(row+col)%3?NEW.rock:NEW.rockLight,[center[0]+x*radii[0],center[1]+y*radii[1],center[2]+z*radii[2]],[radii[0]*.25,radii[1]/rows*.88,radii[2]*.25]);
+      mesh.rotation.set(y*.4,angle,.12*Math.sin(col*3+row));
+    }
+  }
+}
+function thingPart(g,name,s){
+  if(name==='torso'){
+    rockSurface(g,[.52,.48,.39],[0,.02,0],6,11);
+    box(g,NEW.blue,[0,-.43,0],[.87,.21,.68]);box(g,M.black,[0,-.36,.34],[.73,.04,.04]);
+    ring(g,M.white,[0,-.4,.38],.067,.014);
+  }else if(name==='head'){
+    rockSurface(g,[.48,.45,.39],[0,.02,0],5,10);
+    box(g,NEW.rockDark,[0,.02,.395],[.68,.11,.045]);
+    for(const side of [-1,1]){box(g,M.white,[side*.19,.055,.43],[.15,.065,.035]);box(g,M.black,[side*.19,.055,.452],[.04,.05,.012]);ell(g,NEW.rock,[side*.19,.19,.4],[.25,.12,.1]);}
+    box(g,NEW.rock,[0,-.07,.45],[.2,.17,.15]);box(g,NEW.rockDark,[0,-.24,.39],[.4,.035,.025]);
+  }else{
+    const lower=name.startsWith('forearm')||name.startsWith('shin');rockSurface(g,[.43,.45,.38],[0,.02,0],5,9);
+    if(name.startsWith('upperArm'))rockSurface(g,[.53,.3,.45],[0,.3,0],3,8);
+    if(name.startsWith('forearm')){rockSurface(g,[.44,.2,.36],[0,-.42,.12],3,8);for(let i=0;i<4;i++)ell(g,NEW.rockLight,[(i-1.5)*.18,-.43,.36],[.11,.12,.11]);}
+    if(name.startsWith('thigh'))box(g,NEW.blue,[0,.32,0],[.78,.3,.69]);
+    if(name.startsWith('shin'))rockSurface(g,[.45,.17,.52],[0,-.41,.2],3,8);
+  }
+}
+function wolverinePart(g,name,s){
+  if(name==='torso'){
+    ell(g,NEW.blue,[0,.04,0],[.48,.48,.34]);
+    for(const side of [-1,1]){
+      ell(g,NEW.yellow,[side*.21,.18,.23],[.25,.31,.15]);
+      panel(g,NEW.blue,[[side*.07,.4],[side*.35,.41],[side*.13,-.02]],.035,[0,0,.36]);
+      box(g,NEW.blue,[side*.38,-.04,.12],[.18,.48,.35]);
+      for(let i=0;i<3;i++)box(g,NEW.yellow,[side*.19,-.13-i*.075,.31],[.26,.055,.06]);
+      box(g,NEW.leather,[side*.34,-.4,.24],[.17,.18,.16]);
+    }
+    box(g,NEW.redBelt,[0,-.34,.08],[.88,.1,.65]);cyl(g,M.gun,[0,-.34,.43],[.095,.035,.095],[Math.PI/2,0,0]);rod(g,NEW.redBelt,[-.045,-.385,.455],[.045,-.295,.455],.018);rod(g,NEW.redBelt,[-.045,-.295,.455],[.045,-.385,.455],.018);
+  }else if(name==='head'){
+    ell(g,NEW.yellow,[0,.04,0],[.46,.48,.4]);
+    ell(g,NEW.skin,[0,-.21,.28],[.32,.23,.22]);
+    for(const side of [-1,1]){
+      panel(g,NEW.blue,[[side*.08,.12],[side*.42,.28],[side*.67,.75],[side*.48,-.19],[side*.24,-.2]],.07,[0,0,.31]);
+      panel(g,M.white,[[side*.12,.09],[side*.36,.13],[side*.29,.015],[side*.13,.005]],.022,[0,0,.415]);
+      box(g,NEW.hair,[side*.31,-.21,.27],[.08,.19,.11],[0,0,side*.13]);
+    }
+    ell(g,NEW.skin,[0,-.12,.48],[.08,.12,.08]);box(g,M.mouth,[0,-.29,.44],[.23,.035,.025]);
+  }else if(name.startsWith('upperArm')){
+    ell(g,NEW.skin,[0,-.07,0],[.4,.43,.34]);ell(g,NEW.skin,[0,-.12,.2],[.3,.28,.22]);
+    ell(g,NEW.blue,[0,.33,0],[.53,.23,.43]);box(g,NEW.yellow,[0,.35,.31],[.63,.16,.16]);
+    for(let i=0;i<3;i++)rod(g,NEW.leather,[s*.13+i*.045,-.19,.3],[s*.1+i*.045,.12,.3],.012);
+  }else if(name.startsWith('forearm')){
+    ell(g,NEW.skin,[0,.21,0],[.35,.28,.3]);box(g,NEW.blue,[0,-.11,0],[.64,.55,.58]);box(g,NEW.yellow,[0,.02,.31],[.45,.37,.07]);
+    box(g,NEW.leather,[0,-.4,.07],[.61,.24,.5]);
+    for(let i=0;i<3;i++){
+      const x=(i-1)*.16;
+      panel(g,NEW.claw,[[x-.018,-.44],[x+.018,-.44],[x+.01,-1.16],[x-.028,-1.31]],.024,[0,0,.3]);
+      rod(g,M.gun,[x,-.43,.28],[x,-.32,.28],.032);
+    }
+  }else{
+    ell(g,NEW.yellow,[0,.04,0],[.39,.48,.34]);
+    box(g,NEW.blue,[s*.27,.04,.06],[.16,.65,.45]);
+    if(name.startsWith('shin')){box(g,NEW.blue,[0,-.23,.1],[.72,.59,.66]);box(g,NEW.yellow,[0,.21,.32],[.5,.26,.12]);box(g,NEW.blue,[0,-.43,.27],[.75,.2,.82]);}
+  }
+}
+
 export function createPart(type,partName,size=[1,1,1]){
-  const g=new THREE.Group(); const s=partName.endsWith('L')?-1:1;
-  if(type==='buster'){
+  const g=new THREE.Group(); const s=partName.endsWith('L')?-1:1;let equipment={};
+  if(type==='titan')equipment=titanPart(g,partName,s);
+  else if(type==='carnage')carnagePart(g,partName,s);
+  else if(type==='thing')thingPart(g,partName,s);
+  else if(type==='wolverine')wolverinePart(g,partName,s);
+  else if(type==='buster'){
     if(partName==='torso')busterTorso(g);else if(partName==='head')busterHead(g);
     else if(partName.includes('Arm')||partName.includes('forearm'))busterArm(g,partName.includes('forearm'),s);
     else busterLeg(g,partName.includes('shin'),s);
@@ -398,7 +565,7 @@ export function createPart(type,partName,size=[1,1,1]){
     if(partName==='torso')ultronTorso(g);else if(partName==='head')ultronHead(g);else ultronLimb(g,partName,s);
   }
   const armor=addRemovableArmor(g,type,partName);mergePart(g);g.scale.set(...size);g.name=`${type}-${partName}`;
-  g.userData={type,partName,size:[...size],damageLevel:-1,wounds:new THREE.Group(),armor};g.add(g.userData.wounds);
+  g.userData={type,partName,size:[...size],damageLevel:-1,wounds:new THREE.Group(),armor,...equipment};g.add(g.userData.wounds);
   return g;
 }
 
@@ -439,4 +606,38 @@ export function createVeronica(){
   }
   for(const s of [-1,1]){rod(g,M.gold,[s*.7,-.15,.6],[s*1.2,-.9,.9],.055);rod(g,M.gun,[s*1.2,-.9,.9],[s*.9,-1.2,1.1],.04);}
   mergePart(g);g.userData.modules=modules;g.name='veronica';return g;
+}
+
+
+// SUNDAY: an eight-module industrial delivery platform, distinct from Veronica.
+// Module visibility is controlled by remaining physical repair stock in runtime.
+export function createSunday(){
+  const group=new THREE.Group();group.name='sunday';
+  box(group,TITAN.deep,[0,0,0],[2.05,.68,1.55]);
+  box(group,TITAN.plate,[0,.25,0],[1.84,.3,1.37]);
+  box(group,TITAN.raised,[0,.44,0],[1.13,.13,.86]);
+  cyl(group,M.gun,[0,.54,0],[.38,.16,.38]);
+  cyl(group,TITAN.cyan,[0,.63,0],[.23,.025,.23]);
+  const modules=[],redThrusters=[];
+  for(let i=0;i<8;i++){
+    const angle=i/8*Math.PI*2,x=Math.cos(angle)*1.6,z=Math.sin(angle)*1.42;
+    const pod=new THREE.Group();pod.position.set(x,-.06,z);pod.rotation.y=-angle+Math.PI/2;
+    box(pod,TITAN.deep,[0,0,0],[.64,.84,.96]);
+    box(pod,TITAN.plate,[0,.1,.04],[.58,.58,.88]);
+    box(pod,TITAN.raised,[0,.42,.04],[.55,.12,.82]);
+    for(const side of [-1,1])rod(pod,M.gun,[side*.29,-.36,-.34],[side*.29,-.36,.34],.035);
+    box(pod,TITAN.cyan,[0,.19,.5],[.29,.03,.018]);
+    for(let j=0;j<3;j++)box(pod,M.black,[(j-1)*.13,-.15,.487],[.035,.22,.022]);
+    mergePart(pod);group.add(pod);modules.push(pod);
+    rod(group,TITAN.trim,[Math.cos(angle)*.7,0,Math.sin(angle)*.56],[x,0,z],.085);
+  }
+  for(const side of [-1,1]){
+    box(group,TITAN.deep,[side*1.04,-.1,-.68],[.52,.5,.9]);
+    redThrusters.push(titanThruster(group,[side*1.04,-.1,-1.2],.17));
+    cyl(group,TITAN.deep,[side*.65,-.46,.45],[.25,.21,.25]);
+    cyl(group,TITAN.exhaust,[side*.65,-.58,.45],[.16,.025,.16]);
+    rod(group,M.gun,[side*.52,.41,-.32],[side*.7,1.05,-.49],.025);
+    ell(group,TITAN.cyan,[side*.7,1.06,-.49],[.047,.047,.047]);
+  }
+  mergePart(group);group.userData={modules,redThrusters};return group;
 }

@@ -174,6 +174,7 @@ export class CombatEffects {
     this.seen = new Set(); this.lines = []; this.waves = []; this.marks = [];
     this.lastSim = null; this.lastTime = 0; this.trailTimes = new Map();
     this._a = new THREE.Vector3(); this._b = new THREE.Vector3(); this._direction = new THREE.Vector3(); this._mid = new THREE.Vector3();
+    this._ropeA = new THREE.Vector3(); this._ropeB = new THREE.Vector3(); this._ropePrev = new THREE.Vector3(); this._jetPoint = new THREE.Vector3(); this._jetDirection = new THREE.Vector3();
     this._q = new THREE.Quaternion(); this._twist = new THREE.Quaternion(); this._twistAxis = new THREE.Vector3(0, 0, 1); this._previous = new THREE.Vector3(); this._scale = new THREE.Vector3();
   }
 
@@ -215,10 +216,10 @@ export class CombatEffects {
   _line(event, mode) {
     if (!finite(event.to)) return;
     const start = new THREE.Vector3().copy(event.position), end = new THREE.Vector3().copy(event.to);
-    const life = Math.min(1.1, Math.max(mode === 'tendril' ? .15 : .1, event.ttl ?? .3));
+    const life = Math.min(1.1, Math.max(mode === 'tendril' || mode === 'rope' ? .15 : .1, event.ttl ?? .3));
     if (this.lines.length >= 40) this.lines.shift();
-    this.lines.push({ start, end, mode, life, maxLife: life, width: event.width ?? (mode === 'beam' ? .18 : mode === 'tendril' ? .13 : .045), color: event.color ?? (mode === 'repair' ? 0x80f7ff : 0xb9efff), phase: Math.random() * 10 });
-    if (mode !== 'tendril' && mode !== 'tracer') {
+    this.lines.push({ start, end, mode, life, maxLife: life, width: event.width ?? (mode === 'beam' ? .18 : mode === 'tendril' ? .13 : mode === 'rope' ? .045 : .045), color: event.color ?? (mode === 'repair' ? 0x80f7ff : 0xb9efff), phase: Math.random() * 10 });
+    if (mode !== 'tendril' && mode !== 'tracer' && mode !== 'rope') {
       this.fire.spawn(start, { color: event.color ?? 0x94eaff, size: mode === 'beam' ? 2.8 : .9, life: .18, alpha: .85, brightness: 2, growth: 2 });
       this.fire.spawn(end, { color: event.color ?? 0x94eaff, size: mode === 'beam' ? 1.5 : .5, life: .15, alpha: .8, brightness: 2 });
     }
@@ -251,8 +252,74 @@ export class CombatEffects {
     }
     this._mark(event.position, .35 + Math.random() * .3, event.color ?? 0x5b1819, .7, 90);
   }
+  _redPunch(event, sim) {
+    const titan = (sim.fighters || []).find(f => f.type === 'titan');
+    let nearest = null, distance = Infinity;
+    for (const name of ['forearmL', 'forearmR']) {
+      const part = titan?.parts?.[name]; if (!part || part.detached) continue;
+      const body = part.body, d = this._jetPoint.copy(body.position).distanceTo(event.position);
+      if (d < distance) { nearest = part; distance = d; }
+    }
+    this._jetPoint.copy(event.position);
+    if (nearest) this._jetPoint.set(0, nearest.size[1] * .42, -nearest.size[2] * .2).applyQuaternion(nearest.body.quaternion).add(nearest.body.position);
+    this._jetDirection.set(0, 0, -1);
+    if (finite(event.to)) this._jetDirection.subVectors(this._jetPoint, event.to).normalize();
+    else if (nearest) this._jetDirection.applyQuaternion(nearest.body.quaternion);
+    const p = this._jetPoint, d = this._jetDirection;
+    for (let i = 0; i < 6; i++) {
+      this.fire.spawn(p, { vx: d.x * (7 + i), vy: d.y * (7 + i), vz: d.z * (7 + i), color: i < 2 ? 0xffc0a3 : 0xff281c, endColor: 0xb71012, size: .3 + i * .06, growth: .5, life: .1 + i * .016, alpha: .8, brightness: 1.9, drag: 1.2 });
+    }
+    this.onImpact?.({ type: 'redPunch', position: {x:p.x,y:p.y,z:p.z}, radius: .7, intensity: event.intensity ?? 1.2, color: 0xff3322 });
+  }
+
+  _ropeWraps(sim) {
+    if (!sim) return;
+    for (const fighter of sim.fighters || []) {
+      const restraint = fighter.restraint;
+      if (!restraint || restraint.health <= 0 || fighter.type !== 'titan') continue;
+      const target = typeof restraint.target === 'string' ? sim.fighters.find(f => f.id === restraint.target) : restraint.target;
+      if (!target?.parts?.torso?.body) continue;
+      const color = restraint.health < 30 ? 0x667680 : 0x9ab8bf;
+      const torso = target.parts.torso;
+      // Three chest/waist coils and independent arm/leg coils follow each rigid
+      // body's current pose. The restraint's physical links remain authoritative.
+      for (const [name, offset, segments] of [['torso', .34, 12], ['torso', 0, 12], ['torso', -.34, 12], ['forearmL', 0, 8], ['forearmR', 0, 8], ['shinL', 0, 8], ['shinR', 0, 8]]) {
+        const part = target.parts[name]; if (!part || part.detached) continue;
+        const [w, h, depth] = part.size, rx = w * .53 + .1, rz = depth * .55 + .1;
+        const point = this._ropeA, previous = this._ropePrev;
+        for (let n = 0; n <= segments; n++) {
+          const angle = n / segments * Math.PI * 2;
+          point.set(Math.cos(angle) * rx, offset * h, Math.sin(angle) * rz).applyQuaternion(part.body.quaternion).add(part.body.position);
+          if (n) this._segment(this.tendrils, previous, point, .045, color, 1);
+          previous.copy(point);
+        }
+      }
+      const hand = ['forearmL', 'forearmR'].map(n => fighter.parts[n]).find(p => p && !p.detached);
+      if (hand) {
+        this._ropeA.set(0, -hand.size[1] * .35, -hand.size[2] * .48).applyQuaternion(hand.body.quaternion).add(hand.body.position);
+        this._ropeB.set(0, 0, torso.size[2] * .58).applyQuaternion(torso.body.quaternion).add(torso.body.position);
+        this._segment(this.tendrils, this._ropeA, this._ropeB, .04, color, .95);
+      }
+    }
+  }
+
   _consume(event, sim) {
     if (!finite(event.position)) return;
+    if(event.type==='redPunch'){this._redPunch(event,sim);return;}
+    if(event.type==='rope'){this._line({...event,color:event.color??0x9ab8bf,width:.045},'rope');return;}
+    if(event.type==='missileTrail'){
+      this.fire.spawn(event.position,{color:0xff5a35,endColor:0xb71d1b,size:.35,growth:.6,life:.14,alpha:.65,brightness:1.6});
+      this.smoke.spawn(event.position,{color:0xa4a6a5,size:.22,growth:1.6,life:.55,alpha:.2,vy:.5});return;
+    }
+    if(event.type==='steam'){
+      for(let i=0;i<7;i++)this.smoke.spawn(event.position,{color:0xcad6d3,endColor:0xd7e4df,size:.35+Math.random()*.35,growth:1.1,life:.65+Math.random()*.4,alpha:.22,vy:1+Math.random(),vx:(Math.random()-.5)*.8,vz:(Math.random()-.5)*.8});return;
+    }
+    if(event.type==='gas'){
+      this.onImpact?.({type:'gas',position:event.position,intensity:.5,radius:3});
+      const to=event.to??{x:event.position.x,y:event.position.y,z:event.position.z+2};
+      for(let i=0;i<34;i++){const u=Math.random(),position={x:event.position.x+(to.x-event.position.x)*u,y:event.position.y+(to.y-event.position.y)*u,z:event.position.z+(to.z-event.position.z)*u};this.smoke.spawn(position,{vx:(Math.random()-.5)*2,vy:.4+Math.random(),vz:(Math.random()-.5)*2,size:.6+u,growth:1.2,life:1.1+Math.random(),alpha:.34,color:0xc3d3ab,endColor:0x9ba78d,drag:1.7});}return;
+    }
+    if(event.type==='slash'){this._line({...event,color:event.color??0xe7e6cf,width:.06},'tracer');return;}
     if (event.type === 'blood') { if (sim.options?.blood !== false) this._blood(event); return; }
     if (['beam', 'tracer', 'tendril', 'repair', 'gravity'].includes(event.type)) { this._line(event, event.type === 'gravity' ? 'beam' : event.type); return; }
     if (event.type === 'shockwave' || event.type === 'sonic') { this._shockwave(event); return; }
@@ -272,13 +339,16 @@ export class CombatEffects {
       const body = fighter.parts?.torso?.body;
       if (!body?.velocity || !finite(body.position)) continue;
       const velocity = body.velocity, speed = Math.hypot(velocity.x, velocity.y, velocity.z);
-      if (speed < 8 || (this.trailTimes.get(fighter.id) ?? -1) > sim.elapsed) continue;
+      if ((speed < 8 && !(fighter.flight > sim.elapsed)) || (this.trailTimes.get(fighter.id) ?? -1) > sim.elapsed) continue;
       this.trailTimes.set(fighter.id, sim.elapsed + .045);
-      const color = fighter.type === 'buster' ? 0x8cdbff : fighter.type === 'ultron' ? 0xff5b36 : 0xc0b7a3;
+      const stealth = fighter.type === 'titan' && fighter.stealthUntil > sim.elapsed;
+      if (stealth) continue;
+      const color = fighter.type === 'buster' ? 0x8cdbff : fighter.type === 'titan' ? 0xff5340 : fighter.type === 'ultron' ? 0xff5b36 : 0xc0b7a3;
       const p = body.position;
-      const metal = fighter.type === 'buster' || fighter.type === 'ultron';
+      const metal = fighter.type === 'buster' || fighter.type === 'titan' || fighter.type === 'ultron';
       if (metal && (fighter.flight > sim.elapsed || fighter.boostUntil > sim.elapsed || fighter.action?.kind === 'boost' || fighter.type === 'ultron')) {
         this.fire.spawn({ x: p.x, y: p.y - .8, z: p.z }, { vx: -velocity.x * .25, vy: -4 - Math.max(0, velocity.y * .3), vz: -velocity.z * .25, color, life: .15, size: 1, growth: 2, brightness: 2.5, alpha: .6 });
+        if(fighter.type==='titan')this.fire.spawn({x:p.x,y:p.y-.7,z:p.z},{vx:-velocity.x*.18,vy:-3,vz:-velocity.z*.18,color:0xb5f4ff,endColor:0x49c9ea,life:.09,size:.38,growth:1,brightness:2,alpha:.7});
       }
       this.smoke.spawn(p, { vx: -velocity.x * .1, vy: .5, vz: -velocity.z * .1, color: 0xc4bca7, life: .25 + Math.random() * .2, size: .45, growth: 2.5, alpha: .16, drag: .4 });
     }
@@ -288,13 +358,15 @@ export class CombatEffects {
       const key = `projectile-${projectile.id}`;
       if ((this.trailTimes.get(key) ?? -1) > sim.elapsed) continue;
       this.trailTimes.set(key, sim.elapsed + .025);
-      const color = projectile.kind === 'ultron' ? 0xff5530 : projectile.kind === 'shell' ? 0xffbf69 : 0x8de9ff;
-      this.fire.spawn(body.position, { color, endColor: color, size: projectile.kind === 'shell' ? .6 : .8, life: .12, alpha: .7, brightness: 2, growth: .5 });
+      const color = projectile.kind === 'missile' ? 0xff5736 : projectile.kind === 'ultron' ? 0xff5530 : projectile.kind === 'carnage' ? 0xc7343c : projectile.kind === 'shell' ? 0xffbf69 : 0x8de9ff;
+      const p = projectile.kind === 'missile' ? this._jetPoint.set(0,0,-.44).applyQuaternion(body.quaternion).add(body.position) : body.position;
+      this.fire.spawn(p, { color, endColor: color, size: projectile.kind === 'missile' ? .35 : projectile.kind === 'shell' ? .6 : .8, life: .12, alpha: .7, brightness: 2, growth: .5 });
+      if(projectile.kind==='missile')this.smoke.spawn(p,{size:.28,growth:1.3,life:.65,alpha:.18,color:0xa5a8a6,vy:.35});
       if (projectile.kind === 'shell') this.smoke.spawn(body.position, { size: .45, growth: 1, life: .35, alpha: .18, color: 0x928a79, vy: .5 });
     }
   }
 
-  _drawInstances(dt) {
+  _drawInstances(dt, sim = null) {
     this.rings.begin(); this.beams.begin(); this.tendrils.begin(); this.decals.begin();
     for (let i = this.waves.length - 1; i >= 0; i--) {
       const w = this.waves[i]; w.life -= dt; if (w.life <= 0) { this.waves.splice(i, 1); continue; }
@@ -304,14 +376,14 @@ export class CombatEffects {
     for (let i = this.lines.length - 1; i >= 0; i--) {
       const line = this.lines[i]; line.life -= dt; if (line.life <= 0) { this.lines.splice(i, 1); continue; }
       const opacity = Math.min(1, line.life / Math.min(.12, line.maxLife));
-      if (line.mode === 'tendril') {
+      if (line.mode === 'tendril' || line.mode === 'rope') {
         this._previous.copy(line.start);
         for (let segment = 1; segment <= 12; segment++) {
           const t = segment / 12;
           this._a.lerpVectors(line.start, line.end, t);
-          this._a.y += Math.sin(t * Math.PI) * (1.2 + Math.sin(line.phase + line.life * 12) * .25);
+          this._a.y += Math.sin(t * Math.PI) * (line.mode==='rope'?.2:1.2 + Math.sin(line.phase + line.life * 12) * .25);
           this._a.x += Math.sin(t * Math.PI * 3 + line.phase) * Math.sin(t * Math.PI) * .2;
-          this._segment(this.tendrils, this._previous, this._a, line.width * (1 - t * .35), 0x182b2e, opacity);
+          this._segment(this.tendrils, this._previous, this._a, line.width * (1 - t * .35), line.mode==='rope'?line.color:0x182b2e, opacity);
           this._previous.copy(this._a);
         }
       } else {
@@ -328,6 +400,7 @@ export class CombatEffects {
       this._scale.set(mark.radius * 2, mark.radius * 1.7, 1);
       this.decals.put(mark.position, this._scale, this._q, mark.color, mark.alpha * Math.min(1, mark.life / 10));
     }
+    this._ropeWraps(sim);
     this.rings.end(); this.beams.end(); this.tendrils.end(); this.decals.end();
   }
   _segment(pool, from, to, width, color, alpha) {
@@ -344,7 +417,7 @@ export class CombatEffects {
     this.lastTime = sim.elapsed;
     for (const layer of [this.fire, this.smoke, this.sparks, this.blood]) layer.update(delta);
     for (const light of this.lights) { light.life = Math.max(0, light.life - delta); light.light.intensity = light.power * (light.life / light.maxLife) ** 2; }
-    this._drawInstances(delta);
+    this._drawInstances(delta,sim);
     for (const event of sim.effects || []) if (!this.seen.has(event.id)) { this.seen.add(event.id); this._consume(event, sim); }
     if (elapsed > 0) this._automaticTrails(sim);
     // IDs are monotonically increasing within a run; bound bookkeeping in long fights.
@@ -352,7 +425,7 @@ export class CombatEffects {
     if (this.trailTimes.size > 500) { const ids = new Set((sim.projectiles || []).map(p => `projectile-${p.id}`)); for (const id of this.trailTimes.keys()) if (typeof id === 'string' && id.startsWith('projectile-') && !ids.has(id)) this.trailTimes.delete(id); }
     // Spawned particles appear immediately, including when inspected at pause.
     for (const layer of [this.fire, this.smoke, this.sparks, this.blood]) layer.update(0);
-    this._drawInstances(0);
+    this._drawInstances(0,sim);
     for (const light of this.lights) light.light.intensity = light.power * (light.life / light.maxLife) ** 2;
   }
   clear() {

@@ -439,6 +439,20 @@ export function createProp(prop) {
       box(group,[w*.15,h*.55,d*.22],[x*w*.4,-h*.08,0],silver);
       cylinder(group,[.09,.22,.09],[x*w*.4,-h*.36,0],red);
     }
+  } else if(kind==='repairModule') {
+    // Sunday dispatches a physical engine-sized component, not a healing orb.
+    const armor=material('#555f64',.76,.34),cap=material('#84252a',.68,.37),bright=material('#b8c3c7',.82,.25);
+    const hot=new THREE.MeshBasicMaterial({color:0xff3e2c});
+    box(group,[w*.84,h*.72,d*.82],[0,0,0],armor);
+    for(const side of [-1,1]){
+      box(group,[w*.14,h*.92,d*.95],[side*w*.39,0,0],cap);
+      cylinder(group,[w*.12,h*.78,w*.12],[side*w*.28,0,d*.15],bright);
+      for(let n=0;n<3;n++)box(group,[w*.18,h*.07,d*.55],[side*w*.23,-h*.18+n*h*.18,0],dark);
+    }
+    box(group,[w*.42,h*.1,d*.5],[0,h*.42,0],bright);
+    cylinder(group,[w*.18,h*.2,w*.18],[0,-h*.41,0],dark);
+    cylinder(group,[w*.12,h*.025,w*.12],[0,-h*.52,0],hot);
+    box(group,[w*.18,h*.24,d*.035],[0,0,d*.43],cap);
   } else if(kind==='crate') {
     box(group,[w,h,d],[0,0,0],material('#85745a',.1,.92));
     const strapping=material('#504f43',.45,.65);
@@ -506,9 +520,65 @@ export function updateCivilian(mesh,civ,time) {
 
 export function createProjectile(p) {
   const group=new THREE.Group();
-  const color=p.kind==='ultron'||p.kind==='blast'?0xf65c3f:p.kind==='bullet'?0xffe9aa:0x87e5ff;
+  if(p.kind==='missile'){
+    const body=material('#9da5a8',.78,.31),red=material('#8b252a',.66,.37),dark=material('#30383c',.7,.45);
+    cylinder(group,[.092,.64,.092],[0,0,-.035],body,[Math.PI/2,0,0]);
+    const nose=new THREE.Mesh(new THREE.ConeGeometry(.095,.24,10),dark);nose.rotation.x=Math.PI/2;nose.position.z=.405;nose.castShadow=true;group.add(nose);
+    cylinder(group,[.097,.09,.097],[0,0,.235],red,[Math.PI/2,0,0]);
+    for(const sign of [-1,1]){
+      box(group,[.2,.025,.22],[sign*.105,0,-.25],red,[0,sign*.17,0]);
+      box(group,[.025,.2,.22],[0,sign*.105,-.25],red,[sign*.17,0,0]);
+    }
+    cylinder(group,[.07,.06,.07],[0,0,-.38],dark,[Math.PI/2,0,0]);
+    const exhaust=new THREE.Mesh(sphereGeometry,new THREE.MeshBasicMaterial({color:0xff5936}));exhaust.scale.set(.055,.055,.1);exhaust.position.z=-.415;group.add(exhaust);
+    group.userData.projectileAxis='+Z';batchStaticGeometry(group,[],'compatible');return group;
+  }
+  const color=p.kind==='ultron'||p.kind==='blast'?0xf65c3f:p.kind==='carnage'?0xc7343c:p.kind==='bullet'?0xffe9aa:0x87e5ff;
   const mat=new THREE.MeshBasicMaterial({color});
   const bullet=new THREE.Mesh(sphereGeometry,mat);bullet.scale.set(p.kind==='bullet'?.045:.12,p.kind==='bullet'?.045:.12,p.kind==='bullet'?.12:.25);group.add(bullet);
   const halo=new THREE.Mesh(sphereGeometry,new THREE.MeshBasicMaterial({color,transparent:true,opacity:.18,depthWrite:false}));halo.scale.set(.24,.24,.4);group.add(halo);
   return group;
+}
+
+// A cheap animated surface for the same flood depth consumed by the simulation.
+// It adds no buoyancy or immunity; those decisions stay in the physics module.
+export function createWater(scene, depth=0) {
+  const group=new THREE.Group();group.name='battlefield-water';group.userData.depth=Math.max(0,Number(depth)||0);scene.add(group);
+  if(group.userData.depth<=0)return {group,update(){},dispose(){scene.remove(group);}};
+  const uniforms=THREE.UniformsUtils.merge([THREE.UniformsLib.fog,{
+    time:{value:0},deepColor:{value:new THREE.Color('#285c67')},shallowColor:{value:new THREE.Color('#5a8990')}
+  }]);
+  const waterMaterial=new THREE.ShaderMaterial({uniforms,transparent:true,depthWrite:false,side:THREE.DoubleSide,fog:true,
+    vertexShader:`
+      uniform float time;varying vec3 vWaterPosition;varying vec3 vWaterNormal;
+      #include <fog_pars_vertex>
+      void main(){
+        vec3 p=position;
+        float a=p.x*.19+time*.8,b=p.y*.24-time*.6;
+        p.z+=sin(a)*.026+sin(b)*.021;
+        vec4 world=modelMatrix*vec4(p,1.);
+        vWaterPosition=world.xyz;vWaterNormal=normalize(mat3(modelMatrix)*vec3(-cos(a)*.0049,-cos(b)*.005,1.));
+        vec4 mvPosition=viewMatrix*world;gl_Position=projectionMatrix*mvPosition;
+        #include <fog_vertex>
+      }`,
+    fragmentShader:`
+      uniform float time;uniform vec3 deepColor;uniform vec3 shallowColor;
+      varying vec3 vWaterPosition;varying vec3 vWaterNormal;
+      #include <fog_pars_fragment>
+      void main(){
+        vec2 p=vWaterPosition.xz;
+        float ripples=sin(p.x*1.7+sin(p.y*.7+time)*1.3+time*1.1)*sin(p.y*2.-time*.8);
+        float smallWave=sin(p.x*.35-p.y*.46+time*.7);
+        vec3 view=normalize(cameraPosition-vWaterPosition);
+        float fresnel=pow(1.-abs(dot(view,normalize(vWaterNormal))),3.);
+        float streak=pow(max(0.,ripples),12.)*.14;
+        vec3 color=mix(deepColor,shallowColor,.32+smallWave*.12+fresnel*.4)+vec3(.26,.32,.31)*streak;
+        gl_FragColor=vec4(color,.31+fresnel*.19);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+        #include <fog_fragment>
+      }`
+  });
+  const surface=new THREE.Mesh(new THREE.PlaneGeometry(500,500,40,40),waterMaterial);surface.rotation.x=-Math.PI/2;surface.position.y=group.userData.depth;surface.renderOrder=2;group.add(surface);
+  return {group,update(time=0){uniforms.time.value=Number.isFinite(time)?time:0;},dispose(){scene.remove(group);surface.geometry.dispose();waterMaterial.dispose();}};
 }
