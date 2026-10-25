@@ -14,7 +14,7 @@ from PIL import Image, ImageStat
 from playwright.sync_api import sync_playwright
 
 
-BASE = os.environ.get("BOBS_BASE_URL", "http://127.0.0.1:8000/").rstrip("/") + "/"
+BASE = os.environ.get("BOBS_BASE_URL", "http://127.0.0.1:8000/observatory/").rstrip("/") + "/"
 SHOTS = Path(os.environ.get("BOBS_SHOTS", "/workspace/scratch"))
 SHOTS.mkdir(parents=True, exist_ok=True)
 

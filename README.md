@@ -1,51 +1,53 @@
-# Bob’s Bath — House Observatory
+# Hulkbuster — Stark Combat Lab
 
-[Watch the game](https://cory56626-art.github.io/THEBOBSBATH/)
+[Play on GitHub Pages](https://cory56626-art.github.io/THEBOBSBATH/)
 
-A real-time 3D spectator horror game. An autonomous survivor searches a large, furnished house for a brass key, power fuse, and bolt cutters, then unlocks the front door. The survivor has three lives; collected objects persist between lives.
+A self-contained 3D spectator combat sandbox. Watch an autonomous, movie-inspired Mark XLIV Hulkbuster fight **Hulk, Venom, or Ultron** in a city or a flat grass arena. The city includes evacuating civilians, soldiers, tanks, physical cars and destructible buildings.
 
-The resident is an original, lanky paper-mask monster. It moves around the survivor’s running speed and hunts with forward vision, local sound clues, and fading memory. Walls and tall furniture block sight. Loud pickups, knocked-over objects, footsteps, and closet doors can start an investigation. Lost chases lead to guessed routes and nearby hiding-place searches, rather than following the survivor through walls. The survivor chooses escape routes and hides in closets or under beds.
-
-The house has 16 rooms, three connecting halls, 16 beds, 16 closets, and alternate routes between rooms. Its geometry, collision boundaries, and navigation all use the same layout. Each attempt uses a fresh seed; deterministic decisions allow reproduction of a run.
+- Ten rigid bodies per fighter, constrained joints, motor-assisted walking and balance, force-driven strikes, impact damage, physical projectiles and debris. No timed or predetermined winner.
+- Film-inspired loadouts: repulsors, hydraulic punches and boosts; Hulk leaps, smashes and thunderclaps; Venom tendrils, bites and healing; Ultron blasts, gravity control, flight and sentries.
+- Per-limb damage, progressive armor shedding, bruises, cuts and blood. Severe joint failure can separate limbs. Hulk's optional limb regrowth takes longer than normal healing; Venom naturally reforms.
+- Veronica carries six replacement modules. Repairs consume stock, and enemy attacks can destroy her pod. No infinite repair supply.
+- Optional Ultron transfer consumes a surviving sentry to provide one backup body.
 
 ## Controls
 
-- **Begin observation:** both NPCs act autonomously. You control the camera and simulation.
-- **Drag:** orbit or look around the selected actor. **Scroll/pinch:** zoom.
-- **House / Survivor / Resident:** choose an overview or following camera. **C:** cycle views.
-- **Senses / V:** show the monster’s sight cone and fading last-seen marker. Sound rings show local noise sources.
-- **Pause / Space:** pause or resume. **1× / 2× / 4×:** change time speed.
-- **↻:** restart with a fresh seed. The field guide lets you set the difficulty for the next attempt.
-- Touch devices use the same on-screen controls. Leaving the browser tab pauses the run.
-- **♪:** enable optional house ambience and local sound effects. Audio starts only after you choose to enable it.
-- Graphics adapt automatically on slower devices. The field guide also offers Performance and High quality settings.
+Choose an opponent and battlefield, then **Begin engagement**. AI controls both fighters. Drag to orbit and scroll/pinch to zoom. Camera presets follow either fighter or the fight. Manual command buttons request Hulkbuster abilities; range, charge, equipment and cooldowns still apply.
+
+**Space** pauses; **C** changes camera; **R** resets the fight; **1–4** issue repulsor, jackhammer, boost and repair commands. Use quarter speed for slow motion. Settings include limb regrowth, severe separation, injury effects, network transfer, military response and graphics quality. Touch controls are included. Sound is optional and begins only after enabling it. Leaving the tab pauses the simulation.
+
+## Scope and research
+
+[Research and sources](arena/RESEARCH.md) are also linked from the in-game Field notes. MCU film references inform Hulkbuster, Hulk and Ultron. Tom Hardy's Sony films supply Venom's combat reference. Extended abilities are selectable; numerical durability, masses, regeneration times and repair stock are gameplay tuning.
+
+Models are detailed procedural likenesses, not film meshes or photoreal scans. Physics uses simplified rigid collision shapes and assisted locomotion. Organic damage is a visual game system rather than anatomical simulation. Ability and repair effects follow explicit game rules. This is an unofficial fan experiment.
 
 ## Development
 
-No build step, server API, accounts, or runtime CDN requests. Three.js r169 is vendored with its MIT license under `house/vendor/`; textures, architecture, furniture, and characters are procedural.
+No build step or runtime CDN dependency. Three.js r169 is shared with the archived house game; Cannon-es 0.20.0, fonts, and licenses are vendored in `arena/vendor/`. All character/environment geometry and textures are generated locally.
 
 ```sh
 npm test
 npm run serve
+# In another terminal, with Python Playwright and Chromium installed:
+python tests/arena_browser.py
 ```
 
-Open `http://localhost:8000`. The browser needs WebGL and JavaScript. Python 3 serves static files; Node 20+ runs simulation tests. Browser flow checks use Python Playwright and Chromium:
+Open `http://localhost:8000/`. The site needs WebGL and JavaScript. Graphics automatically lower resolution on software renderers and slower devices. `ARENA_BASE_URL` selects another deployment for browser checks.
 
-```sh
-python tests/browser_smoke.py
-```
+- `arena/simulation.js`: physical rigs, collisions, AI, abilities, damage, regrowth, repairs, city response.
+- `arena/models.js`: characters, armor loss, injury overlays, Veronica.
+- `arena/environment.js`: city/grass, vehicles, civilians, soldiers and sentries.
+- `arena/main.js`: rendering, effects, cameras, UI and fixed-step loop.
+- `arena/simulation.test.js`: physics and game-rule regression tests.
+- `tests/arena_browser.py`: desktop/mobile browser integration checks.
 
-- `house/layout.js`: house structure, collision, sight occlusion, and A* navigation.
-- `house/simulation.js`: deterministic NPC decisions, sensing, hiding, search, lives, and escape.
-- `house/renderer.js`: Three.js house, characters, effects, and spectator cameras.
-- `house/main.js`: fixed-step loop, UI, floor plan, and controls.
-- `tests/`: perception, navigation, simulation, and browser verification.
+GitHub Pages serves `main` from the root. All asset paths work under `/THEBOBSBATH/`.
 
-GitHub Pages serves `main` from the repository root. Relative module and asset paths work under `/THEBOBSBATH/`.
+## Preserved games
 
-## Existing games
+- [House Observatory](https://cory56626-art.github.io/THEBOBSBATH/observatory/) — previous front page, with original assets under `house/`.
+- [Meridian — Open City](https://cory56626-art.github.io/THEBOBSBATH/meridian/)
+- [LATCH — The Appeals Desk](https://cory56626-art.github.io/THEBOBSBATH/appeals/)
 
-The previous games are preserved:
-
-- [Meridian — Open City](https://cory56626-art.github.io/THEBOBSBATH/meridian/): the previous front-page city game. Its original assets remain in `assets/`.
-- [LATCH — The Appeals Desk](https://cory56626-art.github.io/THEBOBSBATH/appeals/): the existing investigation game, unchanged.
+Original house simulation tests remain part of `npm test`; its browser check defaults to `/observatory/`.

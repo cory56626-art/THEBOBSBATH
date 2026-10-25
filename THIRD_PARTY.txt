@@ -19,3 +19,19 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+ARENA ADDITIONS
+
+Cannon-es 0.20.0 — MIT License. License: arena/vendor/CANNON-LICENSE.txt.
+https://github.com/pmndrs/cannon-es
+
+Barlow and Barlow Condensed — SIL Open Font License 1.1.
+Licenses: arena/vendor/barlow-OFL.txt, arena/vendor/barlowcondensed-OFL.txt.
+IBM Plex Mono — SIL Open Font License 1.1.
+License: arena/vendor/ibmplexmono-OFL.txt.
+Font sources: https://github.com/google/fonts
+
+Character names and film designs belong to their respective owners. Procedural
+fan artwork is authored for this non-official browser experiment; no film meshes,
+textures, recordings, or music are included. The repository's software license
+does not grant rights to Marvel/Sony characters or trademarks.
