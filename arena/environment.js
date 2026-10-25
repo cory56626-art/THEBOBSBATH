@@ -306,6 +306,66 @@ export function createEnvironment(scene,type='city') {
   return {group,update(){},dispose(){scene.remove(group);group.traverse(obj=>{if(obj.isInstancedMesh)obj.dispose();if(obj.isMesh&&obj.geometry!==boxGeometry&&obj.geometry!==sphereGeometry&&obj.geometry!==cylinderGeometry&&obj.geometry!==taperGeometry)obj.geometry.dispose();});groundMat.dispose();}};
 }
 
+const facadeMaterials=new Map();
+function buildingMaterials(w,h,d,tone){
+  const key=`${w}-${h}-${d}-${tone}`;
+  if(!facadeMaterials.has(key))facadeMaterials.set(key,{
+    front:new THREE.MeshStandardMaterial({map:facadeTexture(w,h,tone),roughness:.86,metalness:.13}),
+    side:new THREE.MeshStandardMaterial({map:facadeTexture(d,h,tone),roughness:.86,metalness:.13})
+  });
+  return facadeMaterials.get(key);
+}
+
+// The breach mask is identical to the simulation's rebuilt lower collision
+// cells. Only exposed faces are emitted; surviving tower floors do not vanish.
+function fracturedBuilding(group,prop,front,side){
+  const [w,h,d]=prop.size,lower=prop.fractureHeight??Math.min(12,h);
+  const nx=Math.ceil(w/2.8),ny=Math.ceil(lower/2.8),nz=Math.ceil(d/2.8),cx=w/nx,cy=lower/ny,cz=d/nz;
+  const fractures=prop.fractures||[],tolerance=Math.hypot(cx,cy,cz)*.15;
+  const solid=new Uint8Array(nx*ny*nz),index=(x,y,z)=>(y*nz+z)*nx+x;
+  for(let iy=0;iy<ny;iy++)for(let iz=0;iz<nz;iz++)for(let ix=0;ix<nx;ix++){
+    const x=-w/2+cx*(ix+.5),y=-h/2+cy*(iy+.5),z=-d/2+cz*(iz+.5);
+    solid[index(ix,iy,iz)]=fractures.some(f=>Math.hypot(x-f.x,y-f.y,z-f.z)<f.radius+tolerance)?0:1;
+  }
+  const buckets=[{positions:[],normals:[],uvs:[],mat:side},{positions:[],normals:[],uvs:[],mat:front},{positions:[],normals:[],uvs:[],mat:material('#77796f',0,.96)}];
+  const dirs=[{n:[1,0,0],u:[0,0,-1],v:[0,1,0],axis:0},{n:[-1,0,0],u:[0,0,1],v:[0,1,0],axis:0},{n:[0,1,0],u:[1,0,0],v:[0,0,-1],axis:1},{n:[0,-1,0],u:[1,0,0],v:[0,0,1],axis:1},{n:[0,0,1],u:[1,0,0],v:[0,1,0],axis:2},{n:[0,0,-1],u:[-1,0,0],v:[0,1,0],axis:2}];
+  function face(center,dims,dir,exterior){
+    const {n,u,v,axis}=dir,su=axis===0?dims[2]:dims[0],sv=axis===1?dims[2]:dims[1];
+    const target=buckets[exterior&&axis!==1?(axis===0?0:1):2];
+    const points=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([a,b])=>center.map((val,j)=>val+n[j]*dims[axis]/2+u[j]*a*su/2+v[j]*b*sv/2));
+    for(const k of [0,1,2,0,2,3]){const p=points[k];target.positions.push(...p);target.normals.push(...n);
+      target.uvs.push(axis===0?(n[0]>0?-p[2]/d+.5:p[2]/d+.5):(n[2]<0?-p[0]/w+.5:p[0]/w+.5),p[1]/h+.5);
+    }
+  }
+  for(let iy=0;iy<ny;iy++)for(let iz=0;iz<nz;iz++)for(let ix=0;ix<nx;ix++){
+    if(!solid[index(ix,iy,iz)])continue;
+    const center=[-w/2+cx*(ix+.5),-h/2+cy*(iy+.5),-d/2+cz*(iz+.5)];
+    for(const dir of dirs){const tx=ix+dir.n[0],ty=iy+dir.n[1],tz=iz+dir.n[2];
+      const exterior=tx<0||tx>=nx||tz<0||tz>=nz||ty<0;
+      // Lower cells meet the intact upper volume without an internal face.
+      if(ty>=ny&&lower<h)continue;
+      if(tx>=0&&tx<nx&&ty>=0&&ty<ny&&tz>=0&&tz<nz&&solid[index(tx,ty,tz)])continue;
+      face(center,[cx,cy,cz],dir,exterior);
+    }
+  }
+  if(h>lower){const center=[0,lower/2,0],dims=[w,h-lower,d];for(const dir of dirs)face(center,dims,dir,true);}
+  for(const bucket of buckets){if(!bucket.positions.length)continue;const geometry=new THREE.BufferGeometry();
+    geometry.setAttribute('position',new THREE.Float32BufferAttribute(bucket.positions,3));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(bucket.normals,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(bucket.uvs,2));geometry.computeBoundingSphere();
+    const mesh=new THREE.Mesh(geometry,bucket.mat);mesh.castShadow=true;mesh.receiveShadow=true;group.add(mesh);
+  }
+  const rebar=material('#3f4543',.65,.8);
+  for(let n=0;n<fractures.length;n++){
+    const f=fractures[n];
+    for(let j=0;j<5;j++){
+      const angle=j/5*Math.PI*2,x=f.x+Math.cos(angle)*f.radius*.85,y=f.y+Math.sin(angle)*f.radius*.65;
+      if(Math.abs(x)<w*.5&&y>-h*.5&&y<-h*.5+lower){
+        const z=Math.max(-d*.5+.12,Math.min(d*.5-.12,f.z));
+        cylinder(group,[.022,.65+.12*j,.022],[x,y,z],rebar,[.18*j,0,.45*Math.sin(j*2+n)]);
+      }
+    }
+  }
+}
+
 export function createProp(prop) {
   const group=new THREE.Group();
   group.name=`prop-${prop.id}`;
@@ -314,12 +374,16 @@ export function createProp(prop) {
   const steel=material('#626d6e',.6,.5),dark=material('#232b2c',.3,.75),rubber=material('#171c1b',.05,.94);
   if(kind==='building'){
     const seed=String(prop.id).split('').reduce((a,b)=>a+b.charCodeAt(0),0),tone=seed%4;
-    const front=new THREE.MeshStandardMaterial({map:facadeTexture(w,h,tone),roughness:.86,metalness:.13});
-    const side=new THREE.MeshStandardMaterial({map:facadeTexture(d,h,tone),roughness:.86,metalness:.13});
-    const body=new THREE.Mesh(boxGeometry,[side,side,material('#8d8f85'),material('#6b6e66'),front,front]);
-    body.scale.set(w,h,d);body.castShadow=true;body.receiveShadow=true;group.add(body);
+    const {front,side}=buildingMaterials(w,h,d,tone);
+    if(prop.fractures?.length)fracturedBuilding(group,prop,front,side);
+    else {
+      const body=new THREE.Mesh(boxGeometry,[side,side,material('#8d8f85'),material('#6b6e66'),front,front]);
+      body.scale.set(w,h,d);body.castShadow=true;body.receiveShadow=true;group.add(body);
+    }
     box(group,[w+.24,.28,d+.24],[0,h/2+.08,0],material('#b7b8ad'));
     box(group,[w*.48,.5,d*.35],[0,h/2+.45,0],material('#687271',.3));
+    const frontBreached=prop.fractures?.some(f=>Math.abs(f.z-d/2)<f.radius+1&&f.y<-h/2+5);
+    if(!frontBreached){
     const shopTexture=canvasTexture(`shop-${seed%5}`,512,128,(ctx,cw,ch)=>{
       ctx.fillStyle=['#284b4a','#575149','#554a3c','#33424c','#3f4940'][seed%5];ctx.fillRect(0,0,cw,ch);
       ctx.fillStyle='#d8cdb1';ctx.font='bold 37px sans-serif';ctx.textAlign='center';ctx.fillText(['MOKA  COFFEE','ROSEBANK  TRADING','ATLAS  &  CO.','CENTRAL  HOTEL','STANDARD  HOUSE'][seed%5],cw/2,78);
@@ -329,6 +393,7 @@ export function createProp(prop) {
     box(group,[w*.88,.12,.7],[0,-h/2+2.75,d/2+.3],material('#70756b'));
     box(group,[w*.88,1.9,.035],[0,-h/2+1,d/2+.027],material('#23393f',.4,.35));
     for(const x of [-.38,0,.38])box(group,[.12,2.1,.12],[w*x,-h/2+1.05,d/2+.12],material('#afa99a'));
+    }
   } else if(kind==='car') {
     const palette=['#c7c4b8','#646f73','#873d35','#b7b7ae','#3f5262'];
     const color=palette[Math.abs(Number(String(prop.id??'1').replace(/\D/g,''))||1)%palette.length];
@@ -379,6 +444,13 @@ export function createProp(prop) {
     const strapping=material('#504f43',.45,.65);
     for(const x of [-.35,.35])box(group,[w*.05,h*1.02,d*1.01],[x*w,0,0],strapping);
     box(group,[w*1.01,h*.07,d*1.01],[0,h*.27,0],strapping);
+  } else if(kind==='rubble'&&Math.max(w,h,d)>.9){
+    const geo=boxGeometry.clone();const pos=geo.attributes.position;
+    const random=rng(Number(prop.id)||17);
+    for(let i=0;i<pos.count;i++){pos.setXYZ(i,pos.getX(i)+(random()-.5)*.12,pos.getY(i)+(random()-.5)*.14,pos.getZ(i)+(random()-.5)*.12);}
+    geo.computeVertexNormals();
+    const chunk=new THREE.Mesh(geo,material(prop.color??'#87867b',0,.95));chunk.scale.set(w,h,d);chunk.castShadow=true;chunk.receiveShadow=true;group.add(chunk);
+    if(w>1.4)cylinder(group,[.025,w*.8,.025],[0,h*.15,0],material('#4c504a',.7,.8),[0,0,Math.PI/2]);
   } else {
     const metal=kind==='armor'||kind==='armorDebris'||kind==='metalDebris';
     const color=prop.color??(kind==='armorDebris'?'#7f3027':kind==='metalDebris'?'#75828b':kind==='organicDebris'?'#692d2e':'#777c74');

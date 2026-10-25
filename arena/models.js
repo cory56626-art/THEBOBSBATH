@@ -1,8 +1,16 @@
 import * as THREE from '../house/vendor/three.module.js';
 
 // Authored, film-inspired geometry. Every returned group attaches to one rigid body.
-const S = new THREE.SphereGeometry(1, 20, 14);
-const C = new THREE.CylinderGeometry(1, 1, 1, 16);
+let modelQuality='high';
+const primitiveCache={high:{sphere:new THREE.SphereGeometry(1,20,14),cylinder:new THREE.CylinderGeometry(1,1,1,16)}};
+let S=primitiveCache.high.sphere,C=primitiveCache.high.cylinder;
+
+// Affects newly created rigid meshes. Existing merged geometry stays valid.
+export function configureModelQuality(quality='high'){
+  const next=quality==='low'?'low':'high';if(next===modelQuality)return;
+  if(!primitiveCache[next])primitiveCache[next]={sphere:new THREE.SphereGeometry(1,12,8),cylinder:new THREE.CylinderGeometry(1,1,1,10)};
+  modelQuality=next;S=primitiveCache[next].sphere;C=primitiveCache[next].cylinder;roundedGeometry=undefined;
+}
 const B = new THREE.BoxGeometry(1, 1, 1);
 const mat = (color, metalness = 0, roughness = .55, more = {}) => new THREE.MeshStandardMaterial({color, metalness, roughness, ...more});
 const M = {
@@ -31,7 +39,7 @@ function bevelBox() {
   s.moveTo(-.5+r,-.5); s.lineTo(.5-r,-.5); s.quadraticCurveTo(.5,-.5,.5,-.5+r);
   s.lineTo(.5,.5-r); s.quadraticCurveTo(.5,.5,.5-r,.5); s.lineTo(-.5+r,.5);
   s.quadraticCurveTo(-.5,.5,-.5,.5-r); s.lineTo(-.5,-.5+r); s.quadraticCurveTo(-.5,-.5,-.5+r,-.5);
-  roundedGeometry=new THREE.ExtrudeGeometry(s,{depth:.8,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.08,bevelThickness:.1,curveSegments:3});
+  roundedGeometry=new THREE.ExtrudeGeometry(s,{depth:.8,bevelEnabled:true,bevelSegments:modelQuality==='low'?1:2,steps:1,bevelSize:.08,bevelThickness:.1,curveSegments:modelQuality==='low'?2:3});
   roundedGeometry.translate(0,0,-.4); return roundedGeometry;
 }
 function add(g, geo, material, p, sc, rot) {
@@ -50,21 +58,54 @@ function rod(g,m,a,b,r=.025) {
   const av=new THREE.Vector3(...a),bv=new THREE.Vector3(...b),delta=bv.clone().sub(av);
   const mesh=cyl(g,m,av.clone().add(bv).multiplyScalar(.5).toArray(),[r,delta.length(),r]);mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());return mesh;
 }
-function ring(g,m,p,r,t=.03) {return add(g,new THREE.TorusGeometry(r,t,6,24),m,p);}
+function ring(g,m,p,r,t=.03) {return add(g,new THREE.TorusGeometry(r,t,modelQuality==='low'?4:6,modelQuality==='low'?16:24),m,p);}
 function light(g,p,r=.08,red=false) {cyl(g,red?M.hot:M.blue,p,[r,.025,r],[Math.PI/2,0,0]);}
 function fasten(g,positions){positions.forEach(p=>ell(g,M.gun,p,[.022,.022,.012]));}
+// A single PBR draw per rigid surface batch. Per-vertex finish and emission
+// retain the original paint, gold, steel, skin and reactor response without
+// spending a draw call on every color and tiny fastener.
+const surfaceMaterial=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,metalness:1,roughness:1,emissive:0xffffff});
+surfaceMaterial.onBeforeCompile=shader=>{
+  shader.vertexShader=shader.vertexShader.replace('#include <common>',`#include <common>
+attribute vec2 modelSurface;
+attribute vec3 modelEmission;
+varying vec2 vModelSurface;
+varying vec3 vModelEmission;`).replace('#include <begin_vertex>',`#include <begin_vertex>
+vModelSurface=modelSurface;
+vModelEmission=modelEmission;`);
+  shader.fragmentShader=shader.fragmentShader.replace('#include <common>',`#include <common>
+varying vec2 vModelSurface;
+varying vec3 vModelEmission;`).replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
+roughnessFactor=vModelSurface.x;`).replace('#include <metalnessmap_fragment>',`#include <metalnessmap_fragment>
+metalnessFactor=vModelSurface.y;`).replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
+totalEmissiveRadiance=vModelEmission*emissive;`);
+};
+surfaceMaterial.customProgramCacheKey=()=> 'model-surface-v1';
 function mergePart(group) {
-  // Merge static geometry by material: detailed armor remains affordable on mobile.
-  group.updateMatrixWorld(true); const batches=new Map();
-  group.children.forEach(mesh=>{if(!mesh.isMesh)return;let list=batches.get(mesh.material);if(!list)batches.set(mesh.material,list=[]);list.push(mesh);});
-  for(const [material,list] of batches){
-    if(list.length<2)continue;
-    const positions=[],normals=[],uvs=[]; const normalMatrix=new THREE.Matrix3(); const p=new THREE.Vector3(),n=new THREE.Vector3();
-    for(const mesh of list){const geo=mesh.geometry.index?mesh.geometry.toNonIndexed():mesh.geometry;const pos=geo.attributes.position,nor=geo.attributes.normal,uv=geo.attributes.uv;mesh.updateMatrix();normalMatrix.getNormalMatrix(mesh.matrix);
-      for(let i=0;i<pos.count;i++){p.fromBufferAttribute(pos,i).applyMatrix4(mesh.matrix);positions.push(p.x,p.y,p.z);n.fromBufferAttribute(nor,i).applyMatrix3(normalMatrix).normalize();normals.push(n.x,n.y,n.z);uvs.push(uv?uv.getX(i):0,uv?uv.getY(i):0);}group.remove(mesh);if(geo!==mesh.geometry)geo.dispose();}
-    const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.computeBoundingSphere();add(group,geometry,material);
+  const meshes=group.children.filter(mesh=>mesh.isMesh);if(!meshes.length)return;
+  const count=meshes.reduce((n,mesh)=>n+(mesh.geometry.index?.count??mesh.geometry.attributes.position.count),0);
+  const positions=new Float32Array(count*3),normals=new Float32Array(count*3),uvs=new Float32Array(count*2),colors=new Float32Array(count*3),surfaces=new Float32Array(count*2),emissions=new Float32Array(count*3);
+  const normalMatrix=new THREE.Matrix3(),p=new THREE.Vector3(),n=new THREE.Vector3();let offset=0;
+  for(const mesh of meshes){
+    const geo=mesh.geometry.index?mesh.geometry.toNonIndexed():mesh.geometry;
+    const pos=geo.attributes.position,nor=geo.attributes.normal,uv=geo.attributes.uv,m=mesh.material;
+    mesh.updateMatrix();normalMatrix.getNormalMatrix(mesh.matrix);
+    const emission=m.emissive??new THREE.Color(0),brightness=m.emissiveIntensity??1;
+    for(let i=0;i<pos.count;i++){
+      const index=offset+i;p.fromBufferAttribute(pos,i).applyMatrix4(mesh.matrix);positions.set([p.x,p.y,p.z],index*3);
+      n.fromBufferAttribute(nor,i).applyMatrix3(normalMatrix).normalize();normals.set([n.x,n.y,n.z],index*3);
+      if(uv)uvs.set([uv.getX(i),uv.getY(i)],index*2);
+      colors.set([m.color.r,m.color.g,m.color.b],index*3);
+      surfaces.set([Math.max(.04,m.roughness*(m.roughnessMap?.isTexture ? .67 : 1)),m.metalness],index*2);
+      emissions.set([emission.r*brightness,emission.g*brightness,emission.b*brightness],index*3);
+    }
+    offset+=pos.count;group.remove(mesh);if(geo!==mesh.geometry)geo.dispose();
   }
+  const geometry=new THREE.BufferGeometry();
+  for(const [name,data,stride]of [['position',positions,3],['normal',normals,3],['uv',uvs,2],['color',colors,3],['modelSurface',surfaces,2],['modelEmission',emissions,3]])geometry.setAttribute(name,new THREE.BufferAttribute(data,stride));
+  geometry.computeBoundingSphere();add(group,geometry,surfaceMaterial);
 }
+
 function busterTorso(g) {
   ell(g,M.black,[0,-.05,0],[.43,.49,.38]);
   box(g,M.redDark,[0,-.24,-.02],[.88,.5,.68]);
@@ -264,7 +305,7 @@ function venomHead(g){
     }
   }
   const tongueCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(0,-.25,.43),new THREE.Vector3(.035,-.39,.58),new THREE.Vector3(.2,-.46,.67),new THREE.Vector3(.24,-.38,.75)]);
-  add(g,new THREE.TubeGeometry(tongueCurve,16,.052,7,false),M.tongue);
+  add(g,new THREE.TubeGeometry(tongueCurve,modelQuality==='low'?10:16,.052,modelQuality==='low'?5:7,false),M.tongue);
   rod(g,M.mouth,[.02,-.29,.48],[.13,-.43,.62],.009);
   for(let i=0;i<5;i++)rod(g,M.sinew,[-.3+i*.15,.36,.15],[-.32+i*.16,.2,.32],.009);
 }
@@ -333,10 +374,8 @@ function addRemovableArmor(group,type,name){
   const y=torso?.01:arm?.35:lower?.06:-.07;
   const x=torso?.39:arm?.28:lower?.22:.23;
   for(const side of [-1,1]){
-    const backing=new THREE.Group();backing.position.set(side*x,y,z);
-    box(backing,M.black,[0,0,-.01],[torso?.17:.13,.28,.025]);
-    for(let i=0;i<3;i++)rod(backing,M.steel,[-.045,-.09+i*.07,.009],[.045,-.06+i*.07,.009],.008);
-    group.add(backing);
+    box(group,M.black,[side*x,y,z-.01],[torso?.17:.13,.28,.025]);
+    for(let i=0;i<3;i++)rod(group,M.steel,[side*x-.045,y-.09+i*.07,z+.009],[side*x+.045,y-.06+i*.07,z+.009],.008);
     const outer=new THREE.Group();outer.position.set(side*x,y,z+.018);
     box(outer,type==='buster'?M.redLight:M.silver,[0,0,0],[torso?.19:.15,.31,.045],[0,0,-side*.08]);
     fasten(outer,[[-.045,.11,.027],[.045,-.11,.027]]);mergePart(outer);group.add(outer);plates.push(outer);
@@ -358,7 +397,7 @@ export function createPart(type,partName,size=[1,1,1]){
   }else{
     if(partName==='torso')ultronTorso(g);else if(partName==='head')ultronHead(g);else ultronLimb(g,partName,s);
   }
-  mergePart(g);const armor=addRemovableArmor(g,type,partName);g.scale.set(...size);g.name=`${type}-${partName}`;
+  const armor=addRemovableArmor(g,type,partName);mergePart(g);g.scale.set(...size);g.name=`${type}-${partName}`;
   g.userData={type,partName,size:[...size],damageLevel:-1,wounds:new THREE.Group(),armor};g.add(g.userData.wounds);
   return g;
 }
@@ -368,7 +407,7 @@ export function setPartDamage(group,damageFraction,organic,bloodEnabled=true){
   const key=`${level}-${bloodEnabled}`;if(group.userData.damageLevel===key)return;group.userData.damageLevel=key;
   for(const [index,plate] of (group.userData.armor||[]).entries())plate.visible=level<index+2;
   const wounds=group.userData.wounds;if(!wounds)return;
-  while(wounds.children.length){const child=wounds.children.pop();child.parent=null;}
+  while(wounds.children.length){const child=wounds.children[0];wounds.remove(child);child.geometry?.dispose();}
   if(!level)return;
   for(let i=0;i<level;i++){
     const x=Math.sin(i*5.31+2)*.23,y=Math.cos(i*3.71+1)*.24,z=group.userData.partName==='head'?.42:.44;
@@ -381,6 +420,7 @@ export function setPartDamage(group,damageFraction,organic,bloodEnabled=true){
       rod(wounds,M.gun,[x-.07,y+.04,z+.023],[x+.05,y-.025,z+.023],.012);
     }
   }
+  mergePart(wounds);
 }
 
 export function createVeronica(){
@@ -393,10 +433,10 @@ export function createVeronica(){
     const pod=new THREE.Group();pod.position.set(x,0,z);pod.rotation.y=-a+Math.PI/2;
     box(pod,M.red,[0,0,0],[.7,.8,1.1]);box(pod,M.gold,[0,.3,.1],[.56,.15,.75]);box(pod,M.gun,[0,-.26,.05],[.58,.16,.9]);
     for(const s of [-1,1])rod(pod,M.steel,[s*.22,-.4,-.35],[s*.22,-.4,.3],.035);
-    light(pod,[0,.05,.57],.09);g.add(pod);modules.push(pod);
+    light(pod,[0,.05,.57],.09);mergePart(pod);g.add(pod);modules.push(pod);
     cyl(g,M.gun,[x*.72,-.36,z*.72],[.2,.27,.2]);cyl(g,M.blue,[x*.72,-.51,z*.72],[.145,.025,.145]);
     rod(g,M.gun,[Math.cos(a)*.68,0,Math.sin(a)*.68],[x,0,z],.11);
   }
   for(const s of [-1,1]){rod(g,M.gold,[s*.7,-.15,.6],[s*1.2,-.9,.9],.055);rod(g,M.gun,[s*1.2,-.9,.9],[s*.9,-1.2,1.1],.04);}
-  g.userData.modules=modules;g.name='veronica';return g;
+  mergePart(g);g.userData.modules=modules;g.name='veronica';return g;
 }

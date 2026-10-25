@@ -15,7 +15,7 @@ with sync_playwright() as p:
  page.screenshot(path=str(SHOTS/'arena-desktop.png'))
  page.click('#guide-open');assert page.locator('#guide').is_visible();page.click('[data-close="guide"]')
  page.click('#settings-open');page.select_option('#graphics','low');page.uncheck('#military');page.click('[data-close="settings"]')
- assert not page.evaluate('__arena.sim.options.military')
+ page.wait_for_function('__arena.sim.options.military===false')
  page.click('#launch');page.wait_for_function('__arena.sim.elapsed>0.03');page.click('#pause')
  before=page.evaluate('__arena.sim.elapsed');page.wait_for_timeout(350);assert page.evaluate('__arena.sim.elapsed')==before
  page.evaluate('for(let i=0;i<900;i++)__arena.sim.step(1/30);__arena.step(0)')

@@ -42,7 +42,7 @@ test('regrowth and severe separation options are independent',()=>{
 
 test('Veronica consumes finite modules and destruction stops repairs',()=>{
   const sim=new Simulation({enemy:'ultron',arena:'grass',seed:4});
-  for(let i=0;i<6;i++){sim.hitPart('buster','forearmL',130);sim.veronica.cooldown=0;sim._repair();}
+  for(let i=0;i<6;i++){const part=sim.fighters[0].parts.forearmL;sim.hitPart('buster','forearmL',part.health-part.maxHealth*.15);sim.veronica.cooldown=0;sim._repair();}
   assert.equal(sim.veronica.parts,0);
   sim.hitPart('buster','forearmL',130);const hp=sim.fighters[0].parts.forearmL.health;sim.veronica.cooldown=0;sim._repair();assert.equal(sim.fighters[0].parts.forearmL.health,hp);
   sim.veronica.parts=2;sim.damageVeronica(1000);assert.equal(sim.veronica.destroyed,true);
@@ -55,7 +55,7 @@ test('film-specific loadouts reject other characters powers and charge cooldowns
   assert.equal(sim.ability('buster','thunderclap'),false);
   assert.equal(sim.ability('buster','repulsor'),true);
   assert.equal(sim.ability('buster','repulsor'),false);
-  assert.equal(sim.fighters[0].energy,83);assert.ok(sim.projectiles.length>0);
+  assert.equal(sim.fighters[0].energy,83);assert.equal(sim.fighters[0].action.kind,'repulsor');sim.fighters[1].decision=999;run(sim,.3);assert.ok(sim.projectiles.length>0,'charged repulsor releases a physical projectile after its windup');
   assert.equal(sim.ability('venom','flight'),false);assert.equal(sim.ability('venom','tendril'),true);
   sim.dispose();
 });
@@ -106,5 +106,39 @@ test('all three opponents remain numerically stable through extended combat',()=
     const sim=new Simulation({enemy,arena:'city',seed:11});run(sim,30);
     assert.ok(finite(sim),enemy);assert.ok(sim.world.bodies.length<240,'physics body budget remains bounded');assert.ok(sim.props.length<240,'debris bookkeeping remains bounded');
     assert.ok(sim.fighters.every(f=>Number.isFinite(f.health)),enemy);sim.dispose();
+  }
+});
+
+test('launches move the connected rig ballistically without locomotion braking',()=>{
+  const sim=new Simulation({enemy:'hulk',arena:'grass',military:false,seed:7}),victim=sim.fighters[1];
+  const start=victim.parts.torso.body.position.clone(),v=victim.parts.torso.body.velocity.clone();v.set(18,7,0);
+  sim._launch(victim,v,{duration:1,source:'buster'});sim.finished=true;
+  for(const part of Object.values(victim.parts))assert.ok(Math.abs(part.body.velocity.x-18)<1e-8,'the impulse is distributed by connected body mass');
+  run(sim,.25);
+  assert.ok(victim.parts.torso.body.position.x-start.x>3.8,'the active walking motor does not cancel knockback');
+  assert.ok(victim.parts.torso.body.velocity.x>14,'horizontal momentum persists through a physical flight');
+  assert.ok(victim.parts.torso.body.position.y>start.y+.9);assert.ok(finite(sim));sim.dispose();
+});
+
+test('a launched fighter physically fractures a facade while retaining the tower',()=>{
+  const sim=new Simulation({enemy:'hulk',arena:'city',military:false,seed:17}),victim=sim.fighters[1];
+  const velocity=victim.parts.torso.body.velocity.clone();velocity.set(15,7,22);
+  sim._launch(victim,velocity,{duration:1.2,source:'buster'});sim.finished=true;run(sim,2);
+  const damaged=sim.props.find(p=>p.kind==='building'&&p.damageVersion>0);
+  assert.ok(damaged,'collision momentum damages a structure without a scripted demolition');
+  assert.ok(damaged.fractures.length>0);assert.ok(damaged.body.shapes.length>1,'a compound collider retains the surrounding tower');
+  assert.ok(sim.world.bodies.includes(damaged.body));assert.equal(damaged.destroyed,undefined);
+  assert.ok(sim.props.some(p=>p.kind==='rubble'&&p.body.mass>100),'the fracture creates substantial physical debris');
+  assert.ok(sim.props.some(p=>p.kind==='building'&&!p.damaged&&p.body.shapes.length===1),'other towers remain intact');sim.dispose();
+});
+
+test('each opponent produces fast sustained physical action in the opening seconds',()=>{
+  for(const enemy of ['hulk','venom','ultron']){
+    const sim=new Simulation({enemy,arena:'city',military:false,seed:17});run(sim,8);
+    assert.ok(sim.stats.firstLaunch<2,`${enemy}: first meaningful launch happens early`);
+    assert.ok(sim.stats.launches>=4,`${enemy}: abilities keep the fight active`);
+    assert.ok(sim.stats.maxLaunchSpeed>15,`${enemy}: launches carry superhuman momentum`);
+    assert.ok(sim.fighters.every(f=>f.alive),`${enemy}: fights do not immediately dismember or kill everyone`);
+    assert.ok(finite(sim));sim.dispose();
   }
 });
