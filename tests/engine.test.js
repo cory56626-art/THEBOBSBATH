@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Chess } from 'chess.js';
-import { chooseMove, directMove } from '../src/engine.js';
+import { chooseMove, directMove, ENGINE_VERSION } from '../src/engine.js';
 import { FEATURE_NAMES } from '../src/controller.js';
 
 const uci = (move) => move.from + move.to + (move.promotion || '');
@@ -72,30 +72,21 @@ test('search handles a one-node budget without an illegal fallback', async () =>
   assert.ok(game.moves({ verbose: true }).some((move) => uci(move) === result.move));
 });
 
-test('search reserves observed inference cost before starting an unaffordable evaluation', async (t) => {
-  // A controlled clock models synchronous inference without fragile wall-time
-  // assertions or a real busy wait. The old loop started one extra evaluation.
+test('hybrid search pays for neural inference once even when it consumes most of the time budget', async (t) => {
   let elapsed = 0;
   t.mock.method(performance, 'now', () => elapsed);
-  for (const inferenceCost of [40, 80]) {
+  for (const inferenceCost of [40, 80, 120]) {
     elapsed = 0;
-    const starts = [];
     const base = fakeModel();
-    const model = {
-      infer(chess) {
-        starts.push(elapsed);
-        elapsed += inferenceCost;
-        return base.infer(chess);
-      },
-    };
-    const budgetMs = 100;
-    const result = await chooseMove(new Chess(), model, { mode: 'search', budgetMs, maxNodes: 100 });
-    assert.ok(starts.length >= 1, 'The initial policy inference is still required');
-    assert.ok(starts.slice(1).every((start) => budgetMs - start >= inferenceCost),
-      `An extra ${inferenceCost}ms evaluation started without enough time remaining`);
-    assert.ok(starts.length <= Math.floor(budgetMs / inferenceCost));
-    assert.equal(result.inferenceCalls, starts.length);
-    assert.equal(result.stopReason, 'time-limit');
+    const model = { infer(chess) { elapsed += inferenceCost; return base.infer(chess); } };
+    const result = await chooseMove(new Chess(), model, { mode: 'search', budgetMs: 100, maxNodes: 100 });
+    assert.equal(base.calls, 1, 'Tactical expansion must not repeat the expensive network call');
+    assert.equal(result.inferenceCalls, 1);
+    assert.ok(result.nodes <= 100);
+    if (inferenceCost >= 100) {
+      assert.equal(result.nodes, 0, 'No search starts after inference consumes the budget');
+      assert.equal(result.stopReason, 'time-limit');
+    }
     assert.ok(new Chess().moves({ verbose: true }).some((move) => uci(move) === result.move));
   }
 });
@@ -112,19 +103,19 @@ test('terminal checkmate, stalemate and historical repetition produce no move', 
   }
 });
 
-test('one-time game-history setup does not inflate every later inference reserve', async (t) => {
-  let elapsed = 0;
-  t.mock.method(performance, 'now', () => elapsed);
+test('tactical expansion reuses the policy and preserves full game history', async () => {
   const game = new Chess();
-  const history = game.history.bind(game);
-  t.mock.method(game, 'history', (...args) => { elapsed += 60; return history(...args); });
-  const base = fakeModel();
-  const model = { infer(chess) { elapsed += 20; return base.infer(chess); } };
-  const result = await chooseMove(game, model, { mode: 'search', budgetMs: 150, maxNodes: 100 });
-  assert.ok(result.inferenceCalls > 1, 'Remaining time can buy evaluations after the one-time setup');
-  assert.ok(result.elapsedMs <= 150, 'The observed evaluation reserve still respects the controlled budget');
-  assert.equal(result.inferenceCalls, base.calls);
-  assert.equal(result.stopReason, 'time-limit');
+  for (const move of ['Nf3', 'Nf6', 'Ng1', 'Ng8']) game.move(move);
+  const initialFen = game.fen(), initialPgn = game.pgn();
+  const model = fakeModel();
+  const result = await chooseMove(game, model, { mode: 'search', budgetMs: 10000, maxNodes: 500 });
+  assert.equal(result.inferenceCalls, 1);
+  assert.equal(model.calls, 1);
+  assert.ok(result.nodes > 1 && result.nodes <= 500);
+  assert.equal(result.nodeUnit, 'tactical-position');
+  assert.equal(game.fen(), initialFen);
+  assert.equal(game.pgn(), initialPgn);
+  assert.equal(game.isThreefoldRepetition(), false);
 });
 
 test('an already aborted decision rejects without evaluating the model', async () => {
@@ -147,7 +138,7 @@ test('search can be cancelled after it begins', async () => {
 test('selective mode can accept the direct move or request search using the fitted-gate contract', async () => {
   const gate = {
     trained: true, modelId: 'deterministic-test-policy',
-    referenceEngineVersion: 'intuition-mcts-2',
+    referenceEngineVersion: ENGINE_VERSION,
     metrics: { testCount: 40, testPositiveRate: 0.5, brier: 0.05, baselineBrier: 0.25 },
     featureNames: FEATURE_NAMES, weights: FEATURE_NAMES.map(() => 0),
     means: FEATURE_NAMES.map(() => 0), scales: FEATURE_NAMES.map(() => 1), bias: -20,

@@ -2,14 +2,14 @@
 
 [Open the experiment on GitHub Pages](https://cory56626-art.github.io/THEBOBSBATH/)
 
-A browser experiment comparing **direct neural play**, **always searching**, and **selective searching** with the same pretrained chess model. The previous game has been replaced; its earlier versions remain in Git history.
+A chess engine combining neural move ordering with fast tactical search. The experiment retains **direct neural play**, **always searching**, and **selective searching** as separate decision procedures. The previous game remains in Git history.
 
 This is an experiment, **not a claim to have surpassed Stockfish**. The small pretrained model makes the project practical on ordinary devices. Its playing strength must be measured rather than inferred from model size, a puzzle result, or an unrelated published Elo rating.
 
 ## Try it
 
 - **Play:** choose a decision mode, your side, and a search budget. Click a piece and a destination to make a legal move. Start a new game, undo, flip the board, or export the game as PGN.
-- **Position lab:** load a FEN position and compare all three modes. Inspect each move, its inference/search time, and its search work. Scores are predictions from this model, not an independent assessment of correctness.
+- **Position lab:** load a FEN position and compare all three modes. Inspect each move, its inference/search time, and its search work. Direct scores come from the neural model; hybrid search uses its own positional evaluation. Neither is an independent assessment of correctness.
 - **Benchmark:** run the supplied position suite or paired games. A game pair uses the same opening with colors reversed. Export raw results instead of relying only on the summary.
 - **Controller:** inspect or calibrate the selective-search controller. Training examples and held-out evaluation have different roles; controller labels come from additional model-guided search, which is a reference procedure rather than a perfect chess oracle.
 
@@ -22,27 +22,38 @@ The model and engine run locally in your browser. No API key, account, paid infe
 | Mode | Decision procedure | What it tests |
 | --- | --- | --- |
 | Direct | Select the strongest legal move predicted by the policy, without expanding a future-position search tree. | What the pretrained model can do directly. |
-| Search | Use model-guided tree search within the configured limits. | Whether additional computation improves the policy's decisions. |
+| Search | Order moves with the neural policy, then use iterative deepening, alpha-beta, capture quiescence, and positional evaluation. | Whether the hybrid decision engine improves on the raw policy. |
 | Selective | Use the direct policy unless the controller decides additional computation is worthwhile. | Whether an allocation rule can save computation while preserving decision quality. |
 
-Every mode uses the same model weights, legal-move rules, and initial position. The direct mode still performs neural inference and legal move generation; “no search” does not mean zero computation. A high policy probability is not a calibrated guarantee that a move is correct. Two methods can also agree on a mistake.
+Every mode uses the same neural weights, legal-move rules, and initial position. Search also has a handcrafted evaluation function, so this compares complete decision procedures rather than isolating computation alone. Direct still performs neural inference and legal move generation; “no search” does not mean zero computation. A high policy probability is not a calibrated guarantee that a move is correct. Two methods can also agree on a mistake.
 
 The included model is Peter Baer's **v3.1-clean-distilled** transformer: 116,266 parameters and 464,936 weight bytes. It was distilled from a larger model trained on human Lichess games. It is not a Stockfish-trained model. Exact source revision, fingerprint, and license information are in [model/provenance.json](model/provenance.json).
 
-## AI version 2
+## AI version 3
 
-Search is now the default playing mode. The raw direct policy remains available as the unchanged experimental baseline; this iteration improves move selection and verification with the same pretrained weights.
+The previous engine examined only about five or six neural tree positions in its 150 ms test games. Independent analysis found missed central breaks and short kingside tactics. Version 3 calls the same neural model once to order root moves, then spends the remaining budget on much faster tactical evaluation.
+
+- Iterative deepening keeps the last fully completed search result. Alpha-beta pruning, move ordering, killer/history heuristics, and a bounded transposition table reduce repeated work.
+- Capture quiescence continues exchanges beyond the nominal depth and searches all legal check evasions. Evaluation combines material, phase-dependent piece placement, mobility, pawn structure, passed pawns, and king safety.
+- Draw detection preserves repetition history and the fifty-move counter. Exact mate selection and final mate-in-one safety checks remain in place.
+- The position cap now counts tactical search positions, including quiescence, rather than neural tree visits. The default is 32,768 positions. Reports include `nodeUnit`, `searchKind`, `qNodes`, completed depth, and the single neural inference separately.
+
+The new evaluation and search are original project code; Stockfish remains an external test opponent and judge. The neural weights have not been retrained. See [version 3 strength tests and replayable matches](docs/AI-STRENGTH-V3.md) for the fixed time limits, results, and remaining weaknesses.
+
+## Earlier AI version 2
+
+Version 2 made Search the default playing mode. The raw direct policy remains available as the unchanged experimental baseline.
 
 - Proven checkmates override neural preferences and visit counts. Solved terminal branches are not repeatedly searched while alternatives remain unresolved.
 - Tactical verification checks for immediate opponent mates, including replacement moves chosen after a bad policy suggestion is rejected. Neural tree visits and rule-based tactical probes are recorded separately.
 - A private game board is reused and undone during search, preserving history and repetition without replaying the entire game for every simulation.
 - Selective mode can skip search only with compatible evidence for this engine, at least 30 mixed-class held-out positions, and Brier error below its constant-predictor baseline. The shipped 40-position pilot does not meet this standard, so it falls back to verification.
 
-The independent assessment uses Stockfish 19 as an offline judge and test opponent. Raw before/after position records, controlled color-reversed games, games against two explicitly limited Stockfish opponents, model assessment, and reproduction commands are linked in [AI evaluation](docs/AI-EVALUATION.md). Small experiments do not establish an Elo rating or superiority over Stockfish.
+The earlier Stockfish assessment, controlled games, and two limited-opponent pilots are preserved in [version 2 evaluation](docs/AI-EVALUATION.md). Small experiments do not establish an Elo rating or superiority over Stockfish.
 
 ## Read results carefully
 
-1. **Budget both time and work.** Node limits make repeated comparisons easier to interpret. The wall-clock cap is soft: synchronous neural inference cannot be interrupted, and the engine checks time between search iterations. It reserves an estimate of observed inference/iteration cost before starting another simulation to reduce overruns, but pauses, throttling, and changing inference costs can still exceed a cap. Paired games deduct actual measured decision time from equal starting clocks. Record browser and settings with results.
+1. **Budget both time and work.** Node limits make repeated comparisons easier to interpret. Version 3 checks time at each tactical position and reserves time for the final rules check. The wall-clock cap remains soft because the initial neural call and individual rule operations cannot be interrupted. Pauses and throttling can still cause overruns. Paired games deduct actual measured decision time from equal starting clocks. Record browser and settings with results. Version 2 neural visits and version 3 tactical positions are different work units.
 2. **Keep the opponent and openings fixed.** Compare game pairs with colors reversed. Do not mix settings or device classes into one strength claim.
 3. **Separate training and testing.** Evaluate a fitted controller on held-out opening groups. The split is selected for label availability before fitting, never by its accuracy. If one class cannot be represented in both splits, the report includes an explicit limited-holdout warning. Selecting thresholds on a test suite and then reporting the same suite as independent evidence overstates generalization.
 4. **Treat search labels as provisional.** The controller learns whether deeper search changes the policy's first choice. A changed move does not automatically prove an improvement. Search can also miss the best move.

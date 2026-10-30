@@ -1,0 +1,342 @@
+{
+  "startedAt": "2026-10-30T22:08:55.067Z",
+  "inputReportSHA256": "f1a3bc7049db372a3595f3ae6c69b6270e0a5a660dbe7213fe1f35f614d820e3",
+  "sourceReport": "ai-v3-stockfish5.json",
+  "replayValidation": {
+    "games": 8,
+    "scored": 4,
+    "unfinished": 4,
+    "moves": 1039,
+    "terminations": {
+      "checkmate": 4,
+      "truncated": 4
+    }
+  },
+  "scriptSHA256": "8b3f2632d00aafd6ebb44f6ea7cda5c37593f8336c0e4b88af47bf8708ace91b",
+  "oracle": {
+    "source": "https://github.com/official-stockfish/Stockfish/releases/tag/sf_19",
+    "executableSHA256": "0f83d24cc46d2c66c60f16001af5444873bc112b7d028594513426894c12da19",
+    "options": {
+      "Threads": 1,
+      "Hash": 16,
+      "MultiPV": 1,
+      "Ponder": false,
+      "UCI_LimitStrength": false,
+      "Skill Level": 20
+    },
+    "name": "Stockfish 19"
+  },
+  "settings": {
+    "nodes": 100000,
+    "fullHistory": true,
+    "hashClearedPerPosition": true
+  },
+  "caveats": [
+    "Post-match development diagnostics on unfinished positions, selected after observing the results. This is not an independent strength test.",
+    "Fixed-node evaluations are estimates, not proofs of perfect chess play.",
+    "Every source game retains its original unfinished, unscored result. These evaluations do not adjudicate, extend or rescore any game.",
+    "Scores are reported from the side to move and separately converted to the INTUITION side. Mate distances remain in Stockfish UCI units."
+  ],
+  "positions": [
+    {
+      "gameId": 2,
+      "opening": "Italian",
+      "originalResult": "*",
+      "originalStatus": "truncated",
+      "fen": "8/8/5k2/8/6R1/6K1/3r4/8 w - - 23 84",
+      "intuitionColor": "b",
+      "sideToMove": "w",
+      "material": {
+        "w": {
+          "pieces": {
+            "r": 1,
+            "k": 1
+          },
+          "centipawns": 500
+        },
+        "b": {
+          "pieces": {
+            "k": 1,
+            "r": 1
+          },
+          "centipawns": 500
+        }
+      },
+      "intuitionMaterialBalanceCp": 0,
+      "oracle": {
+        "depth": 16,
+        "nodes": 100074,
+        "timeMs": 54,
+        "score": {
+          "type": "cp",
+          "value": 29
+        },
+        "pv": [
+          "g4a4",
+          "d2d7"
+        ],
+        "bestMove": "g4a4",
+        "bound": "upperbound",
+        "rawInfo": "info depth 16 seldepth 17 multipv 1 score cp 29 upperbound nodes 100074 nps 1853222 hashfull 29 tbhits 0 time 54 pv g4a4 d2d7",
+        "latestExactInfo": {
+          "score": {
+            "type": "cp",
+            "value": 38
+          },
+          "depth": 15,
+          "nodes": 77701,
+          "rawInfo": "info depth 15 seldepth 17 multipv 1 score cp 38 nodes 77701 nps 1850023 hashfull 23 tbhits 0 time 42 pv g4a4 d2d7 g3f3 f6g5 a4a6"
+        }
+      },
+      "intuitionScore": {
+        "type": "cp",
+        "value": -29,
+        "bound": "lowerbound"
+      },
+      "latestExactIntuitionScore": {
+        "type": "cp",
+        "value": -38,
+        "depth": 15,
+        "nodes": 77701
+      },
+      "pvSan": [
+        "Ra4",
+        "Rd7"
+      ]
+    },
+    {
+      "gameId": 3,
+      "opening": "Queen’s Gambit",
+      "originalResult": "*",
+      "originalStatus": "truncated",
+      "fen": "8/4n3/P7/1R4P1/5k2/1K1q4/8/8 w - - 9 84",
+      "intuitionColor": "w",
+      "sideToMove": "w",
+      "material": {
+        "w": {
+          "pieces": {
+            "p": 2,
+            "r": 1,
+            "k": 1
+          },
+          "centipawns": 700
+        },
+        "b": {
+          "pieces": {
+            "n": 1,
+            "k": 1,
+            "q": 1
+          },
+          "centipawns": 1220
+        }
+      },
+      "intuitionMaterialBalanceCp": -520,
+      "oracle": {
+        "depth": 17,
+        "nodes": 100139,
+        "timeMs": 66,
+        "score": {
+          "type": "cp",
+          "value": -623
+        },
+        "pv": [
+          "b3b4",
+          "d3d6",
+          "b4b3",
+          "d6e6",
+          "b3b4",
+          "e6a6",
+          "b5c5",
+          "a6b6",
+          "c5b5",
+          "e7d5",
+          "b4c4",
+          "b6c6",
+          "b5c5",
+          "d5b6",
+          "c4b4"
+        ],
+        "bestMove": "b3b4",
+        "bound": null,
+        "rawInfo": "info depth 17 seldepth 24 multipv 1 score cp -623 nodes 100139 nps 1517257 hashfull 28 tbhits 0 time 66 pv b3b4 d3d6 b4b3 d6e6 b3b4 e6a6 b5c5 a6b6 c5b5 e7d5 b4c4 b6c6 b5c5 d5b6 c4b4",
+        "latestExactInfo": {
+          "score": {
+            "type": "cp",
+            "value": -623
+          },
+          "depth": 17,
+          "nodes": 100139,
+          "rawInfo": "info depth 17 seldepth 24 multipv 1 score cp -623 nodes 100139 nps 1517257 hashfull 28 tbhits 0 time 66 pv b3b4 d3d6 b4b3 d6e6 b3b4 e6a6 b5c5 a6b6 c5b5 e7d5 b4c4 b6c6 b5c5 d5b6 c4b4"
+        }
+      },
+      "intuitionScore": {
+        "type": "cp",
+        "value": -623,
+        "bound": null
+      },
+      "latestExactIntuitionScore": {
+        "type": "cp",
+        "value": -623,
+        "depth": 17,
+        "nodes": 100139
+      },
+      "pvSan": [
+        "Kb4",
+        "Qd6+",
+        "Kb3",
+        "Qe6+",
+        "Kb4",
+        "Qxa6",
+        "Rc5",
+        "Qb6+",
+        "Rb5",
+        "Nd5+",
+        "Kc4",
+        "Qc6+",
+        "Rc5",
+        "Nb6+",
+        "Kb4"
+      ]
+    },
+    {
+      "gameId": 4,
+      "opening": "Queen’s Gambit",
+      "originalResult": "*",
+      "originalStatus": "truncated",
+      "fen": "8/1n6/1P6/8/8/K1k5/8/8 w - - 13 84",
+      "intuitionColor": "b",
+      "sideToMove": "w",
+      "material": {
+        "w": {
+          "pieces": {
+            "p": 1,
+            "k": 1
+          },
+          "centipawns": 100
+        },
+        "b": {
+          "pieces": {
+            "n": 1,
+            "k": 1
+          },
+          "centipawns": 320
+        }
+      },
+      "intuitionMaterialBalanceCp": 220,
+      "oracle": {
+        "depth": 23,
+        "nodes": 100098,
+        "timeMs": 44,
+        "score": {
+          "type": "cp",
+          "value": 0
+        },
+        "pv": [
+          "a3a4",
+          "c3c4",
+          "a4a3",
+          "c4c3",
+          "a3a4"
+        ],
+        "bestMove": "a3a4",
+        "bound": null,
+        "rawInfo": "info depth 23 seldepth 6 multipv 1 score cp 0 nodes 100098 nps 2274954 hashfull 16 tbhits 0 time 44 pv a3a4 c3c4 a4a3 c4c3 a3a4",
+        "latestExactInfo": {
+          "score": {
+            "type": "cp",
+            "value": 0
+          },
+          "depth": 23,
+          "nodes": 100098,
+          "rawInfo": "info depth 23 seldepth 6 multipv 1 score cp 0 nodes 100098 nps 2274954 hashfull 16 tbhits 0 time 44 pv a3a4 c3c4 a4a3 c4c3 a3a4"
+        }
+      },
+      "intuitionScore": {
+        "type": "cp",
+        "value": 0,
+        "bound": null
+      },
+      "latestExactIntuitionScore": {
+        "type": "cp",
+        "value": 0,
+        "depth": 23,
+        "nodes": 100098
+      },
+      "pvSan": [
+        "Ka4",
+        "Kc4",
+        "Ka3",
+        "Kc3",
+        "Ka4"
+      ]
+    },
+    {
+      "gameId": 5,
+      "opening": "Sicilian",
+      "originalResult": "*",
+      "originalStatus": "truncated",
+      "fen": "8/8/8/p3k3/PbK5/1P6/8/8 w - - 26 84",
+      "intuitionColor": "w",
+      "sideToMove": "w",
+      "material": {
+        "w": {
+          "pieces": {
+            "p": 2,
+            "k": 1
+          },
+          "centipawns": 200
+        },
+        "b": {
+          "pieces": {
+            "p": 1,
+            "k": 1,
+            "b": 1
+          },
+          "centipawns": 430
+        }
+      },
+      "intuitionMaterialBalanceCp": -230,
+      "oracle": {
+        "depth": 15,
+        "nodes": 100027,
+        "timeMs": 45,
+        "score": {
+          "type": "cp",
+          "value": -703
+        },
+        "pv": [
+          "c4d3",
+          "e5f4"
+        ],
+        "bestMove": "c4d3",
+        "bound": "upperbound",
+        "rawInfo": "info depth 15 seldepth 27 multipv 1 score cp -703 upperbound nodes 100027 nps 2222822 hashfull 12 tbhits 0 time 45 pv c4d3 e5f4",
+        "latestExactInfo": {
+          "score": {
+            "type": "cp",
+            "value": -359
+          },
+          "depth": 14,
+          "nodes": 11404,
+          "rawInfo": "info depth 14 seldepth 24 multipv 1 score cp -359 nodes 11404 nps 1425500 hashfull 1 tbhits 0 time 8 pv c4d3 e5f4 d3d4 f4f3 d4d3 b4e1 d3d4 f3e2 d4c4 e2e3 c4b5 e3d3 b5b6"
+        }
+      },
+      "intuitionScore": {
+        "type": "cp",
+        "value": -703,
+        "bound": "upperbound"
+      },
+      "latestExactIntuitionScore": {
+        "type": "cp",
+        "value": -359,
+        "depth": 14,
+        "nodes": 11404
+      },
+      "pvSan": [
+        "Kd3",
+        "Kf4"
+      ]
+    }
+  ],
+  "finishedAt": "2026-10-30T22:08:55.749Z"
+}

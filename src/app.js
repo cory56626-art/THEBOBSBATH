@@ -29,7 +29,7 @@ function toast(message, error = false) {
   log(error ? 'error' : 'notice', message);
 }
 function settings() {
-  return { budgetMs: Number($('budget')?.value || 500), maxNodes: Number($('node-limit')?.value || 128), gate, threshold: Number($('controller-threshold')?.value || 0.5) };
+  return { budgetMs: Number($('budget')?.value || 500), maxNodes: Number($('node-limit')?.value || 32768), gate, threshold: Number($('controller-threshold')?.value || 0.5) };
 }
 function request(type, options = {}, position = serializePosition(game), onProgress) {
   if (!ready) return Promise.reject(new Error('The neural model is still loading.'));
@@ -145,7 +145,7 @@ function updateControls(redraw = true) {
   for (const id of ['mode', 'budget', 'node-limit', 'side', 'controller-threshold']) if ($(id)) $(id).disabled = busy || startingGame;
   $('play-engine').textContent = $('side')?.value === 'watch' ? watchRunning ? 'Pause watching' : 'Watch engines play' : 'Let engine move';
   if ($('mode-description')) $('mode-description').textContent = {
-    direct: 'One neural prediction. No tree search.', search: 'The same neural model guides a budgeted tree search.', selective: 'A learned controller decides when to search. Untrained controllers always search.',
+    direct: 'One neural prediction. No tree search.', search: 'Neural move ordering with tactical search and capture analysis.', selective: 'A learned controller decides when to search. Untrained controllers always search.',
   }[$('mode')?.value || 'direct'];
   if (redraw && $('board')) renderBoard($('board'), game.fen(), { orientation, selected, targets: selected ? game.moves({ square: selected, verbose: true }).map(m => m.to) : [], lastMove, onSquareClick: handle(onSquare), disabled: !humanCanMove() });
 }

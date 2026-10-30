@@ -150,7 +150,7 @@ test('New game cancels an in-flight reply and no old move reappears on the reset
   await openLab(page);
   await page.locator('#mode').selectOption('search');
   await page.locator('#budget').selectOption('2000');
-  await page.locator('#node-limit').selectOption('256');
+  await page.locator('#node-limit').selectOption('131072');
   await page.locator('#board [data-square="e2"]').click();
   await page.locator('#board [data-square="e4"]').click();
   await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(true);
@@ -171,7 +171,7 @@ test('New game in watch mode restarts autoplay instead of leaving a motionless b
   await openLab(page);
   await page.locator('#mode').selectOption('search');
   await page.locator('#budget').selectOption('2000');
-  await page.locator('#node-limit').selectOption('256');
+  await page.locator('#node-limit').selectOption('131072');
   await page.locator('#side').selectOption('watch');
   await page.locator('#play-engine').click();
   await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(true);

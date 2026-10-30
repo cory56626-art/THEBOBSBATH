@@ -1,0 +1,3177 @@
+{
+  "createdAt": "2026-10-30T21:55:28.426Z",
+  "purpose": "Development diagnosis of recorded v2 losses; inspected positions must not become held-out validation data",
+  "sourceArena": {
+    "path": "docs/ai-bot-arena.json",
+    "SHA256": "63107ccc7734e49b80c542803074f75c69723cfebf773fd870fcad77ffb4a8f6",
+    "engine": {
+      "version": "intuition-mcts-2",
+      "sourceSHA256": "1c4ff43e028f81966f8cbb8873347a54e683b300624961742cc910ec0e557fdc",
+      "mode": "search"
+    },
+    "model": {
+      "name": "Neural Chess v3.1 clean-distilled",
+      "modelId": "v3.1-clean-distilled",
+      "parameters": 116266,
+      "weightsBytes": 464936,
+      "weightsSHA256": "5b584935b8a23a662096d2ecc34f2af8c580058252ef0567194b080187945468",
+      "source": "https://github.com/pbaer/neural-chess",
+      "sourceCommit": "524ba14d4af3b739cbe19bd8cd0b14892e6305ca",
+      "sourceLicense": "MIT",
+      "weightsLicense": "CC0-1.0",
+      "valuePerspective": "side to move",
+      "actualWeightsSHA256": "5b584935b8a23a662096d2ecc34f2af8c580058252ef0567194b080187945468"
+    }
+  },
+  "oracle": {
+    "executableSHA256": "0f83d24cc46d2c66c60f16001af5444873bc112b7d028594513426894c12da19",
+    "nodesPerQuery": 100000,
+    "confirmationNodesPerQuery": 500000,
+    "threads": 1,
+    "hashMB": 16,
+    "hashClearedPerQuery": true,
+    "scoreSelection": "Last unbounded info score (completed iteration estimate); retain the final reported line separately because a node limit can interrupt an aspiration search with a bound.",
+    "name": "Stockfish 19"
+  },
+  "diagnosticScriptSHA256": "0449b8dc047478adb6e8f187a9f40026a1a832b1c4abf1b668986aff34dcf6e5",
+  "selection": {
+    "split": "development",
+    "skills": [
+      5
+    ],
+    "completedLossesOnly": true,
+    "gameIds": [
+      5,
+      6,
+      8
+    ],
+    "thresholdCp": 200,
+    "stop": "Analyze INTUITION moves chronologically within each completed loss. Stop at the first finite score regret >=200cp, newly allowed forced mate, or lost forced winning mate. Retain earlier rows."
+  },
+  "caveats": [
+    "Fixed-node Stockfish estimates can be unstable; restricted and unrestricted root searches can disagree.",
+    "This selects failures after observing outcomes, so it is development diagnosis, not independent strength evidence.",
+    "No Stockfish evaluation is used by the deployed playing engine.",
+    "All scores use the side-to-move perspective at the position before INTUITION chose its move. Mate scores are kept separate from centipawns."
+  ],
+  "games": [
+    {
+      "id": 5,
+      "opening": "Italian",
+      "whiteEngine": "intuition",
+      "blackEngine": "stockfish",
+      "result": "0-1",
+      "rows": [
+        {
+          "gameId": 5,
+          "playedPly": 1,
+          "fullMoveNumber": 4,
+          "color": "w",
+          "fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+          "history": [
+            "e2e4",
+            "e7e5",
+            "g1f3",
+            "b8c6",
+            "f1c4",
+            "f8c5"
+          ],
+          "move": "e1g1",
+          "san": "O-O",
+          "bestMove": "c2c3",
+          "bestSan": "c3",
+          "reference": {
+            "score": {
+              "type": "cp",
+              "value": 15,
+              "bound": null
+            },
+            "depth": 13,
+            "nodes": 84204,
+            "timeMs": 80,
+            "pv": [
+              "c2c3",
+              "g8f6",
+              "d2d4",
+              "e5d4",
+              "c3d4",
+              "c5b4",
+              "b1d2",
+              "b4d2",
+              "c1d2",
+              "f6e4",
+              "d4d5",
+              "c6e7",
+              "e1g1",
+              "e8g8"
+            ],
+            "bestMove": "c2c3",
+            "reportedBestMove": "c2c3",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": 9,
+                "bound": "upperbound"
+              },
+              "depth": 14,
+              "nodes": 100155,
+              "timeMs": 96,
+              "pv": [
+                "c2c3",
+                "g8f6"
+              ]
+            },
+            "forcedMove": null
+          },
+          "chosen": {
+            "score": {
+              "type": "cp",
+              "value": 16,
+              "bound": null
+            },
+            "depth": 17,
+            "nodes": 100056,
+            "timeMs": 103,
+            "pv": [
+              "e1g1",
+              "g8f6",
+              "d2d3",
+              "d7d6",
+              "c2c3",
+              "a7a6",
+              "f1e1",
+              "c5a7",
+              "c4b3",
+              "c8g4",
+              "h2h3"
+            ],
+            "bestMove": "e1g1",
+            "reportedBestMove": "e1g1",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": 16,
+                "bound": null
+              },
+              "depth": 17,
+              "nodes": 100056,
+              "timeMs": 103,
+              "pv": [
+                "e1g1",
+                "g8f6",
+                "d2d3",
+                "d7d6",
+                "c2c3",
+                "a7a6",
+                "f1e1",
+                "c5a7",
+                "c4b3",
+                "c8g4",
+                "h2h3"
+              ]
+            },
+            "forcedMove": "e1g1"
+          },
+          "referencePvSan": [
+            "c3",
+            "Nf6",
+            "d4",
+            "exd4",
+            "cxd4",
+            "Bb4+",
+            "Nbd2",
+            "Bxd2+",
+            "Bxd2",
+            "Nxe4"
+          ],
+          "chosenPvSan": [
+            "O-O",
+            "Nf6",
+            "d3",
+            "d6",
+            "c3",
+            "a6",
+            "Re1",
+            "Ba7",
+            "Bb3",
+            "Bg4"
+          ],
+          "rawCpDelta": -1,
+          "cpLoss": 0,
+          "newlyAllowsForcedMate": false,
+          "losesForcedWinningMate": false,
+          "inferenceCalls": 6,
+          "treeNodes": 6,
+          "elapsedMs": 134.05189099999916,
+          "split": "development"
+        },
+        {
+          "gameId": 5,
+          "playedPly": 3,
+          "fullMoveNumber": 5,
+          "color": "w",
+          "fen": "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 w kq - 6 5",
+          "history": [
+            "e2e4",
+            "e7e5",
+            "g1f3",
+            "b8c6",
+            "f1c4",
+            "f8c5",
+            "e1g1",
+            "g8f6"
+          ],
+          "move": "d2d3",
+          "san": "d3",
+          "bestMove": "d2d3",
+          "bestSan": "d3",
+          "reference": {
+            "score": {
+              "type": "cp",
+              "value": 13,
+              "bound": null
+            },
+            "depth": 15,
+            "nodes": 81433,
+            "timeMs": 85,
+            "pv": [
+              "d2d3",
+              "d7d6",
+              "c2c3",
+              "c5b6",
+              "a2a4",
+              "h7h6",
+              "f1e1",
+              "a7a5",
+              "c4b5",
+              "e8g8",
+              "h2h3",
+              "c6e7",
+              "d3d4",
+              "e7g6"
+            ],
+            "bestMove": "d2d3",
+            "reportedBestMove": "d2d3",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": 12,
+                "bound": "lowerbound"
+              },
+              "depth": 16,
+              "nodes": 100094,
+              "timeMs": 104,
+              "pv": [
+                "d2d3",
+                "d7d6"
+              ]
+            },
+            "forcedMove": null
+          },
+          "chosen": {
+            "score": {
+              "type": "cp",
+              "value": 13,
+              "bound": null
+            },
+            "depth": 15,
+            "nodes": 81433,
+            "timeMs": 85,
+            "pv": [
+              "d2d3",
+              "d7d6",
+              "c2c3",
+              "c5b6",
+              "a2a4",
+              "h7h6",
+              "f1e1",
+              "a7a5",
+              "c4b5",
+              "e8g8",
+              "h2h3",
+              "c6e7",
+              "d3d4",
+              "e7g6"
+            ],
+            "bestMove": "d2d3",
+            "reportedBestMove": "d2d3",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": 12,
+                "bound": "lowerbound"
+              },
+              "depth": 16,
+              "nodes": 100094,
+              "timeMs": 104,
+              "pv": [
+                "d2d3",
+                "d7d6"
+              ]
+            },
+            "forcedMove": null
+          },
+          "referencePvSan": [
+            "d3",
+            "d6",
+            "c3",
+            "Bb6",
+            "a4",
+            "h6",
+            "Re1",
+            "a5",
+            "Bb5",
+            "O-O"
+          ],
+          "chosenPvSan": [
+            "d3",
+            "d6",
+            "c3",
+            "Bb6",
+            "a4",
+            "h6",
+            "Re1",
+            "a5",
+            "Bb5",
+            "O-O"
+          ],
+          "rawCpDelta": 0,
+          "cpLoss": 0,
+          "newlyAllowsForcedMate": false,
+          "losesForcedWinningMate": false,
+          "inferenceCalls": 5,
+          "treeNodes": 5,
+          "elapsedMs": 117.41515000000072,
+          "split": "development"
+        },
+        {
+          "gameId": 5,
+          "playedPly": 5,
+          "fullMoveNumber": 6,
+          "color": "w",
+          "fen": "r1bqk2r/pppp1pp1/2n2n1p/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 w kq - 0 6",
+          "history": [
+            "e2e4",
+            "e7e5",
+            "g1f3",
+            "b8c6",
+            "f1c4",
+            "f8c5",
+            "e1g1",
+            "g8f6",
+            "d2d3",
+            "h7h6"
+          ],
+          "move": "c2c3",
+          "san": "c3",
+          "bestMove": "c2c3",
+          "bestSan": "c3",
+          "reference": {
+            "score": {
+              "type": "cp",
+              "value": 31,
+              "bound": null
+            },
+            "depth": 17,
+            "nodes": 100121,
+            "timeMs": 95,
+            "pv": [
+              "c2c3",
+              "d7d6",
+              "b2b4",
+              "c5b6",
+              "a2a4",
+              "a7a5",
+              "b4b5",
+              "c6e7",
+              "b1d2",
+              "e8g8",
+              "f1e1",
+              "c7c6",
+              "d3d4",
+              "f8e8",
+              "c4b3"
+            ],
+            "bestMove": "c2c3",
+            "reportedBestMove": "c2c3",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": 31,
+                "bound": null
+              },
+              "depth": 17,
+              "nodes": 100121,
+              "timeMs": 95,
+              "pv": [
+                "c2c3",
+                "d7d6",
+                "b2b4",
+                "c5b6",
+                "a2a4",
+                "a7a5",
+                "b4b5",
+                "c6e7",
+                "b1d2",
+                "e8g8",
+                "f1e1",
+                "c7c6",
+                "d3d4",
+                "f8e8",
+                "c4b3"
+              ]
+            },
+            "forcedMove": null
+          },
+          "chosen": {
+            "score": {
+              "type": "cp",
+              "value": 31,
+              "bound": null
+            },
+            "depth": 17,
+            "nodes": 100121,
+            "timeMs": 95,
+            "pv": [
+              "c2c3",
+              "d7d6",
+              "b2b4",
+              "c5b6",
+              "a2a4",
+              "a7a5",
+              "b4b5",
+              "c6e7",
+              "b1d2",
+              "e8g8",
+              "f1e1",
+              "c7c6",
+              "d3d4",
+              "f8e8",
+              "c4b3"
+            ],
+            "bestMove": "c2c3",
+            "reportedBestMove": "c2c3",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": 31,
+                "bound": null
+              },
+              "depth": 17,
+              "nodes": 100121,
+              "timeMs": 95,
+              "pv": [
+                "c2c3",
+                "d7d6",
+                "b2b4",
+                "c5b6",
+                "a2a4",
+                "a7a5",
+                "b4b5",
+                "c6e7",
+                "b1d2",
+                "e8g8",
+                "f1e1",
+                "c7c6",
+                "d3d4",
+                "f8e8",
+                "c4b3"
+              ]
+            },
+            "forcedMove": null
+          },
+          "referencePvSan": [
+            "c3",
+            "d6",
+            "b4",
+            "Bb6",
+            "a4",
+            "a5",
+            "b5",
+            "Ne7",
+            "Nbd2",
+            "O-O"
+          ],
+          "chosenPvSan": [
+            "c3",
+            "d6",
+            "b4",
+            "Bb6",
+            "a4",
+            "a5",
+            "b5",
+            "Ne7",
+            "Nbd2",
+            "O-O"
+          ],
+          "rawCpDelta": 0,
+          "cpLoss": 0,
+          "newlyAllowsForcedMate": false,
+          "losesForcedWinningMate": false,
+          "inferenceCalls": 6,
+          "treeNodes": 6,
+          "elapsedMs": 135.78744000000006,
+          "split": "development"
+        },
+        {
+          "gameId": 5,
+          "playedPly": 7,
+          "fullMoveNumber": 7,
+          "color": "w",
+          "fen": "r1bqk2r/1ppp1pp1/p1n2n1p/2b1p3/2B1P3/2PP1N2/PP3PPP/RNBQ1RK1 w kq - 0 7",
+          "history": [
+            "e2e4",
+            "e7e5",
+            "g1f3",
+            "b8c6",
+            "f1c4",
+            "f8c5",
+            "e1g1",
+            "g8f6",
+            "d2d3",
+            "h7h6",
+            "c2c3",
+            "a7a6"
+          ],
+          "move": "c1e3",
+          "san": "Be3",
+          "bestMove": "d3d4",
+          "bestSan": "d4",
+          "reference": {
+            "score": {
+              "type": "cp",
+              "value": 212,
+              "bound": null
+            },
+            "depth": 17,
+            "nodes": 100097,
+            "timeMs": 99,
+            "pv": [
+              "d3d4",
+              "c5d6",
+              "c4d5",
+              "f6d5",
+              "e4d5",
+              "e5e4",
+              "f3d2",
+              "c6e7",
+              "d2e4",
+              "e8g8",
+              "e4d6",
+              "c7d6",
+              "a2a4",
+              "e7d5",
+              "d1f3",
+              "d5c7",
+              "d4d5",
+              "b7b5",
+              "a4b5",
+              "a6b5",
+              "a1a8",
+              "c7a8"
+            ],
+            "bestMove": "d3d4",
+            "reportedBestMove": "d3d4",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": 212,
+                "bound": null
+              },
+              "depth": 17,
+              "nodes": 100097,
+              "timeMs": 99,
+              "pv": [
+                "d3d4",
+                "c5d6",
+                "c4d5",
+                "f6d5",
+                "e4d5",
+                "e5e4",
+                "f3d2",
+                "c6e7",
+                "d2e4",
+                "e8g8",
+                "e4d6",
+                "c7d6",
+                "a2a4",
+                "e7d5",
+                "d1f3",
+                "d5c7",
+                "d4d5",
+                "b7b5",
+                "a4b5",
+                "a6b5",
+                "a1a8",
+                "c7a8"
+              ]
+            },
+            "forcedMove": null
+          },
+          "chosen": {
+            "score": {
+              "type": "cp",
+              "value": 9,
+              "bound": null
+            },
+            "depth": 17,
+            "nodes": 100052,
+            "timeMs": 97,
+            "pv": [
+              "c1e3",
+              "c5e3",
+              "f2e3",
+              "d7d6",
+              "a2a4",
+              "c6e7",
+              "d1e1",
+              "e8g8",
+              "b1d2",
+              "e7g6",
+              "e1g3",
+              "g8h7",
+              "c4b3",
+              "b7b6",
+              "h2h3",
+              "c8d7"
+            ],
+            "bestMove": "c1e3",
+            "reportedBestMove": "c1e3",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": 9,
+                "bound": null
+              },
+              "depth": 17,
+              "nodes": 100052,
+              "timeMs": 97,
+              "pv": [
+                "c1e3",
+                "c5e3",
+                "f2e3",
+                "d7d6",
+                "a2a4",
+                "c6e7",
+                "d1e1",
+                "e8g8",
+                "b1d2",
+                "e7g6",
+                "e1g3",
+                "g8h7",
+                "c4b3",
+                "b7b6",
+                "h2h3",
+                "c8d7"
+              ]
+            },
+            "forcedMove": "c1e3"
+          },
+          "referencePvSan": [
+            "d4",
+            "Bd6",
+            "Bd5",
+            "Nxd5",
+            "exd5",
+            "e4",
+            "Nfd2",
+            "Ne7",
+            "Nxe4",
+            "O-O"
+          ],
+          "chosenPvSan": [
+            "Be3",
+            "Bxe3",
+            "fxe3",
+            "d6",
+            "a4",
+            "Ne7",
+            "Qe1",
+            "O-O",
+            "Nbd2",
+            "Ng6"
+          ],
+          "rawCpDelta": 203,
+          "cpLoss": 203,
+          "newlyAllowsForcedMate": false,
+          "losesForcedWinningMate": false,
+          "inferenceCalls": 6,
+          "treeNodes": 6,
+          "elapsedMs": 136.767233999999,
+          "split": "development",
+          "confirmation": {
+            "nodesPerQuery": 500000,
+            "reference": {
+              "score": {
+                "type": "cp",
+                "value": 222,
+                "bound": null
+              },
+              "depth": 20,
+              "nodes": 500291,
+              "timeMs": 518,
+              "pv": [
+                "d3d4",
+                "c5a7",
+                "f3e5",
+                "c6e5",
+                "d4e5",
+                "f6e4",
+                "c4f7",
+                "e8f7",
+                "d1d5",
+                "f7f8",
+                "d5e4",
+                "d7d5",
+                "e5d6",
+                "d8d6",
+                "c1f4",
+                "d6e7",
+                "f4e5",
+                "f8f7",
+                "b1d2"
+              ],
+              "bestMove": "d3d4",
+              "reportedBestMove": "d3d4",
+              "finalReportedInfo": {
+                "score": {
+                  "type": "cp",
+                  "value": 222,
+                  "bound": null
+                },
+                "depth": 20,
+                "nodes": 500291,
+                "timeMs": 518,
+                "pv": [
+                  "d3d4",
+                  "c5a7",
+                  "f3e5",
+                  "c6e5",
+                  "d4e5",
+                  "f6e4",
+                  "c4f7",
+                  "e8f7",
+                  "d1d5",
+                  "f7f8",
+                  "d5e4",
+                  "d7d5",
+                  "e5d6",
+                  "d8d6",
+                  "c1f4",
+                  "d6e7",
+                  "f4e5",
+                  "f8f7",
+                  "b1d2"
+                ]
+              },
+              "forcedMove": null
+            },
+            "chosen": {
+              "score": {
+                "type": "cp",
+                "value": 11,
+                "bound": null
+              },
+              "depth": 20,
+              "nodes": 347101,
+              "timeMs": 344,
+              "pv": [
+                "c1e3",
+                "c5e3",
+                "f2e3",
+                "d7d6",
+                "a2a4",
+                "c6e7",
+                "f3h4",
+                "e8g8",
+                "b1d2",
+                "a8b8",
+                "a4a5",
+                "b7b5",
+                "a5b6",
+                "b8b6",
+                "c4b3",
+                "g8h7",
+                "d2c4",
+                "b6b5",
+                "b3c2",
+                "c8e6"
+              ],
+              "bestMove": "c1e3",
+              "reportedBestMove": "c1e3",
+              "finalReportedInfo": {
+                "score": {
+                  "type": "cp",
+                  "value": 2,
+                  "bound": "upperbound"
+                },
+                "depth": 21,
+                "nodes": 500051,
+                "timeMs": 501,
+                "pv": [
+                  "c1e3",
+                  "c5e3"
+                ]
+              },
+              "forcedMove": "c1e3"
+            },
+            "bestSan": "d4",
+            "referencePvSan": [
+              "d4",
+              "Ba7",
+              "Nxe5",
+              "Nxe5",
+              "dxe5",
+              "Nxe4",
+              "Bxf7+",
+              "Kxf7",
+              "Qd5+",
+              "Kf8"
+            ],
+            "chosenPvSan": [
+              "Be3",
+              "Bxe3",
+              "fxe3",
+              "d6",
+              "a4",
+              "Ne7",
+              "Nh4",
+              "O-O",
+              "Nd2",
+              "Rb8"
+            ],
+            "cpLoss": 211
+          }
+        }
+      ],
+      "firstLargeMistake": {
+        "gameId": 5,
+        "playedPly": 7,
+        "fullMoveNumber": 7,
+        "color": "w",
+        "fen": "r1bqk2r/1ppp1pp1/p1n2n1p/2b1p3/2B1P3/2PP1N2/PP3PPP/RNBQ1RK1 w kq - 0 7",
+        "history": [
+          "e2e4",
+          "e7e5",
+          "g1f3",
+          "b8c6",
+          "f1c4",
+          "f8c5",
+          "e1g1",
+          "g8f6",
+          "d2d3",
+          "h7h6",
+          "c2c3",
+          "a7a6"
+        ],
+        "move": "c1e3",
+        "san": "Be3",
+        "bestMove": "d3d4",
+        "bestSan": "d4",
+        "reference": {
+          "score": {
+            "type": "cp",
+            "value": 212,
+            "bound": null
+          },
+          "depth": 17,
+          "nodes": 100097,
+          "timeMs": 99,
+          "pv": [
+            "d3d4",
+            "c5d6",
+            "c4d5",
+            "f6d5",
+            "e4d5",
+            "e5e4",
+            "f3d2",
+            "c6e7",
+            "d2e4",
+            "e8g8",
+            "e4d6",
+            "c7d6",
+            "a2a4",
+            "e7d5",
+            "d1f3",
+            "d5c7",
+            "d4d5",
+            "b7b5",
+            "a4b5",
+            "a6b5",
+            "a1a8",
+            "c7a8"
+          ],
+          "bestMove": "d3d4",
+          "reportedBestMove": "d3d4",
+          "finalReportedInfo": {
+            "score": {
+              "type": "cp",
+              "value": 212,
+              "bound": null
+            },
+            "depth": 17,
+            "nodes": 100097,
+            "timeMs": 99,
+            "pv": [
+              "d3d4",
+              "c5d6",
+              "c4d5",
+              "f6d5",
+              "e4d5",
+              "e5e4",
+              "f3d2",
+              "c6e7",
+              "d2e4",
+              "e8g8",
+              "e4d6",
+              "c7d6",
+              "a2a4",
+              "e7d5",
+              "d1f3",
+              "d5c7",
+              "d4d5",
+              "b7b5",
+              "a4b5",
+              "a6b5",
+              "a1a8",
+              "c7a8"
+            ]
+          },
+          "forcedMove": null
+        },
+        "chosen": {
+          "score": {
+            "type": "cp",
+            "value": 9,
+            "bound": null
+          },
+          "depth": 17,
+          "nodes": 100052,
+          "timeMs": 97,
+          "pv": [
+            "c1e3",
+            "c5e3",
+            "f2e3",
+            "d7d6",
+            "a2a4",
+            "c6e7",
+            "d1e1",
+            "e8g8",
+            "b1d2",
+            "e7g6",
+            "e1g3",
+            "g8h7",
+            "c4b3",
+            "b7b6",
+            "h2h3",
+            "c8d7"
+          ],
+          "bestMove": "c1e3",
+          "reportedBestMove": "c1e3",
+          "finalReportedInfo": {
+            "score": {
+              "type": "cp",
+              "value": 9,
+              "bound": null
+            },
+            "depth": 17,
+            "nodes": 100052,
+            "timeMs": 97,
+            "pv": [
+              "c1e3",
+              "c5e3",
+              "f2e3",
+              "d7d6",
+              "a2a4",
+              "c6e7",
+              "d1e1",
+              "e8g8",
+              "b1d2",
+              "e7g6",
+              "e1g3",
+              "g8h7",
+              "c4b3",
+              "b7b6",
+              "h2h3",
+              "c8d7"
+            ]
+          },
+          "forcedMove": "c1e3"
+        },
+        "referencePvSan": [
+          "d4",
+          "Bd6",
+          "Bd5",
+          "Nxd5",
+          "exd5",
+          "e4",
+          "Nfd2",
+          "Ne7",
+          "Nxe4",
+          "O-O"
+        ],
+        "chosenPvSan": [
+          "Be3",
+          "Bxe3",
+          "fxe3",
+          "d6",
+          "a4",
+          "Ne7",
+          "Qe1",
+          "O-O",
+          "Nbd2",
+          "Ng6"
+        ],
+        "rawCpDelta": 203,
+        "cpLoss": 203,
+        "newlyAllowsForcedMate": false,
+        "losesForcedWinningMate": false,
+        "inferenceCalls": 6,
+        "treeNodes": 6,
+        "elapsedMs": 136.767233999999,
+        "split": "development",
+        "confirmation": {
+          "nodesPerQuery": 500000,
+          "reference": {
+            "score": {
+              "type": "cp",
+              "value": 222,
+              "bound": null
+            },
+            "depth": 20,
+            "nodes": 500291,
+            "timeMs": 518,
+            "pv": [
+              "d3d4",
+              "c5a7",
+              "f3e5",
+              "c6e5",
+              "d4e5",
+              "f6e4",
+              "c4f7",
+              "e8f7",
+              "d1d5",
+              "f7f8",
+              "d5e4",
+              "d7d5",
+              "e5d6",
+              "d8d6",
+              "c1f4",
+              "d6e7",
+              "f4e5",
+              "f8f7",
+              "b1d2"
+            ],
+            "bestMove": "d3d4",
+            "reportedBestMove": "d3d4",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": 222,
+                "bound": null
+              },
+              "depth": 20,
+              "nodes": 500291,
+              "timeMs": 518,
+              "pv": [
+                "d3d4",
+                "c5a7",
+                "f3e5",
+                "c6e5",
+                "d4e5",
+                "f6e4",
+                "c4f7",
+                "e8f7",
+                "d1d5",
+                "f7f8",
+                "d5e4",
+                "d7d5",
+                "e5d6",
+                "d8d6",
+                "c1f4",
+                "d6e7",
+                "f4e5",
+                "f8f7",
+                "b1d2"
+              ]
+            },
+            "forcedMove": null
+          },
+          "chosen": {
+            "score": {
+              "type": "cp",
+              "value": 11,
+              "bound": null
+            },
+            "depth": 20,
+            "nodes": 347101,
+            "timeMs": 344,
+            "pv": [
+              "c1e3",
+              "c5e3",
+              "f2e3",
+              "d7d6",
+              "a2a4",
+              "c6e7",
+              "f3h4",
+              "e8g8",
+              "b1d2",
+              "a8b8",
+              "a4a5",
+              "b7b5",
+              "a5b6",
+              "b8b6",
+              "c4b3",
+              "g8h7",
+              "d2c4",
+              "b6b5",
+              "b3c2",
+              "c8e6"
+            ],
+            "bestMove": "c1e3",
+            "reportedBestMove": "c1e3",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": 2,
+                "bound": "upperbound"
+              },
+              "depth": 21,
+              "nodes": 500051,
+              "timeMs": 501,
+              "pv": [
+                "c1e3",
+                "c5e3"
+              ]
+            },
+            "forcedMove": "c1e3"
+          },
+          "bestSan": "d4",
+          "referencePvSan": [
+            "d4",
+            "Ba7",
+            "Nxe5",
+            "Nxe5",
+            "dxe5",
+            "Nxe4",
+            "Bxf7+",
+            "Kxf7",
+            "Qd5+",
+            "Kf8"
+          ],
+          "chosenPvSan": [
+            "Be3",
+            "Bxe3",
+            "fxe3",
+            "d6",
+            "a4",
+            "Ne7",
+            "Nh4",
+            "O-O",
+            "Nd2",
+            "Rb8"
+          ],
+          "cpLoss": 211
+        }
+      }
+    },
+    {
+      "id": 6,
+      "opening": "Italian",
+      "whiteEngine": "stockfish",
+      "blackEngine": "intuition",
+      "result": "1-0",
+      "rows": [
+        {
+          "gameId": 6,
+          "playedPly": 2,
+          "fullMoveNumber": 4,
+          "color": "b",
+          "fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R b KQkq - 0 4",
+          "history": [
+            "e2e4",
+            "e7e5",
+            "g1f3",
+            "b8c6",
+            "f1c4",
+            "f8c5",
+            "d2d3"
+          ],
+          "move": "d7d6",
+          "san": "d6",
+          "bestMove": "g8f6",
+          "bestSan": "Nf6",
+          "reference": {
+            "score": {
+              "type": "cp",
+              "value": -12,
+              "bound": null
+            },
+            "depth": 18,
+            "nodes": 100072,
+            "timeMs": 101,
+            "pv": [
+              "g8f6",
+              "c2c3",
+              "d7d6",
+              "e1g1",
+              "h7h6",
+              "f1e1",
+              "a7a5",
+              "a2a4",
+              "c5a7",
+              "b1d2",
+              "e8g8",
+              "h2h3",
+              "c8e6"
+            ],
+            "bestMove": "g8f6",
+            "reportedBestMove": "g8f6",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -12,
+                "bound": null
+              },
+              "depth": 18,
+              "nodes": 100072,
+              "timeMs": 101,
+              "pv": [
+                "g8f6",
+                "c2c3",
+                "d7d6",
+                "e1g1",
+                "h7h6",
+                "f1e1",
+                "a7a5",
+                "a2a4",
+                "c5a7",
+                "b1d2",
+                "e8g8",
+                "h2h3",
+                "c8e6"
+              ]
+            },
+            "forcedMove": null
+          },
+          "chosen": {
+            "score": {
+              "type": "cp",
+              "value": -13,
+              "bound": null
+            },
+            "depth": 15,
+            "nodes": 100051,
+            "timeMs": 104,
+            "pv": [
+              "d7d6",
+              "b1c3",
+              "a7a6",
+              "c3d5",
+              "h7h6",
+              "c2c3",
+              "c5a7",
+              "c1e3",
+              "g8f6"
+            ],
+            "bestMove": "d7d6",
+            "reportedBestMove": "d7d6",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -13,
+                "bound": null
+              },
+              "depth": 15,
+              "nodes": 100051,
+              "timeMs": 104,
+              "pv": [
+                "d7d6",
+                "b1c3",
+                "a7a6",
+                "c3d5",
+                "h7h6",
+                "c2c3",
+                "c5a7",
+                "c1e3",
+                "g8f6"
+              ]
+            },
+            "forcedMove": "d7d6"
+          },
+          "referencePvSan": [
+            "Nf6",
+            "c3",
+            "d6",
+            "O-O",
+            "h6",
+            "Re1",
+            "a5",
+            "a4",
+            "Ba7",
+            "Nbd2"
+          ],
+          "chosenPvSan": [
+            "d6",
+            "Nc3",
+            "a6",
+            "Nd5",
+            "h6",
+            "c3",
+            "Ba7",
+            "Be3",
+            "Nf6"
+          ],
+          "rawCpDelta": 1,
+          "cpLoss": 1,
+          "newlyAllowsForcedMate": false,
+          "losesForcedWinningMate": false,
+          "inferenceCalls": 6,
+          "treeNodes": 6,
+          "elapsedMs": 138.5416899999982,
+          "split": "development"
+        },
+        {
+          "gameId": 6,
+          "playedPly": 4,
+          "fullMoveNumber": 5,
+          "color": "b",
+          "fen": "r1bqk1nr/ppp2ppp/2np4/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 b kq - 1 5",
+          "history": [
+            "e2e4",
+            "e7e5",
+            "g1f3",
+            "b8c6",
+            "f1c4",
+            "f8c5",
+            "d2d3",
+            "d7d6",
+            "e1g1"
+          ],
+          "move": "g8e7",
+          "san": "Nge7",
+          "bestMove": "g8f6",
+          "bestSan": "Nf6",
+          "reference": {
+            "score": {
+              "type": "cp",
+              "value": -14,
+              "bound": null
+            },
+            "depth": 15,
+            "nodes": 78077,
+            "timeMs": 78,
+            "pv": [
+              "g8f6",
+              "b1c3",
+              "a7a6",
+              "a2a4",
+              "h7h6",
+              "c3e2",
+              "c5a7",
+              "c2c3",
+              "e8g8",
+              "e2g3",
+              "c8e6",
+              "c4e6"
+            ],
+            "bestMove": "g8f6",
+            "reportedBestMove": "g8f6",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -11,
+                "bound": "lowerbound"
+              },
+              "depth": 16,
+              "nodes": 100136,
+              "timeMs": 102,
+              "pv": [
+                "g8f6",
+                "b1c3"
+              ]
+            },
+            "forcedMove": null
+          },
+          "chosen": {
+            "score": {
+              "type": "cp",
+              "value": -282,
+              "bound": null
+            },
+            "depth": 13,
+            "nodes": 88569,
+            "timeMs": 95,
+            "pv": [
+              "g8e7",
+              "f3g5",
+              "d6d5",
+              "e4d5",
+              "c6a5",
+              "d1h5",
+              "e7g6",
+              "b1c3",
+              "a5c4",
+              "d3c4",
+              "c8d7",
+              "c3e4",
+              "d8e7",
+              "a2a4",
+              "a7a5",
+              "e4c5",
+              "e7c5"
+            ],
+            "bestMove": "g8e7",
+            "reportedBestMove": "g8e7",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -253,
+                "bound": "lowerbound"
+              },
+              "depth": 14,
+              "nodes": 100080,
+              "timeMs": 107,
+              "pv": [
+                "g8e7",
+                "f3g5"
+              ]
+            },
+            "forcedMove": "g8e7"
+          },
+          "referencePvSan": [
+            "Nf6",
+            "Nc3",
+            "a6",
+            "a4",
+            "h6",
+            "Ne2",
+            "Ba7",
+            "c3",
+            "O-O",
+            "Ng3"
+          ],
+          "chosenPvSan": [
+            "Nge7",
+            "Ng5",
+            "d5",
+            "exd5",
+            "Na5",
+            "Qh5",
+            "Ng6",
+            "Nc3",
+            "Nxc4",
+            "dxc4"
+          ],
+          "rawCpDelta": 268,
+          "cpLoss": 268,
+          "newlyAllowsForcedMate": false,
+          "losesForcedWinningMate": false,
+          "inferenceCalls": 6,
+          "treeNodes": 6,
+          "elapsedMs": 133.20898300000044,
+          "split": "development",
+          "confirmation": {
+            "nodesPerQuery": 500000,
+            "reference": {
+              "score": {
+                "type": "cp",
+                "value": -23,
+                "bound": null
+              },
+              "depth": 19,
+              "nodes": 436849,
+              "timeMs": 442,
+              "pv": [
+                "g8f6",
+                "c2c3",
+                "a7a5",
+                "f1e1",
+                "e8g8",
+                "h2h3",
+                "h7h6",
+                "b1d2",
+                "c8e6",
+                "c4b5",
+                "c6e7",
+                "d3d4",
+                "c5a7",
+                "b5d3"
+              ],
+              "bestMove": "g8f6",
+              "reportedBestMove": "g8f6",
+              "finalReportedInfo": {
+                "score": {
+                  "type": "cp",
+                  "value": -26,
+                  "bound": "upperbound"
+                },
+                "depth": 20,
+                "nodes": 500112,
+                "timeMs": 505,
+                "pv": [
+                  "g8f6",
+                  "c2c3"
+                ]
+              },
+              "forcedMove": null
+            },
+            "chosen": {
+              "score": {
+                "type": "cp",
+                "value": -264,
+                "bound": null
+              },
+              "depth": 18,
+              "nodes": 500517,
+              "timeMs": 531,
+              "pv": [
+                "g8e7",
+                "f3g5",
+                "d6d5",
+                "e4d5",
+                "c6a5",
+                "d1h5",
+                "e7g6",
+                "b1c3",
+                "a5c4",
+                "d3c4",
+                "d8e7",
+                "c3e4",
+                "c5b6",
+                "a2a4",
+                "h7h6",
+                "g2g3"
+              ],
+              "bestMove": "g8e7",
+              "reportedBestMove": "g8e7",
+              "finalReportedInfo": {
+                "score": {
+                  "type": "cp",
+                  "value": -264,
+                  "bound": null
+                },
+                "depth": 18,
+                "nodes": 500517,
+                "timeMs": 531,
+                "pv": [
+                  "g8e7",
+                  "f3g5",
+                  "d6d5",
+                  "e4d5",
+                  "c6a5",
+                  "d1h5",
+                  "e7g6",
+                  "b1c3",
+                  "a5c4",
+                  "d3c4",
+                  "d8e7",
+                  "c3e4",
+                  "c5b6",
+                  "a2a4",
+                  "h7h6",
+                  "g2g3"
+                ]
+              },
+              "forcedMove": "g8e7"
+            },
+            "bestSan": "Nf6",
+            "referencePvSan": [
+              "Nf6",
+              "c3",
+              "a5",
+              "Re1",
+              "O-O",
+              "h3",
+              "h6",
+              "Nbd2",
+              "Be6",
+              "Bb5"
+            ],
+            "chosenPvSan": [
+              "Nge7",
+              "Ng5",
+              "d5",
+              "exd5",
+              "Na5",
+              "Qh5",
+              "Ng6",
+              "Nc3",
+              "Nxc4",
+              "dxc4"
+            ],
+            "cpLoss": 241
+          }
+        }
+      ],
+      "firstLargeMistake": {
+        "gameId": 6,
+        "playedPly": 4,
+        "fullMoveNumber": 5,
+        "color": "b",
+        "fen": "r1bqk1nr/ppp2ppp/2np4/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 b kq - 1 5",
+        "history": [
+          "e2e4",
+          "e7e5",
+          "g1f3",
+          "b8c6",
+          "f1c4",
+          "f8c5",
+          "d2d3",
+          "d7d6",
+          "e1g1"
+        ],
+        "move": "g8e7",
+        "san": "Nge7",
+        "bestMove": "g8f6",
+        "bestSan": "Nf6",
+        "reference": {
+          "score": {
+            "type": "cp",
+            "value": -14,
+            "bound": null
+          },
+          "depth": 15,
+          "nodes": 78077,
+          "timeMs": 78,
+          "pv": [
+            "g8f6",
+            "b1c3",
+            "a7a6",
+            "a2a4",
+            "h7h6",
+            "c3e2",
+            "c5a7",
+            "c2c3",
+            "e8g8",
+            "e2g3",
+            "c8e6",
+            "c4e6"
+          ],
+          "bestMove": "g8f6",
+          "reportedBestMove": "g8f6",
+          "finalReportedInfo": {
+            "score": {
+              "type": "cp",
+              "value": -11,
+              "bound": "lowerbound"
+            },
+            "depth": 16,
+            "nodes": 100136,
+            "timeMs": 102,
+            "pv": [
+              "g8f6",
+              "b1c3"
+            ]
+          },
+          "forcedMove": null
+        },
+        "chosen": {
+          "score": {
+            "type": "cp",
+            "value": -282,
+            "bound": null
+          },
+          "depth": 13,
+          "nodes": 88569,
+          "timeMs": 95,
+          "pv": [
+            "g8e7",
+            "f3g5",
+            "d6d5",
+            "e4d5",
+            "c6a5",
+            "d1h5",
+            "e7g6",
+            "b1c3",
+            "a5c4",
+            "d3c4",
+            "c8d7",
+            "c3e4",
+            "d8e7",
+            "a2a4",
+            "a7a5",
+            "e4c5",
+            "e7c5"
+          ],
+          "bestMove": "g8e7",
+          "reportedBestMove": "g8e7",
+          "finalReportedInfo": {
+            "score": {
+              "type": "cp",
+              "value": -253,
+              "bound": "lowerbound"
+            },
+            "depth": 14,
+            "nodes": 100080,
+            "timeMs": 107,
+            "pv": [
+              "g8e7",
+              "f3g5"
+            ]
+          },
+          "forcedMove": "g8e7"
+        },
+        "referencePvSan": [
+          "Nf6",
+          "Nc3",
+          "a6",
+          "a4",
+          "h6",
+          "Ne2",
+          "Ba7",
+          "c3",
+          "O-O",
+          "Ng3"
+        ],
+        "chosenPvSan": [
+          "Nge7",
+          "Ng5",
+          "d5",
+          "exd5",
+          "Na5",
+          "Qh5",
+          "Ng6",
+          "Nc3",
+          "Nxc4",
+          "dxc4"
+        ],
+        "rawCpDelta": 268,
+        "cpLoss": 268,
+        "newlyAllowsForcedMate": false,
+        "losesForcedWinningMate": false,
+        "inferenceCalls": 6,
+        "treeNodes": 6,
+        "elapsedMs": 133.20898300000044,
+        "split": "development",
+        "confirmation": {
+          "nodesPerQuery": 500000,
+          "reference": {
+            "score": {
+              "type": "cp",
+              "value": -23,
+              "bound": null
+            },
+            "depth": 19,
+            "nodes": 436849,
+            "timeMs": 442,
+            "pv": [
+              "g8f6",
+              "c2c3",
+              "a7a5",
+              "f1e1",
+              "e8g8",
+              "h2h3",
+              "h7h6",
+              "b1d2",
+              "c8e6",
+              "c4b5",
+              "c6e7",
+              "d3d4",
+              "c5a7",
+              "b5d3"
+            ],
+            "bestMove": "g8f6",
+            "reportedBestMove": "g8f6",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -26,
+                "bound": "upperbound"
+              },
+              "depth": 20,
+              "nodes": 500112,
+              "timeMs": 505,
+              "pv": [
+                "g8f6",
+                "c2c3"
+              ]
+            },
+            "forcedMove": null
+          },
+          "chosen": {
+            "score": {
+              "type": "cp",
+              "value": -264,
+              "bound": null
+            },
+            "depth": 18,
+            "nodes": 500517,
+            "timeMs": 531,
+            "pv": [
+              "g8e7",
+              "f3g5",
+              "d6d5",
+              "e4d5",
+              "c6a5",
+              "d1h5",
+              "e7g6",
+              "b1c3",
+              "a5c4",
+              "d3c4",
+              "d8e7",
+              "c3e4",
+              "c5b6",
+              "a2a4",
+              "h7h6",
+              "g2g3"
+            ],
+            "bestMove": "g8e7",
+            "reportedBestMove": "g8e7",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -264,
+                "bound": null
+              },
+              "depth": 18,
+              "nodes": 500517,
+              "timeMs": 531,
+              "pv": [
+                "g8e7",
+                "f3g5",
+                "d6d5",
+                "e4d5",
+                "c6a5",
+                "d1h5",
+                "e7g6",
+                "b1c3",
+                "a5c4",
+                "d3c4",
+                "d8e7",
+                "c3e4",
+                "c5b6",
+                "a2a4",
+                "h7h6",
+                "g2g3"
+              ]
+            },
+            "forcedMove": "g8e7"
+          },
+          "bestSan": "Nf6",
+          "referencePvSan": [
+            "Nf6",
+            "c3",
+            "a5",
+            "Re1",
+            "O-O",
+            "h3",
+            "h6",
+            "Nbd2",
+            "Be6",
+            "Bb5"
+          ],
+          "chosenPvSan": [
+            "Nge7",
+            "Ng5",
+            "d5",
+            "exd5",
+            "Na5",
+            "Qh5",
+            "Ng6",
+            "Nc3",
+            "Nxc4",
+            "dxc4"
+          ],
+          "cpLoss": 241
+        }
+      }
+    },
+    {
+      "id": 8,
+      "opening": "Queen’s Gambit",
+      "whiteEngine": "stockfish",
+      "blackEngine": "intuition",
+      "result": "1-0",
+      "rows": [
+        {
+          "gameId": 8,
+          "playedPly": 2,
+          "fullMoveNumber": 4,
+          "color": "b",
+          "fen": "rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/2N2N2/PP2PPPP/R1BQKB1R b KQkq - 3 4",
+          "history": [
+            "d2d4",
+            "d7d5",
+            "c2c4",
+            "e7e6",
+            "b1c3",
+            "g8f6",
+            "g1f3"
+          ],
+          "move": "c7c6",
+          "san": "c6",
+          "bestMove": "c7c5",
+          "bestSan": "c5",
+          "reference": {
+            "score": {
+              "type": "cp",
+              "value": -15,
+              "bound": null
+            },
+            "depth": 15,
+            "nodes": 51735,
+            "timeMs": 50,
+            "pv": [
+              "c7c5",
+              "c4d5",
+              "c5d4",
+              "d1d4",
+              "e6d5",
+              "c1g5",
+              "f8e7",
+              "e2e3",
+              "e8g8",
+              "f1e2",
+              "h7h6",
+              "g5h4"
+            ],
+            "bestMove": "c7c5",
+            "reportedBestMove": "c7c5",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -17,
+                "bound": "lowerbound"
+              },
+              "depth": 16,
+              "nodes": 100092,
+              "timeMs": 98,
+              "pv": [
+                "c7c5",
+                "c1g5"
+              ]
+            },
+            "forcedMove": null
+          },
+          "chosen": {
+            "score": {
+              "type": "cp",
+              "value": -27,
+              "bound": null
+            },
+            "depth": 16,
+            "nodes": 67443,
+            "timeMs": 69,
+            "pv": [
+              "c7c6",
+              "c1g5",
+              "h7h6",
+              "g5f6",
+              "d8f6",
+              "e2e3",
+              "f8d6",
+              "f1d3",
+              "d5c4",
+              "c3e4",
+              "f6e7",
+              "d3c4",
+              "d6b4",
+              "e1f1",
+              "b8d7",
+              "a2a3",
+              "b4d6",
+              "e4d6",
+              "e7d6"
+            ],
+            "bestMove": "c7c6",
+            "reportedBestMove": "c7c6",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -26,
+                "bound": "lowerbound"
+              },
+              "depth": 17,
+              "nodes": 100024,
+              "timeMs": 102,
+              "pv": [
+                "c7c6",
+                "c1g5"
+              ]
+            },
+            "forcedMove": "c7c6"
+          },
+          "referencePvSan": [
+            "c5",
+            "cxd5",
+            "cxd4",
+            "Qxd4",
+            "exd5",
+            "Bg5",
+            "Be7",
+            "e3",
+            "O-O",
+            "Be2"
+          ],
+          "chosenPvSan": [
+            "c6",
+            "Bg5",
+            "h6",
+            "Bxf6",
+            "Qxf6",
+            "e3",
+            "Bd6",
+            "Bd3",
+            "dxc4",
+            "Ne4"
+          ],
+          "rawCpDelta": 12,
+          "cpLoss": 12,
+          "newlyAllowsForcedMate": false,
+          "losesForcedWinningMate": false,
+          "inferenceCalls": 6,
+          "treeNodes": 6,
+          "elapsedMs": 138.74605500000325,
+          "split": "development"
+        },
+        {
+          "gameId": 8,
+          "playedPly": 4,
+          "fullMoveNumber": 5,
+          "color": "b",
+          "fen": "rnbqkb1r/pp3ppp/2p1pn2/3p4/2PP4/2N2N2/PPQ1PPPP/R1B1KB1R b KQkq - 1 5",
+          "history": [
+            "d2d4",
+            "d7d5",
+            "c2c4",
+            "e7e6",
+            "b1c3",
+            "g8f6",
+            "g1f3",
+            "c7c6",
+            "d1c2"
+          ],
+          "move": "f8e7",
+          "san": "Be7",
+          "bestMove": "d5c4",
+          "bestSan": "dxc4",
+          "reference": {
+            "score": {
+              "type": "cp",
+              "value": 6,
+              "bound": null
+            },
+            "depth": 14,
+            "nodes": 71729,
+            "timeMs": 73,
+            "pv": [
+              "d5c4",
+              "a2a4",
+              "f8b4",
+              "g2g3",
+              "b7b5",
+              "f1g2",
+              "c8b7",
+              "e1g1",
+              "a7a6",
+              "f1d1",
+              "e8g8",
+              "b2b3",
+              "c4b3",
+              "c2b3",
+              "b4c3",
+              "b3c3"
+            ],
+            "bestMove": "d5c4",
+            "reportedBestMove": "d5c4",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": 4,
+                "bound": "upperbound"
+              },
+              "depth": 15,
+              "nodes": 100085,
+              "timeMs": 102,
+              "pv": [
+                "d5c4",
+                "a2a4"
+              ]
+            },
+            "forcedMove": null
+          },
+          "chosen": {
+            "score": {
+              "type": "cp",
+              "value": -34,
+              "bound": null
+            },
+            "depth": 15,
+            "nodes": 62817,
+            "timeMs": 61,
+            "pv": [
+              "f8e7",
+              "e2e3",
+              "e8g8",
+              "b2b3",
+              "c6c5",
+              "d4c5",
+              "b8d7",
+              "c4d5",
+              "e6d5",
+              "f1e2",
+              "d7c5",
+              "e1g1",
+              "c5e4"
+            ],
+            "bestMove": "f8e7",
+            "reportedBestMove": "f8e7",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -35,
+                "bound": "upperbound"
+              },
+              "depth": 16,
+              "nodes": 100013,
+              "timeMs": 99,
+              "pv": [
+                "f8e7",
+                "e2e3"
+              ]
+            },
+            "forcedMove": "f8e7"
+          },
+          "referencePvSan": [
+            "dxc4",
+            "a4",
+            "Bb4",
+            "g3",
+            "b5",
+            "Bg2",
+            "Bb7",
+            "O-O",
+            "a6",
+            "Rd1"
+          ],
+          "chosenPvSan": [
+            "Be7",
+            "e3",
+            "O-O",
+            "b3",
+            "c5",
+            "dxc5",
+            "Nbd7",
+            "cxd5",
+            "exd5",
+            "Be2"
+          ],
+          "rawCpDelta": 40,
+          "cpLoss": 40,
+          "newlyAllowsForcedMate": false,
+          "losesForcedWinningMate": false,
+          "inferenceCalls": 5,
+          "treeNodes": 5,
+          "elapsedMs": 125.50871400000324,
+          "split": "development"
+        },
+        {
+          "gameId": 8,
+          "playedPly": 6,
+          "fullMoveNumber": 6,
+          "color": "b",
+          "fen": "rnbqk2r/pp2bppp/2p1pn2/3p4/2PP3P/2N2N2/PPQ1PPP1/R1B1KB1R b KQkq - 0 6",
+          "history": [
+            "d2d4",
+            "d7d5",
+            "c2c4",
+            "e7e6",
+            "b1c3",
+            "g8f6",
+            "g1f3",
+            "c7c6",
+            "d1c2",
+            "f8e7",
+            "h2h4"
+          ],
+          "move": "e8g8",
+          "san": "O-O",
+          "bestMove": "d5c4",
+          "bestSan": "dxc4",
+          "reference": {
+            "score": {
+              "type": "cp",
+              "value": 45,
+              "bound": null
+            },
+            "depth": 13,
+            "nodes": 68445,
+            "timeMs": 73,
+            "pv": [
+              "d5c4",
+              "e2e4",
+              "b7b5",
+              "f1e2",
+              "b8d7",
+              "a2a4",
+              "c8b7",
+              "a4b5",
+              "c6b5",
+              "e4e5",
+              "f6d5",
+              "c3b5"
+            ],
+            "bestMove": "d5c4",
+            "reportedBestMove": "d5c4",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": 30,
+                "bound": "upperbound"
+              },
+              "depth": 14,
+              "nodes": 100054,
+              "timeMs": 105,
+              "pv": [
+                "d5c4",
+                "e2e4"
+              ]
+            },
+            "forcedMove": null
+          },
+          "chosen": {
+            "score": {
+              "type": "cp",
+              "value": -22,
+              "bound": null
+            },
+            "depth": 14,
+            "nodes": 72822,
+            "timeMs": 73,
+            "pv": [
+              "e8g8",
+              "c1f4",
+              "c6c5",
+              "d4c5",
+              "b8a6",
+              "a1d1",
+              "a6c5",
+              "a2a3",
+              "c5e4",
+              "c3e4",
+              "f6e4",
+              "f3g5",
+              "d8b6",
+              "g5e4",
+              "d5e4"
+            ],
+            "bestMove": "e8g8",
+            "reportedBestMove": "e8g8",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -21,
+                "bound": "lowerbound"
+              },
+              "depth": 15,
+              "nodes": 100057,
+              "timeMs": 102,
+              "pv": [
+                "e8g8",
+                "c1f4"
+              ]
+            },
+            "forcedMove": "e8g8"
+          },
+          "referencePvSan": [
+            "dxc4",
+            "e4",
+            "b5",
+            "Be2",
+            "Nbd7",
+            "a4",
+            "Bb7",
+            "axb5",
+            "cxb5",
+            "e5"
+          ],
+          "chosenPvSan": [
+            "O-O",
+            "Bf4",
+            "c5",
+            "dxc5",
+            "Na6",
+            "Rd1",
+            "Nxc5",
+            "a3",
+            "Nce4",
+            "Nxe4"
+          ],
+          "rawCpDelta": 67,
+          "cpLoss": 67,
+          "newlyAllowsForcedMate": false,
+          "losesForcedWinningMate": false,
+          "inferenceCalls": 5,
+          "treeNodes": 5,
+          "elapsedMs": 127.9815180000005,
+          "split": "development"
+        },
+        {
+          "gameId": 8,
+          "playedPly": 8,
+          "fullMoveNumber": 7,
+          "color": "b",
+          "fen": "rnbq1rk1/pp2bppp/2p1pn2/3p4/2PP1B1P/2N2N2/PPQ1PPP1/R3KB1R b KQ - 2 7",
+          "history": [
+            "d2d4",
+            "d7d5",
+            "c2c4",
+            "e7e6",
+            "b1c3",
+            "g8f6",
+            "g1f3",
+            "c7c6",
+            "d1c2",
+            "f8e7",
+            "h2h4",
+            "e8g8",
+            "c1f4"
+          ],
+          "move": "b8d7",
+          "san": "Nbd7",
+          "bestMove": "d5c4",
+          "bestSan": "dxc4",
+          "reference": {
+            "score": {
+              "type": "cp",
+              "value": -1,
+              "bound": null
+            },
+            "depth": 13,
+            "nodes": 65830,
+            "timeMs": 66,
+            "pv": [
+              "d5c4",
+              "e2e4",
+              "b7b5",
+              "f3g5",
+              "g7g6",
+              "f1e2",
+              "b8d7",
+              "e1c1"
+            ],
+            "bestMove": "d5c4",
+            "reportedBestMove": "d5c4",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -5,
+                "bound": "lowerbound"
+              },
+              "depth": 14,
+              "nodes": 100085,
+              "timeMs": 102,
+              "pv": [
+                "d5c4",
+                "e2e4"
+              ]
+            },
+            "forcedMove": null
+          },
+          "chosen": {
+            "score": {
+              "type": "cp",
+              "value": -39,
+              "bound": null
+            },
+            "depth": 14,
+            "nodes": 26175,
+            "timeMs": 26,
+            "pv": [
+              "b8d7",
+              "e2e3",
+              "d5c4",
+              "f1c4",
+              "b7b5",
+              "c4d3",
+              "c8b7",
+              "e1g1",
+              "a8c8",
+              "f1d1",
+              "b5b4",
+              "c3a4",
+              "c6c5",
+              "d4c5",
+              "d8a5"
+            ],
+            "bestMove": "b8d7",
+            "reportedBestMove": "b8d7",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -17,
+                "bound": "lowerbound"
+              },
+              "depth": 15,
+              "nodes": 100112,
+              "timeMs": 101,
+              "pv": [
+                "b8d7",
+                "e2e3"
+              ]
+            },
+            "forcedMove": "b8d7"
+          },
+          "referencePvSan": [
+            "dxc4",
+            "e4",
+            "b5",
+            "Ng5",
+            "g6",
+            "Be2",
+            "Nbd7",
+            "O-O-O"
+          ],
+          "chosenPvSan": [
+            "Nbd7",
+            "e3",
+            "dxc4",
+            "Bxc4",
+            "b5",
+            "Bd3",
+            "Bb7",
+            "O-O",
+            "Rc8",
+            "Rfd1"
+          ],
+          "rawCpDelta": 38,
+          "cpLoss": 38,
+          "newlyAllowsForcedMate": false,
+          "losesForcedWinningMate": false,
+          "inferenceCalls": 5,
+          "treeNodes": 5,
+          "elapsedMs": 130.02578199999698,
+          "split": "development"
+        },
+        {
+          "gameId": 8,
+          "playedPly": 10,
+          "fullMoveNumber": 8,
+          "color": "b",
+          "fen": "r1bq1rk1/pp1nbppp/2p1pn2/3p2N1/2PP1B1P/2N5/PPQ1PPP1/R3KB1R b KQ - 4 8",
+          "history": [
+            "d2d4",
+            "d7d5",
+            "c2c4",
+            "e7e6",
+            "b1c3",
+            "g8f6",
+            "g1f3",
+            "c7c6",
+            "d1c2",
+            "f8e7",
+            "h2h4",
+            "e8g8",
+            "c1f4",
+            "b8d7",
+            "f3g5"
+          ],
+          "move": "h7h6",
+          "san": "h6",
+          "bestMove": "h7h6",
+          "bestSan": "h6",
+          "reference": {
+            "score": {
+              "type": "cp",
+              "value": -2,
+              "bound": null
+            },
+            "depth": 13,
+            "nodes": 81905,
+            "timeMs": 82,
+            "pv": [
+              "h7h6",
+              "e2e3",
+              "e7b4",
+              "g5f3",
+              "b7b6",
+              "f1e2",
+              "c6c5",
+              "d4c5",
+              "d7c5",
+              "e1g1",
+              "b4c3",
+              "c2c3",
+              "d5c4",
+              "c3c4"
+            ],
+            "bestMove": "h7h6",
+            "reportedBestMove": "h7h6",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -3,
+                "bound": "upperbound"
+              },
+              "depth": 14,
+              "nodes": 100012,
+              "timeMs": 100,
+              "pv": [
+                "h7h6",
+                "e2e3"
+              ]
+            },
+            "forcedMove": null
+          },
+          "chosen": {
+            "score": {
+              "type": "cp",
+              "value": -2,
+              "bound": null
+            },
+            "depth": 13,
+            "nodes": 81905,
+            "timeMs": 82,
+            "pv": [
+              "h7h6",
+              "e2e3",
+              "e7b4",
+              "g5f3",
+              "b7b6",
+              "f1e2",
+              "c6c5",
+              "d4c5",
+              "d7c5",
+              "e1g1",
+              "b4c3",
+              "c2c3",
+              "d5c4",
+              "c3c4"
+            ],
+            "bestMove": "h7h6",
+            "reportedBestMove": "h7h6",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -3,
+                "bound": "upperbound"
+              },
+              "depth": 14,
+              "nodes": 100012,
+              "timeMs": 100,
+              "pv": [
+                "h7h6",
+                "e2e3"
+              ]
+            },
+            "forcedMove": null
+          },
+          "referencePvSan": [
+            "h6",
+            "e3",
+            "Bb4",
+            "Nf3",
+            "b6",
+            "Be2",
+            "c5",
+            "dxc5",
+            "Nxc5",
+            "O-O"
+          ],
+          "chosenPvSan": [
+            "h6",
+            "e3",
+            "Bb4",
+            "Nf3",
+            "b6",
+            "Be2",
+            "c5",
+            "dxc5",
+            "Nxc5",
+            "O-O"
+          ],
+          "rawCpDelta": 0,
+          "cpLoss": 0,
+          "newlyAllowsForcedMate": false,
+          "losesForcedWinningMate": false,
+          "inferenceCalls": 5,
+          "treeNodes": 5,
+          "elapsedMs": 136.73123599999963,
+          "split": "development"
+        },
+        {
+          "gameId": 8,
+          "playedPly": 12,
+          "fullMoveNumber": 9,
+          "color": "b",
+          "fen": "r1bq1rk1/pp1nbpp1/2p1pn1p/3p2N1/2PP1B1P/2N1P3/PPQ2PP1/R3KB1R b KQ - 0 9",
+          "history": [
+            "d2d4",
+            "d7d5",
+            "c2c4",
+            "e7e6",
+            "b1c3",
+            "g8f6",
+            "g1f3",
+            "c7c6",
+            "d1c2",
+            "f8e7",
+            "h2h4",
+            "e8g8",
+            "c1f4",
+            "b8d7",
+            "f3g5",
+            "h7h6",
+            "e2e3"
+          ],
+          "move": "h6g5",
+          "san": "hxg5",
+          "bestMove": "d5c4",
+          "bestSan": "dxc4",
+          "reference": {
+            "score": {
+              "type": "cp",
+              "value": 25,
+              "bound": null
+            },
+            "depth": 17,
+            "nodes": 100015,
+            "timeMs": 104,
+            "pv": [
+              "d5c4",
+              "f1c4",
+              "b7b5",
+              "c4d3",
+              "c8b7",
+              "a1d1",
+              "d8a5",
+              "a2a3",
+              "a8c8",
+              "g5h7"
+            ],
+            "bestMove": "d5c4",
+            "reportedBestMove": "d5c4",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": 25,
+                "bound": null
+              },
+              "depth": 17,
+              "nodes": 100015,
+              "timeMs": 104,
+              "pv": [
+                "d5c4",
+                "f1c4",
+                "b7b5",
+                "c4d3",
+                "c8b7",
+                "a1d1",
+                "d8a5",
+                "a2a3",
+                "a8c8",
+                "g5h7"
+              ]
+            },
+            "forcedMove": null
+          },
+          "chosen": {
+            "score": {
+              "type": "cp",
+              "value": -207,
+              "bound": null
+            },
+            "depth": 15,
+            "nodes": 100060,
+            "timeMs": 105,
+            "pv": [
+              "h6g5",
+              "h4g5",
+              "g7g6",
+              "g5f6",
+              "e7f6",
+              "c4d5",
+              "c6d5",
+              "e1c1",
+              "e6e5",
+              "d4e5",
+              "d7e5",
+              "d1d5",
+              "d8c7",
+              "f1b5"
+            ],
+            "bestMove": "h6g5",
+            "reportedBestMove": "h6g5",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -207,
+                "bound": null
+              },
+              "depth": 15,
+              "nodes": 100060,
+              "timeMs": 105,
+              "pv": [
+                "h6g5",
+                "h4g5",
+                "g7g6",
+                "g5f6",
+                "e7f6",
+                "c4d5",
+                "c6d5",
+                "e1c1",
+                "e6e5",
+                "d4e5",
+                "d7e5",
+                "d1d5",
+                "d8c7",
+                "f1b5"
+              ]
+            },
+            "forcedMove": "h6g5"
+          },
+          "referencePvSan": [
+            "dxc4",
+            "Bxc4",
+            "b5",
+            "Bd3",
+            "Bb7",
+            "Rd1",
+            "Qa5",
+            "a3",
+            "Rac8",
+            "Nh7"
+          ],
+          "chosenPvSan": [
+            "hxg5",
+            "hxg5",
+            "g6",
+            "gxf6",
+            "Bxf6",
+            "cxd5",
+            "cxd5",
+            "O-O-O",
+            "e5",
+            "dxe5"
+          ],
+          "rawCpDelta": 232,
+          "cpLoss": 232,
+          "newlyAllowsForcedMate": false,
+          "losesForcedWinningMate": false,
+          "inferenceCalls": 5,
+          "treeNodes": 5,
+          "elapsedMs": 137.26645599999756,
+          "split": "development",
+          "confirmation": {
+            "nodesPerQuery": 500000,
+            "reference": {
+              "score": {
+                "type": "cp",
+                "value": 17,
+                "bound": null
+              },
+              "depth": 19,
+              "nodes": 463851,
+              "timeMs": 484,
+              "pv": [
+                "d5c4",
+                "f1c4",
+                "b7b5",
+                "c4d3",
+                "c8b7",
+                "g5h7",
+                "f6h7",
+                "d3h7",
+                "g8h8",
+                "h7e4",
+                "d8b6",
+                "e1g1",
+                "c6c5",
+                "a2a4",
+                "b7e4",
+                "c3e4",
+                "c5d4",
+                "e3d4",
+                "d7f6",
+                "f4e5"
+              ],
+              "bestMove": "d5c4",
+              "reportedBestMove": "d5c4",
+              "finalReportedInfo": {
+                "score": {
+                  "type": "cp",
+                  "value": 14,
+                  "bound": "upperbound"
+                },
+                "depth": 20,
+                "nodes": 500335,
+                "timeMs": 522,
+                "pv": [
+                  "d5c4",
+                  "f1c4"
+                ]
+              },
+              "forcedMove": null
+            },
+            "chosen": {
+              "score": {
+                "type": "cp",
+                "value": -202,
+                "bound": null
+              },
+              "depth": 16,
+              "nodes": 181870,
+              "timeMs": 191,
+              "pv": [
+                "h6g5",
+                "h4g5",
+                "f6e4",
+                "f2f3",
+                "f7f5",
+                "g5f6",
+                "e4f6",
+                "e1c1",
+                "e7b4",
+                "c4d5",
+                "f6d5",
+                "c3d5",
+                "c6d5",
+                "c2h7",
+                "g8f7",
+                "f1d3",
+                "f8g8",
+                "h7h5",
+                "f7e7"
+              ],
+              "bestMove": "h6g5",
+              "reportedBestMove": "h6g5",
+              "finalReportedInfo": {
+                "score": {
+                  "type": "cp",
+                  "value": -227,
+                  "bound": "upperbound"
+                },
+                "depth": 17,
+                "nodes": 500106,
+                "timeMs": 533,
+                "pv": [
+                  "h6g5",
+                  "h4g5"
+                ]
+              },
+              "forcedMove": "h6g5"
+            },
+            "bestSan": "dxc4",
+            "referencePvSan": [
+              "dxc4",
+              "Bxc4",
+              "b5",
+              "Bd3",
+              "Bb7",
+              "Nh7",
+              "Nxh7",
+              "Bxh7+",
+              "Kh8",
+              "Be4"
+            ],
+            "chosenPvSan": [
+              "hxg5",
+              "hxg5",
+              "Ne4",
+              "f3",
+              "f5",
+              "gxf6",
+              "Nexf6",
+              "O-O-O",
+              "Bb4",
+              "cxd5"
+            ],
+            "cpLoss": 219
+          }
+        }
+      ],
+      "firstLargeMistake": {
+        "gameId": 8,
+        "playedPly": 12,
+        "fullMoveNumber": 9,
+        "color": "b",
+        "fen": "r1bq1rk1/pp1nbpp1/2p1pn1p/3p2N1/2PP1B1P/2N1P3/PPQ2PP1/R3KB1R b KQ - 0 9",
+        "history": [
+          "d2d4",
+          "d7d5",
+          "c2c4",
+          "e7e6",
+          "b1c3",
+          "g8f6",
+          "g1f3",
+          "c7c6",
+          "d1c2",
+          "f8e7",
+          "h2h4",
+          "e8g8",
+          "c1f4",
+          "b8d7",
+          "f3g5",
+          "h7h6",
+          "e2e3"
+        ],
+        "move": "h6g5",
+        "san": "hxg5",
+        "bestMove": "d5c4",
+        "bestSan": "dxc4",
+        "reference": {
+          "score": {
+            "type": "cp",
+            "value": 25,
+            "bound": null
+          },
+          "depth": 17,
+          "nodes": 100015,
+          "timeMs": 104,
+          "pv": [
+            "d5c4",
+            "f1c4",
+            "b7b5",
+            "c4d3",
+            "c8b7",
+            "a1d1",
+            "d8a5",
+            "a2a3",
+            "a8c8",
+            "g5h7"
+          ],
+          "bestMove": "d5c4",
+          "reportedBestMove": "d5c4",
+          "finalReportedInfo": {
+            "score": {
+              "type": "cp",
+              "value": 25,
+              "bound": null
+            },
+            "depth": 17,
+            "nodes": 100015,
+            "timeMs": 104,
+            "pv": [
+              "d5c4",
+              "f1c4",
+              "b7b5",
+              "c4d3",
+              "c8b7",
+              "a1d1",
+              "d8a5",
+              "a2a3",
+              "a8c8",
+              "g5h7"
+            ]
+          },
+          "forcedMove": null
+        },
+        "chosen": {
+          "score": {
+            "type": "cp",
+            "value": -207,
+            "bound": null
+          },
+          "depth": 15,
+          "nodes": 100060,
+          "timeMs": 105,
+          "pv": [
+            "h6g5",
+            "h4g5",
+            "g7g6",
+            "g5f6",
+            "e7f6",
+            "c4d5",
+            "c6d5",
+            "e1c1",
+            "e6e5",
+            "d4e5",
+            "d7e5",
+            "d1d5",
+            "d8c7",
+            "f1b5"
+          ],
+          "bestMove": "h6g5",
+          "reportedBestMove": "h6g5",
+          "finalReportedInfo": {
+            "score": {
+              "type": "cp",
+              "value": -207,
+              "bound": null
+            },
+            "depth": 15,
+            "nodes": 100060,
+            "timeMs": 105,
+            "pv": [
+              "h6g5",
+              "h4g5",
+              "g7g6",
+              "g5f6",
+              "e7f6",
+              "c4d5",
+              "c6d5",
+              "e1c1",
+              "e6e5",
+              "d4e5",
+              "d7e5",
+              "d1d5",
+              "d8c7",
+              "f1b5"
+            ]
+          },
+          "forcedMove": "h6g5"
+        },
+        "referencePvSan": [
+          "dxc4",
+          "Bxc4",
+          "b5",
+          "Bd3",
+          "Bb7",
+          "Rd1",
+          "Qa5",
+          "a3",
+          "Rac8",
+          "Nh7"
+        ],
+        "chosenPvSan": [
+          "hxg5",
+          "hxg5",
+          "g6",
+          "gxf6",
+          "Bxf6",
+          "cxd5",
+          "cxd5",
+          "O-O-O",
+          "e5",
+          "dxe5"
+        ],
+        "rawCpDelta": 232,
+        "cpLoss": 232,
+        "newlyAllowsForcedMate": false,
+        "losesForcedWinningMate": false,
+        "inferenceCalls": 5,
+        "treeNodes": 5,
+        "elapsedMs": 137.26645599999756,
+        "split": "development",
+        "confirmation": {
+          "nodesPerQuery": 500000,
+          "reference": {
+            "score": {
+              "type": "cp",
+              "value": 17,
+              "bound": null
+            },
+            "depth": 19,
+            "nodes": 463851,
+            "timeMs": 484,
+            "pv": [
+              "d5c4",
+              "f1c4",
+              "b7b5",
+              "c4d3",
+              "c8b7",
+              "g5h7",
+              "f6h7",
+              "d3h7",
+              "g8h8",
+              "h7e4",
+              "d8b6",
+              "e1g1",
+              "c6c5",
+              "a2a4",
+              "b7e4",
+              "c3e4",
+              "c5d4",
+              "e3d4",
+              "d7f6",
+              "f4e5"
+            ],
+            "bestMove": "d5c4",
+            "reportedBestMove": "d5c4",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": 14,
+                "bound": "upperbound"
+              },
+              "depth": 20,
+              "nodes": 500335,
+              "timeMs": 522,
+              "pv": [
+                "d5c4",
+                "f1c4"
+              ]
+            },
+            "forcedMove": null
+          },
+          "chosen": {
+            "score": {
+              "type": "cp",
+              "value": -202,
+              "bound": null
+            },
+            "depth": 16,
+            "nodes": 181870,
+            "timeMs": 191,
+            "pv": [
+              "h6g5",
+              "h4g5",
+              "f6e4",
+              "f2f3",
+              "f7f5",
+              "g5f6",
+              "e4f6",
+              "e1c1",
+              "e7b4",
+              "c4d5",
+              "f6d5",
+              "c3d5",
+              "c6d5",
+              "c2h7",
+              "g8f7",
+              "f1d3",
+              "f8g8",
+              "h7h5",
+              "f7e7"
+            ],
+            "bestMove": "h6g5",
+            "reportedBestMove": "h6g5",
+            "finalReportedInfo": {
+              "score": {
+                "type": "cp",
+                "value": -227,
+                "bound": "upperbound"
+              },
+              "depth": 17,
+              "nodes": 500106,
+              "timeMs": 533,
+              "pv": [
+                "h6g5",
+                "h4g5"
+              ]
+            },
+            "forcedMove": "h6g5"
+          },
+          "bestSan": "dxc4",
+          "referencePvSan": [
+            "dxc4",
+            "Bxc4",
+            "b5",
+            "Bd3",
+            "Bb7",
+            "Nh7",
+            "Nxh7",
+            "Bxh7+",
+            "Kh8",
+            "Be4"
+          ],
+          "chosenPvSan": [
+            "hxg5",
+            "hxg5",
+            "Ne4",
+            "f3",
+            "f5",
+            "gxf6",
+            "Nexf6",
+            "O-O-O",
+            "Bb4",
+            "cxd5"
+          ],
+          "cpLoss": 219
+        }
+      }
+    }
+  ],
+  "finishedAt": "2026-10-30T21:55:34.229Z"
+}

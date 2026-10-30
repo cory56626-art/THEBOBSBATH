@@ -66,7 +66,7 @@ function generateCalibrationPositions() {
 export const CALIBRATION_POSITIONS = Object.freeze(generateCalibrationPositions());
 
 function safeOptions(options) {
-  return { budgetMs: Math.max(10, Math.min(10000, Number(options.budgetMs) || 500)), maxNodes: Math.max(1, Math.min(4096, Number(options.maxNodes) || 64)), threshold: Math.max(0, Math.min(1, Number.isFinite(Number(options.threshold)) ? Number(options.threshold) : .5)) };
+  return { budgetMs: Math.max(10, Math.min(10000, Number(options.budgetMs) || 500)), maxNodes: Math.max(1, Math.min(1000000, Number(options.maxNodes) || 32768)), threshold: Math.max(0, Math.min(1, Number.isFinite(Number(options.threshold)) ? Number(options.threshold) : .5)) };
 }
 
 export async function runSuite(model, options = {}) {

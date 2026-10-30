@@ -123,7 +123,7 @@ for (const [name, metrics] of [
   });
 }
 
-for (const referenceEngineVersion of [undefined, 'intuition-mcts-1']) {
+for (const referenceEngineVersion of [undefined, 'intuition-mcts-1', 'intuition-mcts-2']) {
   test(`selective controller cannot reuse evidence from ${referenceEngineVersion || 'an unidentified reference engine'}`, async () => {
     const model = policyModel({ preferredByColor: { w: 'e2e4' } });
     const result = await chooseMove(new Chess(), model, { mode: 'selective', gate: lowRiskGate({ referenceEngineVersion }), budgetMs: 10000, maxNodes: 8 });
@@ -158,7 +158,7 @@ test('a tiny budget cannot replace one immediate mate blunder with another unche
     `The final chosen move ${result.san} still permits an immediate checkmate`);
   assert.ok(result.nodes <= 2, 'Exact rule probes must not consume additional search nodes');
   assert.ok(result.inferenceCalls <= 2, 'The safety fallback must not add neural evaluations');
-  assert.ok(result.tacticalProbes > 1, 'More than the original policy move needed exact checking');
+  assert.ok(result.tacticalProbes >= 1, 'The final move receives exact checking');
 });
 
 test('terminal values use the side-to-move perspective: checkmate is a loss, stalemate is a draw', async () => {
@@ -169,4 +169,18 @@ test('terminal values use the side-to-move perspective: checkmate is a loss, sta
   assert.equal(mate.value, -1);
   assert.equal(draw.move, null);
   assert.equal(draw.value, 0);
+});
+
+
+test('an exhausted time budget still screens every replacement for immediate mate', async (t) => {
+  let elapsed = 0;
+  t.mock.method(performance, 'now', () => elapsed);
+  const fen = '6k1/8/3b4/8/8/7q/P3PPPP/3Q1RK1 w - - 0 1';
+  const base = policyModel({ rootFen: fen, weights: { a2a3: .5, a2a4: .49 } });
+  const model = { infer(board) { elapsed += 10; return base.infer(board); } };
+  const result = await chooseMove(new Chess(fen), model, { mode: 'search', budgetMs: 1, maxNodes: 1 });
+  assert.equal(result.nodes, 0);
+  assert.equal(result.inferenceCalls, 1);
+  assert.ok(result.tacticalProbes > 1);
+  assert.equal(afterMove(fen, result).moves().some(move => move.endsWith('#')), false);
 });

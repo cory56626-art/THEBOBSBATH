@@ -1,5 +1,7 @@
 # Chess AI evaluation
 
+This records the archived version 2 experiment. [Version 3 strength testing](AI-STRENGTH-V3.md) describes the current hybrid engine. The raw reports below retain their original engine fingerprints and results.
+
 The v2 changes address failures in the chess decision engine. Neural weights are unchanged. The raw direct policy is retained as a reference, and Search is the default playing mode.
 
 ## Failures reproduced before editing
