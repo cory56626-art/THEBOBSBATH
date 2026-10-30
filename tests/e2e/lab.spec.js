@@ -66,6 +66,160 @@ test('real pretrained model plays locally, exports legal PGN, flips, and undoes'
   await context.setOffline(false);
 });
 
+test('New game confirms a restart even at the initial position and leaves the board playable', async ({ page }) => {
+  await openLab(page);
+  await tab(page, 'controller');
+  await page.locator('#new-game').click();
+  await expect(page.locator('#toast')).toBeVisible();
+  await expect(page.locator('#toast')).toContainText(/new game/i);
+  await expect(page.locator('#panel-play')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.fen)).toBe(new Chess().fen());
+  await expect(page.locator('#undo')).toBeDisabled();
+  await page.locator('#board [data-square="e2"]').click();
+  await expect(page.locator('#board [data-square="e4"]')).toHaveClass(/legal-target/);
+  await page.locator('#board [data-square="e4"]').click();
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.latestDecision?.mode)).toBe('direct');
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(false);
+  const replay = new Chess();
+  replay.loadPgn((await downloadText(page, '#export-pgn')).text);
+  expect(replay.history()).toHaveLength(2);
+  expect(replay.history()[0]).toBe('e4');
+});
+
+test('New game clears played moves, highlights and stale decision telemetry before fresh play', async ({ page }) => {
+  await openLab(page);
+  await page.locator('#board [data-square="e2"]').click();
+  await page.locator('#board [data-square="e4"]').click();
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.latestDecision?.mode)).toBe('direct');
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(false);
+  await expect(page.locator('#move-list .move-row')).toHaveCount(1);
+  await expect(page.locator('#metric-nodes')).toHaveText('0');
+  await page.locator('#board [data-square="d2"]').click();
+  await expect(page.locator('#board .selected')).toHaveCount(1);
+  await page.locator('#new-game').click();
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.fen)).toBe(new Chess().fen());
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.latestDecision)).toBe(null);
+  await expect(page.locator('#move-list .move-row')).toHaveCount(0);
+  await expect(page.locator('#board .chess-piece')).toHaveCount(32);
+  await expect(page.locator('#board .selected, #board .last-move, #board .legal-target')).toHaveCount(0);
+  await expect(page.locator('#metric-nodes')).toHaveText('—');
+  await expect(page.locator('#metric-confidence')).toHaveText('—');
+  await expect(page.locator('#metric-gate')).toHaveText('—');
+  await expect(page.locator('#metric-time')).toHaveText(/^[—–]/);
+  await expect(page.locator('#undo')).toBeDisabled();
+  await expect(page.locator('#toast')).toContainText(/new game/i);
+  await page.locator('#board [data-square="d2"]').click();
+  await page.locator('#board [data-square="d4"]').click();
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.latestDecision?.mode)).toBe('direct');
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(false);
+  const replay = new Chess();
+  replay.loadPgn((await downloadText(page, '#export-pgn')).text);
+  expect(replay.history()).toHaveLength(2);
+  expect(replay.history()[0]).toBe('d4');
+});
+
+test('New game as Black preserves settings and orientation and plays exactly one new White opening move', async ({ page }) => {
+  await openLab(page);
+  await page.locator('#side').selectOption('b');
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.fen.split(' ')[1])).toBe('b');
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(false);
+  const openingFen = await page.evaluate(() => window.__INTUITION__.fen);
+  await page.locator('#flip').click();
+  await expect(page.locator('#board')).toHaveAttribute('aria-label', /White at the bottom/);
+  await page.locator('#board [data-square="e7"]').click();
+  await page.locator('#board [data-square="e5"]').click();
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.fen.split(' ')[5])).toBe('2');
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(false);
+  await page.locator('#new-game').click();
+  await expect(page.locator('#toast')).toContainText(/new game/i);
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.fen)).toBe(openingFen);
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(false);
+  await expect(page.locator('#side')).toHaveValue('b');
+  await expect(page.locator('#mode')).toHaveValue('direct');
+  await expect(page.locator('#board')).toHaveAttribute('aria-label', /White at the bottom/);
+  const replay = new Chess();
+  replay.loadPgn((await downloadText(page, '#export-pgn')).text);
+  expect(replay.history()).toHaveLength(1);
+  expect(replay.turn()).toBe('b');
+});
+
+test('New game cancels an in-flight reply and no old move reappears on the reset board', async ({ page }) => {
+  await openLab(page);
+  await page.locator('#mode').selectOption('search');
+  await page.locator('#budget').selectOption('2000');
+  await page.locator('#node-limit').selectOption('256');
+  await page.locator('#board [data-square="e2"]').click();
+  await page.locator('#board [data-square="e4"]').click();
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(true);
+  await page.locator('#new-game').click();
+  await expect(page.locator('#toast')).toContainText(/new game/i);
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.fen)).toBe(new Chess().fen());
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(false);
+  // Cross the old decision's full time cap: a late reply/timer must not mutate
+  // the new board, even after cancellation has acknowledged completion.
+  await page.waitForTimeout(2200);
+  expect(await page.evaluate(() => window.__INTUITION__.fen)).toBe(new Chess().fen());
+  expect(await page.evaluate(() => window.__INTUITION__.latestDecision)).toBe(null);
+  await expect(page.locator('#move-list .move-row')).toHaveCount(0);
+  await expect(page.locator('#board [data-square="d2"]')).toBeEnabled();
+});
+
+test('New game in watch mode restarts autoplay instead of leaving a motionless board', async ({ page }) => {
+  await openLab(page);
+  await page.locator('#mode').selectOption('search');
+  await page.locator('#budget').selectOption('2000');
+  await page.locator('#node-limit').selectOption('256');
+  await page.locator('#side').selectOption('watch');
+  await page.locator('#play-engine').click();
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(true);
+  await page.locator('#new-game').click();
+  await expect(page.locator('#toast')).toContainText(/new game/i);
+  await expect(page.locator('#side')).toHaveValue('watch');
+  await expect(page.locator('#move-list .move-row')).toHaveCount(0);
+  await expect(page.locator('#play-engine')).toContainText(/pause/i);
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.fen !== 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')).toBe(true);
+  await page.locator('#play-engine').click();
+  await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(false);
+  await expect(page.locator('#play-engine')).not.toContainText(/pause/i);
+  const replay = new Chess();
+  replay.loadPgn((await downloadText(page, '#export-pgn')).text);
+  expect(replay.history()).toHaveLength(1);
+});
+
+test('New game and a human first move work while weights load, then the engine replies once ready', async ({ page, context }) => {
+  let releaseWeights;
+  let reportBlocked;
+  const released = new Promise((resolve) => { releaseWeights = resolve; });
+  const blocked = new Promise((resolve) => { reportBlocked = resolve; });
+  await context.route('**/*weights*.bin', async (route) => {
+    reportBlocked();
+    await released;
+    await route.continue();
+  });
+  try {
+    await page.goto('./');
+    await blocked;
+    expect(await page.evaluate(() => window.__INTUITION__.ready)).toBe(false);
+    await page.locator('#new-game').click();
+    await expect(page.locator('#toast')).toContainText(/new game/i);
+    await expect(page.locator('#board [data-square="e2"]')).toBeEnabled();
+    await page.locator('#board [data-square="e2"]').click();
+    await page.locator('#board [data-square="e4"]').click();
+    await expect.poll(() => page.evaluate(() => window.__INTUITION__.fen.split(' ')[1])).toBe('b');
+    expect(await page.evaluate(() => window.__INTUITION__.latestDecision)).toBe(null);
+    releaseWeights();
+    await page.waitForFunction(() => window.__INTUITION__.ready === true && window.__INTUITION__.latestDecision !== null && !window.__INTUITION__.busy);
+    const replay = new Chess();
+    replay.loadPgn((await downloadText(page, '#export-pgn')).text);
+    expect(replay.history()).toHaveLength(2);
+    expect(replay.history()[0]).toBe('e4');
+    expect(replay.turn()).toBe('w');
+  } finally {
+    releaseWeights();
+    await context.unroute('**/*weights*.bin');
+  }
+});
+
 test('FEN errors preserve the board; all three modes compare and export the same position', async ({ page }) => {
   await openLab(page);
   await page.locator('#budget').selectOption('100');

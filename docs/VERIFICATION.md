@@ -12,10 +12,23 @@ GitHub Pages serves the static application. A browser action sends a position an
 | Chess rules and history | Castling, en passant, underpromotion, mate, stalemate, historical repetition and serialization checks pass. |
 | Decision modes | Direct mode performs one inference and zero tree visits; budgeted search and learned-gate acceptance/fallback paths are tested. |
 | Timing and cancellation | Deterministic-clock regression prevents starting an obviously unaffordable extra evaluation; cancellation reaches the worker. Neural calls remain synchronous, so the cap is soft. |
-| Browser integration | Actual pretrained inference, human play, undo/flip, FEN/PGN, underpromotion, repetition, all-mode comparison, JSON/CSV downloads, suite execution/cancellation, controller fitting, mobile sizing and keyboard navigation pass. |
+| Browser integration | Actual pretrained inference, human play, New game/reset and startup flows, undo/flip, FEN/PGN, underpromotion, repetition, all-mode comparison, JSON/CSV downloads, suite execution/cancellation, controller fitting, mobile sizing and keyboard navigation pass. |
 | Build and publication | Vite production build uses the repository base path; GitHub Actions requires unit and production-browser checks before deployment. |
 
-Local result: **40 unit tests, 6 production-browser tests, and the production build passed**. Screenshots and traces are test artifacts, not bundled application assets.
+Local result: **40 unit tests, 12 production-browser tests, and the production build passed**. Screenshots and traces are test artifacts, not bundled application assets.
+
+## New game regression verification
+
+The original six browser checks never clicked New game. Two newly added reset flows were first run against the previous production build and both failed because the button gave no visible confirmation. The revised application and production build now pass six additional real-model browser checks:
+
+- Restarting an untouched board confirms the action, opens Play, and allows a legal first move and engine reply.
+- Restarting after play clears history, selection/highlights, the previous decision, and all four telemetry fields before fresh play.
+- Playing Black preserves the selected side, mode, and board orientation, with exactly one White opening move in the new game's PGN.
+- Restarting during a two-second search cancels the old job; after its original budget has elapsed, no old move has appeared on the new board.
+- Restarting Watch mode resumes fresh autoplay and leaves Pause watching functional.
+- With the actual weight download deliberately delayed, New game and a human first move work before the model is ready; releasing the download produces exactly one legal engine reply.
+
+These checks run against the generated production assets, including the real worker and pretrained weights. The complete 12-case browser run passed in 51.1 seconds locally after the reset fix.
 
 ## Actual local pilot
 

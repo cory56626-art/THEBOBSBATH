@@ -13,6 +13,8 @@ This is an experiment, **not a claim to have surpassed Stockfish**. The small pr
 - **Benchmark:** run the supplied position suite or paired games. A game pair uses the same opening with colors reversed. Export raw results instead of relying only on the summary.
 - **Controller:** inspect or calibrate the selective-search controller. Training examples and held-out evaluation have different roles; controller labels come from additional model-guided search, which is a reference procedure rather than a perfect chess oracle.
 
+**New game** confirms the restart, clears the board history and decision metrics, and returns to Play while preserving your side, decision mode, and board orientation. As Black, the engine makes exactly one opening move for White. In Watch mode, a new game restarts autoplay; Pause watching stops it. You can make White's first move while the model is loading, and the engine replies once ready. Restarting during a calculation cancels the previous game and prevents a late result from moving pieces on the new board.
+
 The model and engine run locally in your browser. No API key, account, paid inference service, or backend is required. Once all assets are loaded, model decisions do not require a remote model request. Refreshing the site still requires the static files to be available.
 
 ## What the three modes mean
@@ -64,7 +66,7 @@ The Vite base path is `/THEBOBSBATH/`, matching the repository's GitHub Pages UR
 CHESS_LAB_BASE_URL=https://cory56626-art.github.io/THEBOBSBATH/ npm run test:e2e
 ```
 
-Unit tests cover the decision engine and controller, including chess rule edge cases and computation limits. Chromium tests load the actual browser model and exercise the playable board, position comparison, exports, and benchmark controls. CI runs installation, unit tests, the production build, and browser tests before deploying the generated `dist/` artifact.
+Unit tests cover the decision engine and controller, including chess rule edge cases and computation limits. Chromium tests load the actual browser model and exercise the playable board, position comparison, exports, and benchmark controls. Reset regressions cover visible New game feedback, cleared history/metrics, Black's opening move, Watch-mode restart, cancellation during search, and a delayed model download followed by a human move. CI runs installation, unit tests, the production build, and browser tests before deploying the generated `dist/` artifact.
 
 ## GitHub Pages
 

@@ -9,6 +9,7 @@ const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&a
 const modeNames = { direct: 'Direct policy', search: 'Always search', selective: 'Selective thinking' };
 let game = new Chess(), orientation = 'w', selected = null, lastMove = null, modelMetadata = null;
 let ready = false, busy = false, activeId = null, watchRunning = false, latestDecision = null;
+let startingGame = false, gameEpoch = 0, gameNotice = null, autoMoveTimer = null;
 let latestReport = null, lastComparison = [], gate = defaultGate;
 const pending = new Map(), logs = [], reports = [];
 let sequence = 0;
@@ -52,7 +53,7 @@ worker.onmessage = event => {
     $('model-status').textContent = 'Neural model ready';
     if ($('model-detail')) $('model-detail').textContent = `${Number(data.metadata?.parameters || 116266).toLocaleString()} parameters · local inference · verified weights`;
     log('model-ready', data.metadata);
-    renderGate(); updateControls(); maybeAutoMove(); return;
+    renderGate(); render(); maybeAutoMove(); return;
   }
   if (data.type === 'init-error') { toast(`Model could not load: ${data.error}. Reload to retry.`, true); $('model-status').textContent = 'Model unavailable'; return; }
   const task = pending.get(data.id);
@@ -80,6 +81,7 @@ worker.onerror = event => {
 };
 async function cancelActive() {
   watchRunning = false;
+  clearTimeout(autoMoveTimer); autoMoveTimer = null;
   if (!busy) return;
   const id = activeId;
   worker.postMessage({ type: 'cancel' });
@@ -98,15 +100,23 @@ function handle(action) {
 function bind(id, action, event = 'click') { $(id)?.addEventListener(event, handle(action)); }
 
 function gameStatus() {
+  if (startingGame) return 'Starting a new game…';
   if (game.isCheckmate()) return `Checkmate. ${game.turn() === 'w' ? 'Black' : 'White'} wins.`;
   if (game.isStalemate()) return 'Draw by stalemate.';
   if (game.isThreefoldRepetition()) return 'Draw by threefold repetition.';
   if (game.isInsufficientMaterial()) return 'Draw by insufficient material.';
   if (game.isDraw()) return 'Draw by the fifty-move rule.';
+  if (!ready) return $('side').value === game.turn()
+    ? 'The engine is loading. You can select a piece and make your first move.'
+    : 'The engine is loading. It will move automatically when ready.';
+  if (gameNotice) return gameNotice;
+  if ($('side').value === 'watch') return watchRunning
+    ? `Watching both sides · ${game.turn() === 'w' ? 'White' : 'Black'} to move`
+    : 'Watching is paused. Press Watch engines play to continue.';
   return `${game.turn() === 'w' ? 'White' : 'Black'} to move${game.isCheck() ? ' · check' : ''}`;
 }
 function humanCanMove() {
-  return ready && !busy && !game.isGameOver() && $('side')?.value !== 'watch' && $('side')?.value === game.turn();
+  return !startingGame && !busy && !game.isGameOver() && $('side')?.value !== 'watch' && $('side')?.value === game.turn();
 }
 function render() {
   const targets = selected ? game.moves({ square: selected, verbose: true }).map(move => move.to) : [];
@@ -125,12 +135,14 @@ function render() {
   updateControls(false);
 }
 function updateControls(redraw = true) {
-  for (const id of ['play-engine', 'compare-modes', 'run-suite', 'run-matches', 'train-controller', 'load-fen', 'load-pgn', 'reset-controller']) if ($(id)) $(id).disabled = !ready || busy;
-  if (watchRunning && $('side')?.value === 'watch') $('play-engine').disabled = false;
+  for (const id of ['play-engine', 'compare-modes', 'run-suite', 'run-matches', 'train-controller', 'load-fen', 'load-pgn', 'reset-controller']) if ($(id)) $(id).disabled = !ready || busy || startingGame;
+  if (ready && watchRunning && !startingGame && $('side')?.value === 'watch') $('play-engine').disabled = false;
+  $('new-game').disabled = startingGame;
+  $('new-game').setAttribute('aria-busy', String(startingGame));
   if ($('undo')) $('undo').disabled = !game.history().length;
   if ($('cancel-run')) $('cancel-run').disabled = !busy;
   if ($('stop-active')) { $('stop-active').hidden = !busy; $('stop-active').disabled = !busy; }
-  for (const id of ['mode', 'budget', 'node-limit', 'side', 'controller-threshold']) if ($(id)) $(id).disabled = busy;
+  for (const id of ['mode', 'budget', 'node-limit', 'side', 'controller-threshold']) if ($(id)) $(id).disabled = busy || startingGame;
   $('play-engine').textContent = $('side')?.value === 'watch' ? watchRunning ? 'Pause watching' : 'Watch engines play' : 'Let engine move';
   if ($('mode-description')) $('mode-description').textContent = {
     direct: 'One neural prediction. No tree search.', search: 'The same neural model guides a budgeted tree search.', selective: 'A learned controller decides when to search. Untrained controllers always search.',
@@ -145,6 +157,11 @@ function renderDecision(result) {
   $('metric-gate').textContent = result.mode === 'selective' ? result.searched ? 'Search' : 'Direct' : result.searched ? 'Always' : 'Off';
   if ($('decision-label')) $('decision-label').textContent = `${modeNames[result.mode]} chose ${result.san || '—'} · ${result.gate?.reason || ''}`;
 }
+function clearDecision() {
+  latestDecision = null;
+  for (const id of ['metric-time', 'metric-nodes', 'metric-confidence', 'metric-gate']) $(id).textContent = '—';
+  $('decision-label').textContent = 'Waiting for the first engine move';
+}
 async function onSquare(square) {
   if (!humanCanMove()) return;
   if (selected) {
@@ -154,6 +171,7 @@ async function onSquare(square) {
       if (moves.some(move => move.promotion)) promotion = await choosePromotion();
       if (promotion === null) return;
       const move = game.move({ from: selected, to: square, ...(promotion ? { promotion } : {}) });
+      gameNotice = null;
       lastMove = [move.from, move.to]; selected = null; render(); await maybeAutoMove(); return;
     }
   }
@@ -173,22 +191,52 @@ function choosePromotion() {
   });
 }
 async function engineMove() {
-  if (!ready || busy || game.isGameOver()) return;
+  if (!ready || busy || startingGame || game.isGameOver()) return;
+  const expectedEpoch = gameEpoch;
   const expectedFen = game.fen();
   const result = await request('choose', { ...settings(), mode: $('mode').value });
-  if (game.fen() !== expectedFen || !result.move) return;
+  if (gameEpoch !== expectedEpoch || game.fen() !== expectedFen || !result.move) return;
   const move = playUci(game, result.move);
+  gameNotice = null;
   lastMove = [move.from, move.to]; selected = null;
   renderDecision(result); render();
   log('move', { ...result, fenBefore: expectedFen, fenAfter: game.fen() });
 }
 async function maybeAutoMove() {
-  if (!ready || busy || game.isGameOver()) { if (game.isGameOver()) watchRunning = false; return; }
+  if (!ready || busy || startingGame || game.isGameOver()) { if (game.isGameOver()) watchRunning = false; return; }
+  const expectedEpoch = gameEpoch;
   const side = $('side')?.value || 'w';
   if ((side === 'watch' && watchRunning) || (side !== 'watch' && game.turn() !== side)) {
-    try { await engineMove(); if (watchRunning) setTimeout(() => handle(maybeAutoMove)(), 80); }
-    catch (error) { watchRunning = false; if (error.name !== 'AbortError') toast(error.message, true); }
+    try {
+      await engineMove();
+      if (watchRunning && expectedEpoch === gameEpoch && !startingGame) autoMoveTimer = setTimeout(() => handle(maybeAutoMove)(), 80);
+    } catch (error) {
+      if (expectedEpoch !== gameEpoch) return;
+      watchRunning = false; if (error.name !== 'AbortError') toast(error.message, true);
+    }
   }
+}
+
+async function startNewGame() {
+  if (startingGame) return;
+  startingGame = true;
+  gameEpoch++;
+  const side = $('side').value;
+  game = new Chess(); selected = null; lastMove = null;
+  clearDecision(); activateTab('play');
+  toast('Starting a new game…'); render();
+  try { await cancelActive(); }
+  finally { startingGame = false; }
+  watchRunning = side === 'watch';
+  const instruction = side === 'watch' ? 'Watching both sides.'
+    : side === 'b' ? 'You’re Black. The engine plays White first.'
+      : 'You’re White. Select a piece, then a highlighted square.';
+  gameNotice = `New game started. ${instruction}`;
+  toast(`${gameNotice}${ready ? '' : ' The engine is loading.'}`);
+  render();
+  if (side === 'w') $('board').querySelector('[data-square="e2"]')?.focus({ preventScroll: true });
+  log('new-game', { gameId: gameEpoch, side, mode: $('mode').value });
+  await maybeAutoMove();
 }
 
 function table(headers, rows) {
@@ -233,21 +281,22 @@ function csv(rows) {
   return [keys.map(quote).join(','), ...rows.map(row => keys.map(key => quote(row[key])).join(','))].join('\r\n');
 }
 
-for (const tab of document.querySelectorAll('[data-tab]')) tab.addEventListener('click', () => {
-  for (const button of document.querySelectorAll('[data-tab]')) { const active = button === tab; button.setAttribute('aria-selected', String(active)); button.classList.toggle('active', active); }
-  for (const panel of document.querySelectorAll('[id^="panel-"]')) panel.hidden = panel.id !== `panel-${tab.dataset.tab}`;
-});
-bind('new-game', async () => { await cancelActive(); game = new Chess(); lastMove = null; selected = null; render(); await maybeAutoMove(); });
+function activateTab(name) {
+  for (const button of document.querySelectorAll('[data-tab]')) { const active = button.dataset.tab === name; button.setAttribute('aria-selected', String(active)); button.classList.toggle('active', active); }
+  for (const panel of document.querySelectorAll('[id^="panel-"]')) panel.hidden = panel.id !== `panel-${name}`;
+}
+for (const tab of document.querySelectorAll('[data-tab]')) tab.addEventListener('click', () => activateTab(tab.dataset.tab));
+bind('new-game', startNewGame);
 bind('undo', async () => { await cancelActive(); game.undo(); if ($('side').value !== 'watch' && game.turn() !== $('side').value && game.history().length) game.undo(); selected = null; lastMove = null; render(); });
 bind('flip', () => { orientation = orientation === 'w' ? 'b' : 'w'; render(); });
-bind('side', async () => { await cancelActive(); orientation = $('side').value === 'b' ? 'b' : 'w'; selected = null; render(); await maybeAutoMove(); }, 'change');
+bind('side', async () => { await cancelActive(); gameNotice = null; orientation = $('side').value === 'b' ? 'b' : 'w'; selected = null; render(); await maybeAutoMove(); }, 'change');
 bind('mode', () => render(), 'change');
 bind('play-engine', async () => { if ($('side').value === 'watch') { if (watchRunning) { await cancelActive(); updateControls(); } else { watchRunning = true; await maybeAutoMove(); } } else { await engineMove(); await maybeAutoMove(); } });
 bind('cancel-run', async () => { await cancelActive(); toast('Run cancelled.'); });
 bind('stop-active', async () => { await cancelActive(); toast('Run cancelled.'); });
-bind('load-fen', async () => { const next = new Chess($('fen-input').value.trim()); await cancelActive(); game = next; selected = null; lastMove = null; render(); toast('Position loaded.'); });
+bind('load-fen', async () => { const next = new Chess($('fen-input').value.trim()); await cancelActive(); gameNotice = null; game = next; selected = null; lastMove = null; render(); toast('Position loaded.'); });
 bind('copy-fen', async () => { await navigator.clipboard.writeText(game.fen()); toast('FEN copied.'); });
-bind('load-pgn', async () => { const next = new Chess(); next.loadPgn($('pgn-input').value); await cancelActive(); game = next; selected = null; lastMove = null; render(); toast('PGN loaded with its move history.'); });
+bind('load-pgn', async () => { const next = new Chess(); next.loadPgn($('pgn-input').value); await cancelActive(); gameNotice = null; game = next; selected = null; lastMove = null; render(); toast('PGN loaded with its move history.'); });
 bind('export-pgn', () => download('intuition-game.pgn', game.pgn(), 'application/x-chess-pgn'));
 bind('compare-modes', async () => { watchRunning = false; $('comparison-results').textContent = 'Comparing the same position with all three modes…'; const position = serializePosition(game); lastComparison = await request('compare', settings(), position); renderComparison(lastComparison); keepReport({ kind: 'comparison', position, settings: settings(), rows: lastComparison }); });
 bind('run-suite', async () => { watchRunning = false; $('suite-progress').textContent = 'Starting position suite…'; const result = await request('suite', { ...settings(), suite: $('suite-select').value }, undefined, data => progressText('suite-progress',data)); renderSuite(result); keepReport(result); $('suite-progress').textContent = `Complete · ${result.rows?.length || 0} decisions recorded`; });
@@ -260,7 +309,7 @@ bind('export-csv', () => { if (!latestReport) throw new Error('Run a comparison 
 bind('download-logs', () => download('intuition-session.json', JSON.stringify(reportEnvelope({ logs, reports, currentPosition: serializePosition(game), latestDecision }),null,2)));
 
 // Keep a compact read-only diagnostic hook for reproducible browser checks.
-window.__INTUITION__ = { get ready() { return ready; }, get busy() { return busy; }, get fen() { return game.fen(); }, get latestDecision() { return latestDecision; }, get latestReport() { return latestReport; }, get model() { return modelMetadata; } };
+window.__INTUITION__ = { get ready() { return ready; }, get busy() { return busy; }, get fen() { return game.fen(); }, get latestDecision() { return latestDecision; }, get latestReport() { return latestReport; }, get model() { return modelMetadata; }, get gameId() { return gameEpoch; }, get watchRunning() { return watchRunning; } };
 const suiteLabels = { smoke: 'Quick check · 3 positions', mixed: 'Mixed suite · 10 positions', tactics: 'Tactics · 6 positions', endgames: 'Endgames · 4 positions', openings: 'Openings · 4 positions' };
 $('suite-select').innerHTML = Object.entries(suiteLabels).map(([value,label]) => `<option value="${value}">${label}</option>`).join('');
 $('metric-confidence').title = 'Raw policy preference, not a calibrated probability that this move is correct.';
