@@ -1,0 +1,5187 @@
+{
+  "started": "2026-10-30T06:56:47.605Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "cpu": "AMD EPYC 9V74 80-Core Processor"
+  },
+  "model": {
+    "name": "Neural Chess v3.1 clean-distilled",
+    "modelId": "v3.1-clean-distilled",
+    "parameters": 116266,
+    "weightsBytes": 464936,
+    "weightsSHA256": "5b584935b8a23a662096d2ecc34f2af8c580058252ef0567194b080187945468",
+    "source": "https://github.com/pbaer/neural-chess",
+    "sourceCommit": "524ba14d4af3b739cbe19bd8cd0b14892e6305ca",
+    "sourceLicense": "MIT",
+    "weightsLicense": "CC0-1.0",
+    "valuePerspective": "side to move"
+  },
+  "kind": "suite",
+  "rows": [
+    {
+      "positionId": "mate-white",
+      "name": "White: finish in one",
+      "fen": "7k/5Q2/6K1/8/8/8/8/8 w - - 0 1",
+      "mode": "direct",
+      "move": "f7h7",
+      "san": "Qh7#",
+      "value": 0.9697628495664269,
+      "confidence": 0.23988935030165598,
+      "entropy": 0.7818375968941129,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 25.710700999999972,
+      "inferenceCalls": 1,
+      "searched": false,
+      "pv": [
+        "f7h7"
+      ],
+      "rootStats": [
+        {
+          "uci": "f7h7",
+          "san": "Qh7#",
+          "probability": 0.23988935030165598,
+          "prior": 0.23988935030165598,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7g7",
+          "san": "Qg7#",
+          "probability": 0.13659426644923192,
+          "prior": 0.13659426644923192,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f8",
+          "san": "Qf8#",
+          "probability": 0.1334468615771195,
+          "prior": 0.1334468615771195,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7e8",
+          "san": "Qe8#",
+          "probability": 0.11942858238074504,
+          "prior": 0.11942858238074504,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f6",
+          "san": "Qf6+",
+          "probability": 0.058884315929352296,
+          "prior": 0.058884315929352296,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7g8",
+          "san": "Qg8+",
+          "probability": 0.031732868736601125,
+          "prior": 0.031732868736601125,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g6f6",
+          "san": "Kf6",
+          "probability": 0.031607450868262874,
+          "prior": 0.031607450868262874,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g6h6",
+          "san": "Kh6",
+          "probability": 0.030877502954601607,
+          "prior": 0.030877502954601607,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f5",
+          "san": "Qf5",
+          "probability": 0.030789053060036153,
+          "prior": 0.030789053060036153,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7e7",
+          "san": "Qe7",
+          "probability": 0.0247454330692308,
+          "prior": 0.0247454330692308,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g6g5",
+          "san": "Kg5",
+          "probability": 0.019180937049349225,
+          "prior": 0.019180937049349225,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7e6",
+          "san": "Qe6",
+          "probability": 0.015773588354213837,
+          "prior": 0.015773588354213837,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7d7",
+          "san": "Qd7",
+          "probability": 0.01537190447424681,
+          "prior": 0.01537190447424681,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7b7",
+          "san": "Qb7",
+          "probability": 0.014828467841896247,
+          "prior": 0.014828467841896247,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7c7",
+          "san": "Qc7",
+          "probability": 0.014370722514432692,
+          "prior": 0.014370722514432692,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f4",
+          "san": "Qf4",
+          "probability": 0.013092430728992353,
+          "prior": 0.013092430728992353,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g6f5",
+          "san": "Kf5",
+          "probability": 0.01247424700035553,
+          "prior": 0.01247424700035553,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7a7",
+          "san": "Qa7",
+          "probability": 0.011730977163544676,
+          "prior": 0.011730977163544676,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g6h5",
+          "san": "Kh5",
+          "probability": 0.011385759494808146,
+          "prior": 0.011385759494808146,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f3",
+          "san": "Qf3",
+          "probability": 0.008786560979554511,
+          "prior": 0.008786560979554511,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7d5",
+          "san": "Qd5",
+          "probability": 0.008125430681820362,
+          "prior": 0.008125430681820362,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7c4",
+          "san": "Qc4",
+          "probability": 0.005176356948277652,
+          "prior": 0.005176356948277652,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f2",
+          "san": "Qf2",
+          "probability": 0.004926600577430225,
+          "prior": 0.004926600577430225,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f1",
+          "san": "Qf1",
+          "probability": 0.002601731362172403,
+          "prior": 0.002601731362172403,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7a2",
+          "san": "Qa2",
+          "probability": 0.002256655113609894,
+          "prior": 0.002256655113609894,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7b3",
+          "san": "Qb3",
+          "probability": 0.0019219443884582173,
+          "prior": 0.0019219443884582173,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "expectedMatch": true,
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "mate-white",
+      "name": "White: finish in one",
+      "fen": "7k/5Q2/6K1/8/8/8/8/8 w - - 0 1",
+      "mode": "search",
+      "move": "f7h7",
+      "san": "Qh7#",
+      "value": 1,
+      "confidence": 0.23988935030165598,
+      "entropy": 0.7818375968941129,
+      "nodes": 128,
+      "simulations": 127,
+      "elapsedMs": 312.8629430000001,
+      "inferenceCalls": 11,
+      "searched": true,
+      "pv": [
+        "f7h7"
+      ],
+      "rootStats": [
+        {
+          "uci": "f7h7",
+          "san": "Qh7#",
+          "prior": 0.23988935030165598,
+          "probability": 0.23988935030165598,
+          "visits": 42,
+          "value": 1
+        },
+        {
+          "uci": "f7g7",
+          "san": "Qg7#",
+          "prior": 0.13659426644923192,
+          "probability": 0.13659426644923192,
+          "visits": 23,
+          "value": 1
+        },
+        {
+          "uci": "f7f8",
+          "san": "Qf8#",
+          "prior": 0.1334468615771195,
+          "probability": 0.1334468615771195,
+          "visits": 23,
+          "value": 1
+        },
+        {
+          "uci": "f7e8",
+          "san": "Qe8#",
+          "prior": 0.11942858238074504,
+          "probability": 0.11942858238074504,
+          "visits": 20,
+          "value": 1
+        },
+        {
+          "uci": "f7f6",
+          "san": "Qf6+",
+          "prior": 0.058884315929352296,
+          "probability": 0.058884315929352296,
+          "visits": 8,
+          "value": 0.9739223537592054
+        },
+        {
+          "uci": "f7f5",
+          "san": "Qf5",
+          "prior": 0.030789053060036153,
+          "probability": 0.030789053060036153,
+          "visits": 3,
+          "value": 0.642082741708704
+        },
+        {
+          "uci": "f7e7",
+          "san": "Qe7",
+          "prior": 0.0247454330692308,
+          "probability": 0.0247454330692308,
+          "visits": 3,
+          "value": 0.9554367509132565
+        },
+        {
+          "uci": "f7g8",
+          "san": "Qg8+",
+          "prior": 0.031732868736601125,
+          "probability": 0.031732868736601125,
+          "visits": 1,
+          "value": 0.1665543480675719
+        },
+        {
+          "uci": "g6f6",
+          "san": "Kf6",
+          "prior": 0.031607450868262874,
+          "probability": 0.031607450868262874,
+          "visits": 1,
+          "value": 0
+        },
+        {
+          "uci": "g6h6",
+          "san": "Kh6",
+          "prior": 0.030877502954601607,
+          "probability": 0.030877502954601607,
+          "visits": 1,
+          "value": 0
+        },
+        {
+          "uci": "g6g5",
+          "san": "Kg5",
+          "prior": 0.019180937049349225,
+          "probability": 0.019180937049349225,
+          "visits": 1,
+          "value": 0
+        },
+        {
+          "uci": "f7e6",
+          "san": "Qe6",
+          "prior": 0.015773588354213837,
+          "probability": 0.015773588354213837,
+          "visits": 1,
+          "value": 0
+        },
+        {
+          "uci": "f7d7",
+          "san": "Qd7",
+          "prior": 0.01537190447424681,
+          "probability": 0.01537190447424681,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7b7",
+          "san": "Qb7",
+          "prior": 0.014828467841896247,
+          "probability": 0.014828467841896247,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7c7",
+          "san": "Qc7",
+          "prior": 0.014370722514432692,
+          "probability": 0.014370722514432692,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f4",
+          "san": "Qf4",
+          "prior": 0.013092430728992353,
+          "probability": 0.013092430728992353,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g6f5",
+          "san": "Kf5",
+          "prior": 0.01247424700035553,
+          "probability": 0.01247424700035553,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7a7",
+          "san": "Qa7",
+          "prior": 0.011730977163544676,
+          "probability": 0.011730977163544676,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g6h5",
+          "san": "Kh5",
+          "prior": 0.011385759494808146,
+          "probability": 0.011385759494808146,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f3",
+          "san": "Qf3",
+          "prior": 0.008786560979554511,
+          "probability": 0.008786560979554511,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7d5",
+          "san": "Qd5",
+          "prior": 0.008125430681820362,
+          "probability": 0.008125430681820362,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7c4",
+          "san": "Qc4",
+          "prior": 0.005176356948277652,
+          "probability": 0.005176356948277652,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f2",
+          "san": "Qf2",
+          "prior": 0.004926600577430225,
+          "probability": 0.004926600577430225,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f1",
+          "san": "Qf1",
+          "prior": 0.002601731362172403,
+          "probability": 0.002601731362172403,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7a2",
+          "san": "Qa2",
+          "prior": 0.002256655113609894,
+          "probability": 0.002256655113609894,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7b3",
+          "san": "Qb3",
+          "prior": 0.0019219443884582173,
+          "probability": 0.0019219443884582173,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "depth": 4,
+      "budgetMs": 500,
+      "maxNodes": 128,
+      "stopReason": "node-limit",
+      "expectedMatch": true
+    },
+    {
+      "positionId": "mate-white",
+      "name": "White: finish in one",
+      "fen": "7k/5Q2/6K1/8/8/8/8/8 w - - 0 1",
+      "mode": "selective",
+      "move": "f7h7",
+      "san": "Qh7#",
+      "value": 0.9697628495664269,
+      "confidence": 0.23988935030165598,
+      "entropy": 0.7818375968941129,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 23.215403999999808,
+      "inferenceCalls": 1,
+      "searched": false,
+      "pv": [
+        "f7h7"
+      ],
+      "rootStats": [
+        {
+          "uci": "f7h7",
+          "san": "Qh7#",
+          "probability": 0.23988935030165598,
+          "prior": 0.23988935030165598,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7g7",
+          "san": "Qg7#",
+          "probability": 0.13659426644923192,
+          "prior": 0.13659426644923192,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f8",
+          "san": "Qf8#",
+          "probability": 0.1334468615771195,
+          "prior": 0.1334468615771195,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7e8",
+          "san": "Qe8#",
+          "probability": 0.11942858238074504,
+          "prior": 0.11942858238074504,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f6",
+          "san": "Qf6+",
+          "probability": 0.058884315929352296,
+          "prior": 0.058884315929352296,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7g8",
+          "san": "Qg8+",
+          "probability": 0.031732868736601125,
+          "prior": 0.031732868736601125,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g6f6",
+          "san": "Kf6",
+          "probability": 0.031607450868262874,
+          "prior": 0.031607450868262874,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g6h6",
+          "san": "Kh6",
+          "probability": 0.030877502954601607,
+          "prior": 0.030877502954601607,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f5",
+          "san": "Qf5",
+          "probability": 0.030789053060036153,
+          "prior": 0.030789053060036153,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7e7",
+          "san": "Qe7",
+          "probability": 0.0247454330692308,
+          "prior": 0.0247454330692308,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g6g5",
+          "san": "Kg5",
+          "probability": 0.019180937049349225,
+          "prior": 0.019180937049349225,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7e6",
+          "san": "Qe6",
+          "probability": 0.015773588354213837,
+          "prior": 0.015773588354213837,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7d7",
+          "san": "Qd7",
+          "probability": 0.01537190447424681,
+          "prior": 0.01537190447424681,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7b7",
+          "san": "Qb7",
+          "probability": 0.014828467841896247,
+          "prior": 0.014828467841896247,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7c7",
+          "san": "Qc7",
+          "probability": 0.014370722514432692,
+          "prior": 0.014370722514432692,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f4",
+          "san": "Qf4",
+          "probability": 0.013092430728992353,
+          "prior": 0.013092430728992353,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g6f5",
+          "san": "Kf5",
+          "probability": 0.01247424700035553,
+          "prior": 0.01247424700035553,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7a7",
+          "san": "Qa7",
+          "probability": 0.011730977163544676,
+          "prior": 0.011730977163544676,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g6h5",
+          "san": "Kh5",
+          "probability": 0.011385759494808146,
+          "prior": 0.011385759494808146,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f3",
+          "san": "Qf3",
+          "probability": 0.008786560979554511,
+          "prior": 0.008786560979554511,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7d5",
+          "san": "Qd5",
+          "probability": 0.008125430681820362,
+          "prior": 0.008125430681820362,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7c4",
+          "san": "Qc4",
+          "probability": 0.005176356948277652,
+          "prior": 0.005176356948277652,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f2",
+          "san": "Qf2",
+          "probability": 0.004926600577430225,
+          "prior": 0.004926600577430225,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7f1",
+          "san": "Qf1",
+          "probability": 0.002601731362172403,
+          "prior": 0.002601731362172403,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7a2",
+          "san": "Qa2",
+          "probability": 0.002256655113609894,
+          "prior": 0.002256655113609894,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f7b3",
+          "san": "Qb3",
+          "probability": 0.0019219443884582173,
+          "prior": 0.0019219443884582173,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": 0.032152408808492614,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "expectedMatch": true,
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "mate-black",
+      "name": "Black: finish in one",
+      "fen": "8/8/8/8/8/6k1/5q2/7K b - - 0 1",
+      "mode": "search",
+      "move": "f2h2",
+      "san": "Qh2#",
+      "value": 1,
+      "confidence": 0.23988935030165595,
+      "entropy": 0.7818375968941129,
+      "nodes": 128,
+      "simulations": 127,
+      "elapsedMs": 295.0570359999999,
+      "inferenceCalls": 11,
+      "searched": true,
+      "pv": [
+        "f2h2"
+      ],
+      "rootStats": [
+        {
+          "uci": "f2h2",
+          "san": "Qh2#",
+          "prior": 0.23988935030165595,
+          "probability": 0.23988935030165595,
+          "visits": 42,
+          "value": 1
+        },
+        {
+          "uci": "f2g2",
+          "san": "Qg2#",
+          "prior": 0.1365942664492319,
+          "probability": 0.1365942664492319,
+          "visits": 23,
+          "value": 1
+        },
+        {
+          "uci": "f2f1",
+          "san": "Qf1#",
+          "prior": 0.13344686157711946,
+          "probability": 0.13344686157711946,
+          "visits": 23,
+          "value": 1
+        },
+        {
+          "uci": "f2e1",
+          "san": "Qe1#",
+          "prior": 0.11942858238074501,
+          "probability": 0.11942858238074501,
+          "visits": 20,
+          "value": 1
+        },
+        {
+          "uci": "f2f3",
+          "san": "Qf3+",
+          "prior": 0.05888431592935228,
+          "probability": 0.05888431592935228,
+          "visits": 8,
+          "value": 0.9738623296520336
+        },
+        {
+          "uci": "f2f4",
+          "san": "Qf4",
+          "prior": 0.030789053060036146,
+          "probability": 0.030789053060036146,
+          "visits": 3,
+          "value": 0.6419468678248851
+        },
+        {
+          "uci": "f2e2",
+          "san": "Qe2",
+          "prior": 0.024745433069230795,
+          "probability": 0.024745433069230795,
+          "visits": 3,
+          "value": 0.9552562870687792
+        },
+        {
+          "uci": "f2g1",
+          "san": "Qg1+",
+          "prior": 0.03173286873660112,
+          "probability": 0.03173286873660112,
+          "visits": 1,
+          "value": 0.16680323781533005
+        },
+        {
+          "uci": "g3f3",
+          "san": "Kf3",
+          "prior": 0.03160745086826287,
+          "probability": 0.03160745086826287,
+          "visits": 1,
+          "value": 0
+        },
+        {
+          "uci": "g3h3",
+          "san": "Kh3",
+          "prior": 0.0308775029546016,
+          "probability": 0.0308775029546016,
+          "visits": 1,
+          "value": 0
+        },
+        {
+          "uci": "g3g4",
+          "san": "Kg4",
+          "prior": 0.01918093704934922,
+          "probability": 0.01918093704934922,
+          "visits": 1,
+          "value": 0
+        },
+        {
+          "uci": "f2e3",
+          "san": "Qe3",
+          "prior": 0.015773588354213833,
+          "probability": 0.015773588354213833,
+          "visits": 1,
+          "value": 0
+        },
+        {
+          "uci": "f2d2",
+          "san": "Qd2",
+          "prior": 0.015371904474246809,
+          "probability": 0.015371904474246809,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2b2",
+          "san": "Qb2",
+          "prior": 0.014828467841896245,
+          "probability": 0.014828467841896245,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2c2",
+          "san": "Qc2",
+          "prior": 0.01437072251443269,
+          "probability": 0.01437072251443269,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f5",
+          "san": "Qf5",
+          "prior": 0.013092430728992351,
+          "probability": 0.013092430728992351,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g3f4",
+          "san": "Kf4",
+          "prior": 0.012474247000355529,
+          "probability": 0.012474247000355529,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2a2",
+          "san": "Qa2",
+          "prior": 0.011730977163544673,
+          "probability": 0.011730977163544673,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g3h4",
+          "san": "Kh4",
+          "prior": 0.011385759494808146,
+          "probability": 0.011385759494808146,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f6",
+          "san": "Qf6",
+          "prior": 0.00878656097955451,
+          "probability": 0.00878656097955451,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2d4",
+          "san": "Qd4",
+          "prior": 0.00812543068182036,
+          "probability": 0.00812543068182036,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2c5",
+          "san": "Qc5",
+          "prior": 0.005176356948277651,
+          "probability": 0.005176356948277651,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f7",
+          "san": "Qf7",
+          "prior": 0.004926600577430225,
+          "probability": 0.004926600577430225,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f8",
+          "san": "Qf8",
+          "prior": 0.0026017313621724027,
+          "probability": 0.0026017313621724027,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2a7",
+          "san": "Qa7",
+          "prior": 0.0022566551136098934,
+          "probability": 0.0022566551136098934,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2b6",
+          "san": "Qb6",
+          "prior": 0.0019219443884582168,
+          "probability": 0.0019219443884582168,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "depth": 4,
+      "budgetMs": 500,
+      "maxNodes": 128,
+      "stopReason": "node-limit",
+      "expectedMatch": true
+    },
+    {
+      "positionId": "mate-black",
+      "name": "Black: finish in one",
+      "fen": "8/8/8/8/8/6k1/5q2/7K b - - 0 1",
+      "mode": "selective",
+      "move": "f2h2",
+      "san": "Qh2#",
+      "value": 0.9697628495664269,
+      "confidence": 0.23988935030165595,
+      "entropy": 0.7818375968941129,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 22.762502999999924,
+      "inferenceCalls": 1,
+      "searched": false,
+      "pv": [
+        "f2h2"
+      ],
+      "rootStats": [
+        {
+          "uci": "f2h2",
+          "san": "Qh2#",
+          "probability": 0.23988935030165595,
+          "prior": 0.23988935030165595,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2g2",
+          "san": "Qg2#",
+          "probability": 0.1365942664492319,
+          "prior": 0.1365942664492319,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f1",
+          "san": "Qf1#",
+          "probability": 0.13344686157711946,
+          "prior": 0.13344686157711946,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2e1",
+          "san": "Qe1#",
+          "probability": 0.11942858238074501,
+          "prior": 0.11942858238074501,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f3",
+          "san": "Qf3+",
+          "probability": 0.05888431592935228,
+          "prior": 0.05888431592935228,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2g1",
+          "san": "Qg1+",
+          "probability": 0.03173286873660112,
+          "prior": 0.03173286873660112,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g3f3",
+          "san": "Kf3",
+          "probability": 0.03160745086826287,
+          "prior": 0.03160745086826287,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g3h3",
+          "san": "Kh3",
+          "probability": 0.0308775029546016,
+          "prior": 0.0308775029546016,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f4",
+          "san": "Qf4",
+          "probability": 0.030789053060036146,
+          "prior": 0.030789053060036146,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2e2",
+          "san": "Qe2",
+          "probability": 0.024745433069230795,
+          "prior": 0.024745433069230795,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g3g4",
+          "san": "Kg4",
+          "probability": 0.01918093704934922,
+          "prior": 0.01918093704934922,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2e3",
+          "san": "Qe3",
+          "probability": 0.015773588354213833,
+          "prior": 0.015773588354213833,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2d2",
+          "san": "Qd2",
+          "probability": 0.015371904474246809,
+          "prior": 0.015371904474246809,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2b2",
+          "san": "Qb2",
+          "probability": 0.014828467841896245,
+          "prior": 0.014828467841896245,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2c2",
+          "san": "Qc2",
+          "probability": 0.01437072251443269,
+          "prior": 0.01437072251443269,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f5",
+          "san": "Qf5",
+          "probability": 0.013092430728992351,
+          "prior": 0.013092430728992351,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g3f4",
+          "san": "Kf4",
+          "probability": 0.012474247000355529,
+          "prior": 0.012474247000355529,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2a2",
+          "san": "Qa2",
+          "probability": 0.011730977163544673,
+          "prior": 0.011730977163544673,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g3h4",
+          "san": "Kh4",
+          "probability": 0.011385759494808146,
+          "prior": 0.011385759494808146,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f6",
+          "san": "Qf6",
+          "probability": 0.00878656097955451,
+          "prior": 0.00878656097955451,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2d4",
+          "san": "Qd4",
+          "probability": 0.00812543068182036,
+          "prior": 0.00812543068182036,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2c5",
+          "san": "Qc5",
+          "probability": 0.005176356948277651,
+          "prior": 0.005176356948277651,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f7",
+          "san": "Qf7",
+          "probability": 0.004926600577430225,
+          "prior": 0.004926600577430225,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f8",
+          "san": "Qf8",
+          "probability": 0.0026017313621724027,
+          "prior": 0.0026017313621724027,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2a7",
+          "san": "Qa7",
+          "probability": 0.0022566551136098934,
+          "prior": 0.0022566551136098934,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2b6",
+          "san": "Qb6",
+          "probability": 0.0019219443884582168,
+          "prior": 0.0019219443884582168,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": 0.032152408808492614,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "expectedMatch": true,
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "mate-black",
+      "name": "Black: finish in one",
+      "fen": "8/8/8/8/8/6k1/5q2/7K b - - 0 1",
+      "mode": "direct",
+      "move": "f2h2",
+      "san": "Qh2#",
+      "value": 0.9697628495664269,
+      "confidence": 0.23988935030165595,
+      "entropy": 0.7818375968941129,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 25.406705999999986,
+      "inferenceCalls": 1,
+      "searched": false,
+      "pv": [
+        "f2h2"
+      ],
+      "rootStats": [
+        {
+          "uci": "f2h2",
+          "san": "Qh2#",
+          "probability": 0.23988935030165595,
+          "prior": 0.23988935030165595,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2g2",
+          "san": "Qg2#",
+          "probability": 0.1365942664492319,
+          "prior": 0.1365942664492319,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f1",
+          "san": "Qf1#",
+          "probability": 0.13344686157711946,
+          "prior": 0.13344686157711946,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2e1",
+          "san": "Qe1#",
+          "probability": 0.11942858238074501,
+          "prior": 0.11942858238074501,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f3",
+          "san": "Qf3+",
+          "probability": 0.05888431592935228,
+          "prior": 0.05888431592935228,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2g1",
+          "san": "Qg1+",
+          "probability": 0.03173286873660112,
+          "prior": 0.03173286873660112,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g3f3",
+          "san": "Kf3",
+          "probability": 0.03160745086826287,
+          "prior": 0.03160745086826287,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g3h3",
+          "san": "Kh3",
+          "probability": 0.0308775029546016,
+          "prior": 0.0308775029546016,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f4",
+          "san": "Qf4",
+          "probability": 0.030789053060036146,
+          "prior": 0.030789053060036146,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2e2",
+          "san": "Qe2",
+          "probability": 0.024745433069230795,
+          "prior": 0.024745433069230795,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g3g4",
+          "san": "Kg4",
+          "probability": 0.01918093704934922,
+          "prior": 0.01918093704934922,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2e3",
+          "san": "Qe3",
+          "probability": 0.015773588354213833,
+          "prior": 0.015773588354213833,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2d2",
+          "san": "Qd2",
+          "probability": 0.015371904474246809,
+          "prior": 0.015371904474246809,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2b2",
+          "san": "Qb2",
+          "probability": 0.014828467841896245,
+          "prior": 0.014828467841896245,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2c2",
+          "san": "Qc2",
+          "probability": 0.01437072251443269,
+          "prior": 0.01437072251443269,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f5",
+          "san": "Qf5",
+          "probability": 0.013092430728992351,
+          "prior": 0.013092430728992351,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g3f4",
+          "san": "Kf4",
+          "probability": 0.012474247000355529,
+          "prior": 0.012474247000355529,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2a2",
+          "san": "Qa2",
+          "probability": 0.011730977163544673,
+          "prior": 0.011730977163544673,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g3h4",
+          "san": "Kh4",
+          "probability": 0.011385759494808146,
+          "prior": 0.011385759494808146,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f6",
+          "san": "Qf6",
+          "probability": 0.00878656097955451,
+          "prior": 0.00878656097955451,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2d4",
+          "san": "Qd4",
+          "probability": 0.00812543068182036,
+          "prior": 0.00812543068182036,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2c5",
+          "san": "Qc5",
+          "probability": 0.005176356948277651,
+          "prior": 0.005176356948277651,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f7",
+          "san": "Qf7",
+          "probability": 0.004926600577430225,
+          "prior": 0.004926600577430225,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f8",
+          "san": "Qf8",
+          "probability": 0.0026017313621724027,
+          "prior": 0.0026017313621724027,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2a7",
+          "san": "Qa7",
+          "probability": 0.0022566551136098934,
+          "prior": 0.0022566551136098934,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2b6",
+          "san": "Qb6",
+          "probability": 0.0019219443884582168,
+          "prior": 0.0019219443884582168,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "expectedMatch": true,
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "mate-corner",
+      "name": "Corner mating net",
+      "fen": "k7/8/1QK5/8/8/8/8/8 w - - 0 1",
+      "mode": "selective",
+      "move": "c6c7",
+      "san": "Kc7",
+      "value": 0.9860232303496875,
+      "confidence": 0.22928404290552581,
+      "entropy": 0.8314359648015419,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 21.302970000000187,
+      "inferenceCalls": 1,
+      "searched": false,
+      "pv": [
+        "c6c7"
+      ],
+      "rootStats": [
+        {
+          "uci": "c6c7",
+          "san": "Kc7",
+          "probability": 0.22928404290552581,
+          "prior": 0.22928404290552581,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b7",
+          "san": "Qb7#",
+          "probability": 0.15524050488242574,
+          "prior": 0.15524050488242574,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6c7",
+          "san": "Qc7",
+          "probability": 0.10893042678686048,
+          "prior": 0.10893042678686048,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6a6",
+          "san": "Qa6+",
+          "probability": 0.05804267323220753,
+          "prior": 0.05804267323220753,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6a5",
+          "san": "Qa5+",
+          "probability": 0.05056188463091922,
+          "prior": 0.05056188463091922,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c6b5",
+          "san": "Kb5",
+          "probability": 0.047552656982664414,
+          "prior": 0.047552656982664414,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b5",
+          "san": "Qb5",
+          "probability": 0.0467753012187913,
+          "prior": 0.0467753012187913,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c6c5",
+          "san": "Kc5",
+          "probability": 0.04663210483854932,
+          "prior": 0.04663210483854932,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6d8",
+          "san": "Qd8+",
+          "probability": 0.04172849729377497,
+          "prior": 0.04172849729377497,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c6d7",
+          "san": "Kd7",
+          "probability": 0.028438091147204164,
+          "prior": 0.028438091147204164,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b4",
+          "san": "Qb4",
+          "probability": 0.023893505216063142,
+          "prior": 0.023893505216063142,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b2",
+          "san": "Qb2",
+          "probability": 0.0234243027539345,
+          "prior": 0.0234243027539345,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6a7",
+          "san": "Qa7+",
+          "probability": 0.023300770190090622,
+          "prior": 0.023300770190090622,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b1",
+          "san": "Qb1",
+          "probability": 0.021833090974978004,
+          "prior": 0.021833090974978004,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c6d6",
+          "san": "Kd6",
+          "probability": 0.01891633070776475,
+          "prior": 0.01891633070776475,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6c5",
+          "san": "Qc5",
+          "probability": 0.018671804941185196,
+          "prior": 0.018671804941185196,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c6d5",
+          "san": "Kd5",
+          "probability": 0.017787958158560227,
+          "prior": 0.017787958158560227,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b3",
+          "san": "Qb3",
+          "probability": 0.014199173209649085,
+          "prior": 0.014199173209649085,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b8",
+          "san": "Qb8+",
+          "probability": 0.009117275531306437,
+          "prior": 0.009117275531306437,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6d4",
+          "san": "Qd4",
+          "probability": 0.0070919398287868675,
+          "prior": 0.0070919398287868675,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6e3",
+          "san": "Qe3",
+          "probability": 0.0033795247452485687,
+          "prior": 0.0033795247452485687,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6f2",
+          "san": "Qf2",
+          "probability": 0.003270684424410295,
+          "prior": 0.003270684424410295,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6g1",
+          "san": "Qg1",
+          "probability": 0.0019274553990991205,
+          "prior": 0.0019274553990991205,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": 0.04246034424743695,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "expectedMatch": false,
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "mate-corner",
+      "name": "Corner mating net",
+      "fen": "k7/8/1QK5/8/8/8/8/8 w - - 0 1",
+      "mode": "direct",
+      "move": "c6c7",
+      "san": "Kc7",
+      "value": 0.9860232303496875,
+      "confidence": 0.22928404290552581,
+      "entropy": 0.8314359648015419,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 21.58489399999985,
+      "inferenceCalls": 1,
+      "searched": false,
+      "pv": [
+        "c6c7"
+      ],
+      "rootStats": [
+        {
+          "uci": "c6c7",
+          "san": "Kc7",
+          "probability": 0.22928404290552581,
+          "prior": 0.22928404290552581,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b7",
+          "san": "Qb7#",
+          "probability": 0.15524050488242574,
+          "prior": 0.15524050488242574,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6c7",
+          "san": "Qc7",
+          "probability": 0.10893042678686048,
+          "prior": 0.10893042678686048,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6a6",
+          "san": "Qa6+",
+          "probability": 0.05804267323220753,
+          "prior": 0.05804267323220753,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6a5",
+          "san": "Qa5+",
+          "probability": 0.05056188463091922,
+          "prior": 0.05056188463091922,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c6b5",
+          "san": "Kb5",
+          "probability": 0.047552656982664414,
+          "prior": 0.047552656982664414,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b5",
+          "san": "Qb5",
+          "probability": 0.0467753012187913,
+          "prior": 0.0467753012187913,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c6c5",
+          "san": "Kc5",
+          "probability": 0.04663210483854932,
+          "prior": 0.04663210483854932,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6d8",
+          "san": "Qd8+",
+          "probability": 0.04172849729377497,
+          "prior": 0.04172849729377497,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c6d7",
+          "san": "Kd7",
+          "probability": 0.028438091147204164,
+          "prior": 0.028438091147204164,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b4",
+          "san": "Qb4",
+          "probability": 0.023893505216063142,
+          "prior": 0.023893505216063142,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b2",
+          "san": "Qb2",
+          "probability": 0.0234243027539345,
+          "prior": 0.0234243027539345,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6a7",
+          "san": "Qa7+",
+          "probability": 0.023300770190090622,
+          "prior": 0.023300770190090622,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b1",
+          "san": "Qb1",
+          "probability": 0.021833090974978004,
+          "prior": 0.021833090974978004,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c6d6",
+          "san": "Kd6",
+          "probability": 0.01891633070776475,
+          "prior": 0.01891633070776475,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6c5",
+          "san": "Qc5",
+          "probability": 0.018671804941185196,
+          "prior": 0.018671804941185196,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c6d5",
+          "san": "Kd5",
+          "probability": 0.017787958158560227,
+          "prior": 0.017787958158560227,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b3",
+          "san": "Qb3",
+          "probability": 0.014199173209649085,
+          "prior": 0.014199173209649085,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b8",
+          "san": "Qb8+",
+          "probability": 0.009117275531306437,
+          "prior": 0.009117275531306437,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6d4",
+          "san": "Qd4",
+          "probability": 0.0070919398287868675,
+          "prior": 0.0070919398287868675,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6e3",
+          "san": "Qe3",
+          "probability": 0.0033795247452485687,
+          "prior": 0.0033795247452485687,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6f2",
+          "san": "Qf2",
+          "probability": 0.003270684424410295,
+          "prior": 0.003270684424410295,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6g1",
+          "san": "Qg1",
+          "probability": 0.0019274553990991205,
+          "prior": 0.0019274553990991205,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "expectedMatch": false,
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "mate-corner",
+      "name": "Corner mating net",
+      "fen": "k7/8/1QK5/8/8/8/8/8 w - - 0 1",
+      "mode": "search",
+      "move": "b6b7",
+      "san": "Qb7#",
+      "value": 1,
+      "confidence": 0.22928404290552581,
+      "entropy": 0.8314359648015419,
+      "nodes": 63,
+      "simulations": 62,
+      "elapsedMs": 477.20376899999997,
+      "inferenceCalls": 22,
+      "searched": true,
+      "pv": [
+        "b6b7"
+      ],
+      "rootStats": [
+        {
+          "uci": "b6b7",
+          "san": "Qb7#",
+          "prior": 0.15524050488242574,
+          "probability": 0.15524050488242574,
+          "visits": 27,
+          "value": 1
+        },
+        {
+          "uci": "b6a6",
+          "san": "Qa6+",
+          "prior": 0.05804267323220753,
+          "probability": 0.05804267323220753,
+          "visits": 6,
+          "value": 0.9660624089849245
+        },
+        {
+          "uci": "b6b5",
+          "san": "Qb5",
+          "prior": 0.0467753012187913,
+          "probability": 0.0467753012187913,
+          "visits": 6,
+          "value": 0.9849133167610958
+        },
+        {
+          "uci": "b6a5",
+          "san": "Qa5+",
+          "prior": 0.05056188463091922,
+          "probability": 0.05056188463091922,
+          "visits": 5,
+          "value": 0.9373861865620462
+        },
+        {
+          "uci": "b6d8",
+          "san": "Qd8+",
+          "prior": 0.04172849729377497,
+          "probability": 0.04172849729377497,
+          "visits": 3,
+          "value": 0.9379684980137754
+        },
+        {
+          "uci": "c6c7",
+          "san": "Kc7",
+          "prior": 0.22928404290552581,
+          "probability": 0.22928404290552581,
+          "visits": 2,
+          "value": 0
+        },
+        {
+          "uci": "b6b4",
+          "san": "Qb4",
+          "prior": 0.023893505216063142,
+          "probability": 0.023893505216063142,
+          "visits": 2,
+          "value": 0.9595302645141055
+        },
+        {
+          "uci": "b6b2",
+          "san": "Qb2",
+          "prior": 0.0234243027539345,
+          "probability": 0.0234243027539345,
+          "visits": 2,
+          "value": 0.9576329443840099
+        },
+        {
+          "uci": "b6b1",
+          "san": "Qb1",
+          "prior": 0.021833090974978004,
+          "probability": 0.021833090974978004,
+          "visits": 2,
+          "value": 0.9544663973864296
+        },
+        {
+          "uci": "b6c7",
+          "san": "Qc7",
+          "prior": 0.10893042678686048,
+          "probability": 0.10893042678686048,
+          "visits": 1,
+          "value": 0
+        },
+        {
+          "uci": "c6b5",
+          "san": "Kb5",
+          "prior": 0.047552656982664414,
+          "probability": 0.047552656982664414,
+          "visits": 1,
+          "value": 0
+        },
+        {
+          "uci": "c6c5",
+          "san": "Kc5",
+          "prior": 0.04663210483854932,
+          "probability": 0.04663210483854932,
+          "visits": 1,
+          "value": 0
+        },
+        {
+          "uci": "c6d7",
+          "san": "Kd7",
+          "prior": 0.028438091147204164,
+          "probability": 0.028438091147204164,
+          "visits": 1,
+          "value": 0
+        },
+        {
+          "uci": "b6a7",
+          "san": "Qa7+",
+          "prior": 0.023300770190090622,
+          "probability": 0.023300770190090622,
+          "visits": 1,
+          "value": 0.17868692418914123
+        },
+        {
+          "uci": "c6d6",
+          "san": "Kd6",
+          "prior": 0.01891633070776475,
+          "probability": 0.01891633070776475,
+          "visits": 1,
+          "value": 0
+        },
+        {
+          "uci": "b6c5",
+          "san": "Qc5",
+          "prior": 0.018671804941185196,
+          "probability": 0.018671804941185196,
+          "visits": 1,
+          "value": 0.9418936845609935
+        },
+        {
+          "uci": "c6d5",
+          "san": "Kd5",
+          "prior": 0.017787958158560227,
+          "probability": 0.017787958158560227,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b3",
+          "san": "Qb3",
+          "prior": 0.014199173209649085,
+          "probability": 0.014199173209649085,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6b8",
+          "san": "Qb8+",
+          "prior": 0.009117275531306437,
+          "probability": 0.009117275531306437,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6d4",
+          "san": "Qd4",
+          "prior": 0.0070919398287868675,
+          "probability": 0.0070919398287868675,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6e3",
+          "san": "Qe3",
+          "prior": 0.0033795247452485687,
+          "probability": 0.0033795247452485687,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6f2",
+          "san": "Qf2",
+          "prior": 0.003270684424410295,
+          "probability": 0.003270684424410295,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b6g1",
+          "san": "Qg1",
+          "prior": 0.0019274553990991205,
+          "probability": 0.0019274553990991205,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "depth": 4,
+      "budgetMs": 500,
+      "maxNodes": 128,
+      "stopReason": "time-limit",
+      "expectedMatch": true
+    },
+    {
+      "positionId": "free-queen",
+      "name": "Capture the hanging queen",
+      "fen": "7k/8/8/4q3/3P4/8/8/K7 w - - 0 1",
+      "mode": "direct",
+      "move": "d4e5",
+      "san": "dxe5",
+      "value": 0.48969311810919897,
+      "confidence": 0.8669870536978274,
+      "entropy": 0.38400017764636163,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 18.360301000000163,
+      "inferenceCalls": 1,
+      "searched": false,
+      "pv": [
+        "d4e5"
+      ],
+      "rootStats": [
+        {
+          "uci": "d4e5",
+          "san": "dxe5",
+          "probability": 0.8669870536978274,
+          "prior": 0.8669870536978274,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1b1",
+          "san": "Kb1",
+          "probability": 0.053282031173489716,
+          "prior": 0.053282031173489716,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1a2",
+          "san": "Ka2",
+          "probability": 0.05320753958927075,
+          "prior": 0.05320753958927075,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1b2",
+          "san": "Kb2",
+          "probability": 0.02652337553941217,
+          "prior": 0.02652337553941217,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "expectedMatch": true,
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "free-queen",
+      "name": "Capture the hanging queen",
+      "fen": "7k/8/8/4q3/3P4/8/8/K7 w - - 0 1",
+      "mode": "search",
+      "move": "d4e5",
+      "san": "dxe5",
+      "value": 0.20881740059426898,
+      "confidence": 0.8669870536978274,
+      "entropy": 0.38400017764636163,
+      "nodes": 25,
+      "simulations": 24,
+      "elapsedMs": 489.64055499999995,
+      "inferenceCalls": 25,
+      "searched": true,
+      "pv": [
+        "d4e5",
+        "h8g8",
+        "a1b1",
+        "g8f7",
+        "b1a1"
+      ],
+      "rootStats": [
+        {
+          "uci": "d4e5",
+          "san": "dxe5",
+          "prior": 0.8669870536978274,
+          "probability": 0.8669870536978274,
+          "visits": 21,
+          "value": 0.20881740059426898
+        },
+        {
+          "uci": "a1b1",
+          "san": "Kb1",
+          "prior": 0.053282031173489716,
+          "probability": 0.053282031173489716,
+          "visits": 1,
+          "value": -0.9421977263460563
+        },
+        {
+          "uci": "a1a2",
+          "san": "Ka2",
+          "prior": 0.05320753958927075,
+          "probability": 0.05320753958927075,
+          "visits": 1,
+          "value": -0.9338050506248021
+        },
+        {
+          "uci": "a1b2",
+          "san": "Kb2",
+          "prior": 0.02652337553941217,
+          "probability": 0.02652337553941217,
+          "visits": 1,
+          "value": -0.953404326623219
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "depth": 5,
+      "budgetMs": 500,
+      "maxNodes": 128,
+      "stopReason": "time-limit",
+      "expectedMatch": true
+    },
+    {
+      "positionId": "free-queen",
+      "name": "Capture the hanging queen",
+      "fen": "7k/8/8/4q3/3P4/8/8/K7 w - - 0 1",
+      "mode": "selective",
+      "move": "d4e5",
+      "san": "dxe5",
+      "value": 0.20881740059426898,
+      "confidence": 0.8669870536978274,
+      "entropy": 0.38400017764636163,
+      "nodes": 25,
+      "simulations": 24,
+      "elapsedMs": 487.07387900000003,
+      "inferenceCalls": 25,
+      "searched": true,
+      "pv": [
+        "d4e5",
+        "h8g8",
+        "a1b1",
+        "g8f7",
+        "b1a1"
+      ],
+      "rootStats": [
+        {
+          "uci": "d4e5",
+          "san": "dxe5",
+          "prior": 0.8669870536978274,
+          "probability": 0.8669870536978274,
+          "visits": 21,
+          "value": 0.20881740059426898
+        },
+        {
+          "uci": "a1b1",
+          "san": "Kb1",
+          "prior": 0.053282031173489716,
+          "probability": 0.053282031173489716,
+          "visits": 1,
+          "value": -0.9421977263460563
+        },
+        {
+          "uci": "a1a2",
+          "san": "Ka2",
+          "prior": 0.05320753958927075,
+          "probability": 0.05320753958927075,
+          "visits": 1,
+          "value": -0.9338050506248021
+        },
+        {
+          "uci": "a1b2",
+          "san": "Kb2",
+          "prior": 0.02652337553941217,
+          "probability": 0.02652337553941217,
+          "visits": 1,
+          "value": -0.953404326623219
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": 0.7721148592149373,
+        "threshold": 0.5,
+        "triggered": true,
+        "reason": "Controller predicts reference-search disagreement"
+      },
+      "depth": 5,
+      "budgetMs": 500,
+      "maxNodes": 128,
+      "stopReason": "time-limit",
+      "expectedMatch": true
+    },
+    {
+      "positionId": "pawn-ending",
+      "name": "King and pawn ending",
+      "fen": "8/4k3/8/4P3/4K3/8/8/8 w - - 0 1",
+      "mode": "search",
+      "move": "e4d5",
+      "san": "Kd5",
+      "value": 0.25321810002680223,
+      "confidence": 0.3121077017884325,
+      "entropy": 0.856136608582523,
+      "nodes": 26,
+      "simulations": 25,
+      "elapsedMs": 494.10949100000016,
+      "inferenceCalls": 26,
+      "searched": true,
+      "pv": [
+        "e4d5",
+        "e7d7",
+        "e5e6",
+        "d7e7",
+        "d5e5"
+      ],
+      "rootStats": [
+        {
+          "uci": "e4d5",
+          "san": "Kd5",
+          "prior": 0.3121077017884325,
+          "probability": 0.3121077017884325,
+          "visits": 11,
+          "value": 0.25321810002680223
+        },
+        {
+          "uci": "e4f5",
+          "san": "Kf5",
+          "prior": 0.2923210940460897,
+          "probability": 0.2923210940460897,
+          "visits": 9,
+          "value": 0.23879813223183538
+        },
+        {
+          "uci": "e4d4",
+          "san": "Kd4",
+          "prior": 0.09157359604227715,
+          "probability": 0.09157359604227715,
+          "visits": 1,
+          "value": 0.0314818376491928
+        },
+        {
+          "uci": "e4f4",
+          "san": "Kf4",
+          "prior": 0.08781165019574724,
+          "probability": 0.08781165019574724,
+          "visits": 1,
+          "value": 0.031032392514495584
+        },
+        {
+          "uci": "e5e6",
+          "san": "e6",
+          "prior": 0.07642629434348598,
+          "probability": 0.07642629434348598,
+          "visits": 1,
+          "value": 0.022833589248636047
+        },
+        {
+          "uci": "e4e3",
+          "san": "Ke3",
+          "prior": 0.048951441360292884,
+          "probability": 0.048951441360292884,
+          "visits": 1,
+          "value": 0.011583597078322088
+        },
+        {
+          "uci": "e4d3",
+          "san": "Kd3",
+          "prior": 0.04830509194147186,
+          "probability": 0.04830509194147186,
+          "visits": 1,
+          "value": 0.01020926527591295
+        },
+        {
+          "uci": "e4f3",
+          "san": "Kf3",
+          "prior": 0.04250313028220281,
+          "probability": 0.04250313028220281,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "depth": 5,
+      "budgetMs": 500,
+      "maxNodes": 128,
+      "stopReason": "time-limit",
+      "expectedMatch": null
+    },
+    {
+      "positionId": "pawn-ending",
+      "name": "King and pawn ending",
+      "fen": "8/4k3/8/4P3/4K3/8/8/8 w - - 0 1",
+      "mode": "selective",
+      "move": "e4d5",
+      "san": "Kd5",
+      "value": 0.25321810002680223,
+      "confidence": 0.3121077017884325,
+      "entropy": 0.856136608582523,
+      "nodes": 26,
+      "simulations": 25,
+      "elapsedMs": 490.1788040000001,
+      "inferenceCalls": 26,
+      "searched": true,
+      "pv": [
+        "e4d5",
+        "e7d7",
+        "e5e6",
+        "d7e7",
+        "d5e5"
+      ],
+      "rootStats": [
+        {
+          "uci": "e4d5",
+          "san": "Kd5",
+          "prior": 0.3121077017884325,
+          "probability": 0.3121077017884325,
+          "visits": 11,
+          "value": 0.25321810002680223
+        },
+        {
+          "uci": "e4f5",
+          "san": "Kf5",
+          "prior": 0.2923210940460897,
+          "probability": 0.2923210940460897,
+          "visits": 9,
+          "value": 0.23879813223183538
+        },
+        {
+          "uci": "e4d4",
+          "san": "Kd4",
+          "prior": 0.09157359604227715,
+          "probability": 0.09157359604227715,
+          "visits": 1,
+          "value": 0.0314818376491928
+        },
+        {
+          "uci": "e4f4",
+          "san": "Kf4",
+          "prior": 0.08781165019574724,
+          "probability": 0.08781165019574724,
+          "visits": 1,
+          "value": 0.031032392514495584
+        },
+        {
+          "uci": "e5e6",
+          "san": "e6",
+          "prior": 0.07642629434348598,
+          "probability": 0.07642629434348598,
+          "visits": 1,
+          "value": 0.022833589248636047
+        },
+        {
+          "uci": "e4e3",
+          "san": "Ke3",
+          "prior": 0.048951441360292884,
+          "probability": 0.048951441360292884,
+          "visits": 1,
+          "value": 0.011583597078322088
+        },
+        {
+          "uci": "e4d3",
+          "san": "Kd3",
+          "prior": 0.04830509194147186,
+          "probability": 0.04830509194147186,
+          "visits": 1,
+          "value": 0.01020926527591295
+        },
+        {
+          "uci": "e4f3",
+          "san": "Kf3",
+          "prior": 0.04250313028220281,
+          "probability": 0.04250313028220281,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": 0.5859305933715131,
+        "threshold": 0.5,
+        "triggered": true,
+        "reason": "Controller predicts reference-search disagreement"
+      },
+      "depth": 5,
+      "budgetMs": 500,
+      "maxNodes": 128,
+      "stopReason": "time-limit",
+      "expectedMatch": null
+    },
+    {
+      "positionId": "pawn-ending",
+      "name": "King and pawn ending",
+      "fen": "8/4k3/8/4P3/4K3/8/8/8 w - - 0 1",
+      "mode": "direct",
+      "move": "e4d5",
+      "san": "Kd5",
+      "value": 0.27630817024887727,
+      "confidence": 0.3121077017884325,
+      "entropy": 0.856136608582523,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 18.58974599999965,
+      "inferenceCalls": 1,
+      "searched": false,
+      "pv": [
+        "e4d5"
+      ],
+      "rootStats": [
+        {
+          "uci": "e4d5",
+          "san": "Kd5",
+          "probability": 0.3121077017884325,
+          "prior": 0.3121077017884325,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e4f5",
+          "san": "Kf5",
+          "probability": 0.2923210940460897,
+          "prior": 0.2923210940460897,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e4d4",
+          "san": "Kd4",
+          "probability": 0.09157359604227715,
+          "prior": 0.09157359604227715,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e4f4",
+          "san": "Kf4",
+          "probability": 0.08781165019574724,
+          "prior": 0.08781165019574724,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e5e6",
+          "san": "e6",
+          "probability": 0.07642629434348598,
+          "prior": 0.07642629434348598,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e4e3",
+          "san": "Ke3",
+          "probability": 0.048951441360292884,
+          "prior": 0.048951441360292884,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e4d3",
+          "san": "Kd3",
+          "probability": 0.04830509194147186,
+          "prior": 0.04830509194147186,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e4f3",
+          "san": "Kf3",
+          "probability": 0.04250313028220281,
+          "prior": 0.04250313028220281,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "expectedMatch": null,
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "rook-ending",
+      "name": "Rook and king technique",
+      "fen": "8/7k/8/6K1/8/8/8/R7 w - - 0 1",
+      "mode": "selective",
+      "move": "a1a7",
+      "san": "Ra7+",
+      "value": 0.8835956164921988,
+      "confidence": 0.12200064712078061,
+      "entropy": 0.9576021892428154,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 21.082919000000402,
+      "inferenceCalls": 1,
+      "searched": false,
+      "pv": [
+        "a1a7"
+      ],
+      "rootStats": [
+        {
+          "uci": "a1a7",
+          "san": "Ra7+",
+          "probability": 0.12200064712078061,
+          "prior": 0.12200064712078061,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1a8",
+          "san": "Ra8",
+          "probability": 0.10168921849427741,
+          "prior": 0.10168921849427741,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g5f6",
+          "san": "Kf6",
+          "probability": 0.07353515342356681,
+          "prior": 0.07353515342356681,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1b1",
+          "san": "Rb1",
+          "probability": 0.06696569429125002,
+          "prior": 0.06696569429125002,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1a6",
+          "san": "Ra6",
+          "probability": 0.06633635802281307,
+          "prior": 0.06633635802281307,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1f1",
+          "san": "Rf1",
+          "probability": 0.06277061260681936,
+          "prior": 0.06277061260681936,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1g1",
+          "san": "Rg1",
+          "probability": 0.055178538705085094,
+          "prior": 0.055178538705085094,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1h1",
+          "san": "Rh1+",
+          "probability": 0.05275355852521579,
+          "prior": 0.05275355852521579,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g5h5",
+          "san": "Kh5",
+          "probability": 0.049820141714434156,
+          "prior": 0.049820141714434156,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1c1",
+          "san": "Rc1",
+          "probability": 0.04131530916361234,
+          "prior": 0.04131530916361234,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1e1",
+          "san": "Re1",
+          "probability": 0.04097262654830531,
+          "prior": 0.04097262654830531,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1a5",
+          "san": "Ra5",
+          "probability": 0.04058296437657692,
+          "prior": 0.04058296437657692,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1a2",
+          "san": "Ra2",
+          "probability": 0.04054673526268255,
+          "prior": 0.04054673526268255,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g5f5",
+          "san": "Kf5",
+          "probability": 0.036166251489100146,
+          "prior": 0.036166251489100146,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1a4",
+          "san": "Ra4",
+          "probability": 0.0291646665984787,
+          "prior": 0.0291646665984787,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1a3",
+          "san": "Ra3",
+          "probability": 0.029093300935078586,
+          "prior": 0.029093300935078586,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g5g4",
+          "san": "Kg4",
+          "probability": 0.028304738940070063,
+          "prior": 0.028304738940070063,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1d1",
+          "san": "Rd1",
+          "probability": 0.02723321539747109,
+          "prior": 0.02723321539747109,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g5f4",
+          "san": "Kf4",
+          "probability": 0.024458290896541623,
+          "prior": 0.024458290896541623,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g5h4",
+          "san": "Kh4",
+          "probability": 0.01111197748784003,
+          "prior": 0.01111197748784003,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": 0.09542428241512133,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "expectedMatch": null,
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "rook-ending",
+      "name": "Rook and king technique",
+      "fen": "8/7k/8/6K1/8/8/8/R7 w - - 0 1",
+      "mode": "direct",
+      "move": "a1a7",
+      "san": "Ra7+",
+      "value": 0.8835956164921988,
+      "confidence": 0.12200064712078061,
+      "entropy": 0.9576021892428154,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 20.367983000000095,
+      "inferenceCalls": 1,
+      "searched": false,
+      "pv": [
+        "a1a7"
+      ],
+      "rootStats": [
+        {
+          "uci": "a1a7",
+          "san": "Ra7+",
+          "probability": 0.12200064712078061,
+          "prior": 0.12200064712078061,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1a8",
+          "san": "Ra8",
+          "probability": 0.10168921849427741,
+          "prior": 0.10168921849427741,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g5f6",
+          "san": "Kf6",
+          "probability": 0.07353515342356681,
+          "prior": 0.07353515342356681,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1b1",
+          "san": "Rb1",
+          "probability": 0.06696569429125002,
+          "prior": 0.06696569429125002,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1a6",
+          "san": "Ra6",
+          "probability": 0.06633635802281307,
+          "prior": 0.06633635802281307,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1f1",
+          "san": "Rf1",
+          "probability": 0.06277061260681936,
+          "prior": 0.06277061260681936,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1g1",
+          "san": "Rg1",
+          "probability": 0.055178538705085094,
+          "prior": 0.055178538705085094,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1h1",
+          "san": "Rh1+",
+          "probability": 0.05275355852521579,
+          "prior": 0.05275355852521579,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g5h5",
+          "san": "Kh5",
+          "probability": 0.049820141714434156,
+          "prior": 0.049820141714434156,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1c1",
+          "san": "Rc1",
+          "probability": 0.04131530916361234,
+          "prior": 0.04131530916361234,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1e1",
+          "san": "Re1",
+          "probability": 0.04097262654830531,
+          "prior": 0.04097262654830531,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1a5",
+          "san": "Ra5",
+          "probability": 0.04058296437657692,
+          "prior": 0.04058296437657692,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1a2",
+          "san": "Ra2",
+          "probability": 0.04054673526268255,
+          "prior": 0.04054673526268255,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g5f5",
+          "san": "Kf5",
+          "probability": 0.036166251489100146,
+          "prior": 0.036166251489100146,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1a4",
+          "san": "Ra4",
+          "probability": 0.0291646665984787,
+          "prior": 0.0291646665984787,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1a3",
+          "san": "Ra3",
+          "probability": 0.029093300935078586,
+          "prior": 0.029093300935078586,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g5g4",
+          "san": "Kg4",
+          "probability": 0.028304738940070063,
+          "prior": 0.028304738940070063,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1d1",
+          "san": "Rd1",
+          "probability": 0.02723321539747109,
+          "prior": 0.02723321539747109,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g5f4",
+          "san": "Kf4",
+          "probability": 0.024458290896541623,
+          "prior": 0.024458290896541623,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g5h4",
+          "san": "Kh4",
+          "probability": 0.01111197748784003,
+          "prior": 0.01111197748784003,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "expectedMatch": null,
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "rook-ending",
+      "name": "Rook and king technique",
+      "fen": "8/7k/8/6K1/8/8/8/R7 w - - 0 1",
+      "mode": "search",
+      "move": "a1a7",
+      "san": "Ra7+",
+      "value": 0.8576345656982058,
+      "confidence": 0.12200064712078061,
+      "entropy": 0.9576021892428154,
+      "nodes": 25,
+      "simulations": 24,
+      "elapsedMs": 486.8829990000004,
+      "inferenceCalls": 25,
+      "searched": true,
+      "pv": [
+        "a1a7",
+        "h7g8",
+        "g5g6"
+      ],
+      "rootStats": [
+        {
+          "uci": "a1a7",
+          "san": "Ra7+",
+          "prior": 0.12200064712078061,
+          "probability": 0.12200064712078061,
+          "visits": 5,
+          "value": 0.8576345656982058
+        },
+        {
+          "uci": "a1a8",
+          "san": "Ra8",
+          "prior": 0.10168921849427741,
+          "probability": 0.10168921849427741,
+          "visits": 4,
+          "value": 0.8497313235543942
+        },
+        {
+          "uci": "a1b1",
+          "san": "Rb1",
+          "prior": 0.06696569429125002,
+          "probability": 0.06696569429125002,
+          "visits": 2,
+          "value": 0.850474576096801
+        },
+        {
+          "uci": "a1a6",
+          "san": "Ra6",
+          "prior": 0.06633635802281307,
+          "probability": 0.06633635802281307,
+          "visits": 2,
+          "value": 0.856124821942196
+        },
+        {
+          "uci": "a1f1",
+          "san": "Rf1",
+          "prior": 0.06277061260681936,
+          "probability": 0.06277061260681936,
+          "visits": 2,
+          "value": 0.8682018550026889
+        },
+        {
+          "uci": "a1g1",
+          "san": "Rg1",
+          "prior": 0.055178538705085094,
+          "probability": 0.055178538705085094,
+          "visits": 2,
+          "value": 0.858647741915823
+        },
+        {
+          "uci": "g5f6",
+          "san": "Kf6",
+          "prior": 0.07353515342356681,
+          "probability": 0.07353515342356681,
+          "visits": 1,
+          "value": 0.7363936169446431
+        },
+        {
+          "uci": "a1h1",
+          "san": "Rh1+",
+          "prior": 0.05275355852521579,
+          "probability": 0.05275355852521579,
+          "visits": 1,
+          "value": 0.7405093814286702
+        },
+        {
+          "uci": "g5h5",
+          "san": "Kh5",
+          "prior": 0.049820141714434156,
+          "probability": 0.049820141714434156,
+          "visits": 1,
+          "value": 0.6933732691256796
+        },
+        {
+          "uci": "a1c1",
+          "san": "Rc1",
+          "prior": 0.04131530916361234,
+          "probability": 0.04131530916361234,
+          "visits": 1,
+          "value": 0.8062074905996091
+        },
+        {
+          "uci": "a1e1",
+          "san": "Re1",
+          "prior": 0.04097262654830531,
+          "probability": 0.04097262654830531,
+          "visits": 1,
+          "value": 0.822097787287102
+        },
+        {
+          "uci": "a1a5",
+          "san": "Ra5",
+          "prior": 0.04058296437657692,
+          "probability": 0.04058296437657692,
+          "visits": 1,
+          "value": 0.7658511940934016
+        },
+        {
+          "uci": "a1a2",
+          "san": "Ra2",
+          "prior": 0.04054673526268255,
+          "probability": 0.04054673526268255,
+          "visits": 1,
+          "value": 0.7285440055002466
+        },
+        {
+          "uci": "g5f5",
+          "san": "Kf5",
+          "prior": 0.036166251489100146,
+          "probability": 0.036166251489100146,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1a4",
+          "san": "Ra4",
+          "prior": 0.0291646665984787,
+          "probability": 0.0291646665984787,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1a3",
+          "san": "Ra3",
+          "prior": 0.029093300935078586,
+          "probability": 0.029093300935078586,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g5g4",
+          "san": "Kg4",
+          "prior": 0.028304738940070063,
+          "probability": 0.028304738940070063,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1d1",
+          "san": "Rd1",
+          "prior": 0.02723321539747109,
+          "probability": 0.02723321539747109,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g5f4",
+          "san": "Kf4",
+          "prior": 0.024458290896541623,
+          "probability": 0.024458290896541623,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g5h4",
+          "san": "Kh4",
+          "prior": 0.01111197748784003,
+          "probability": 0.01111197748784003,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "depth": 3,
+      "budgetMs": 500,
+      "maxNodes": 128,
+      "stopReason": "time-limit",
+      "expectedMatch": null
+    },
+    {
+      "positionId": "terminal-stalemate",
+      "name": "Recognize stalemate",
+      "fen": "7k/5Q2/6K1/8/8/8/8/8 b - - 0 1",
+      "mode": "direct",
+      "move": null,
+      "san": null,
+      "value": 0,
+      "confidence": 0,
+      "entropy": 0,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 0.10853399999996327,
+      "inferenceCalls": 0,
+      "searched": false,
+      "rootStats": [],
+      "pv": [],
+      "terminal": true,
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Game over"
+      },
+      "expectedMatch": true,
+      "modelId": "v3.1-clean-distilled",
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "terminal-stalemate",
+      "name": "Recognize stalemate",
+      "fen": "7k/5Q2/6K1/8/8/8/8/8 b - - 0 1",
+      "mode": "search",
+      "move": null,
+      "san": null,
+      "value": 0,
+      "confidence": 0,
+      "entropy": 0,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 0.01667600000018865,
+      "inferenceCalls": 0,
+      "searched": false,
+      "rootStats": [],
+      "pv": [],
+      "terminal": true,
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Game over"
+      },
+      "expectedMatch": true,
+      "modelId": "v3.1-clean-distilled",
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "terminal-stalemate",
+      "name": "Recognize stalemate",
+      "fen": "7k/5Q2/6K1/8/8/8/8/8 b - - 0 1",
+      "mode": "selective",
+      "move": null,
+      "san": null,
+      "value": 0,
+      "confidence": 0,
+      "entropy": 0,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 0.014761999999791442,
+      "inferenceCalls": 0,
+      "searched": false,
+      "rootStats": [],
+      "pv": [],
+      "terminal": true,
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Game over"
+      },
+      "expectedMatch": true,
+      "modelId": "v3.1-clean-distilled",
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "terminal-mate",
+      "name": "Recognize checkmate",
+      "fen": "7k/6Q1/6K1/8/8/8/8/8 b - - 0 1",
+      "mode": "search",
+      "move": null,
+      "san": null,
+      "value": 0,
+      "confidence": 0,
+      "entropy": 0,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 0.016474999999445572,
+      "inferenceCalls": 0,
+      "searched": false,
+      "rootStats": [],
+      "pv": [],
+      "terminal": true,
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Game over"
+      },
+      "expectedMatch": true,
+      "modelId": "v3.1-clean-distilled",
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "terminal-mate",
+      "name": "Recognize checkmate",
+      "fen": "7k/6Q1/6K1/8/8/8/8/8 b - - 0 1",
+      "mode": "selective",
+      "move": null,
+      "san": null,
+      "value": 0,
+      "confidence": 0,
+      "entropy": 0,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 0.01279900000008638,
+      "inferenceCalls": 0,
+      "searched": false,
+      "rootStats": [],
+      "pv": [],
+      "terminal": true,
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Game over"
+      },
+      "expectedMatch": true,
+      "modelId": "v3.1-clean-distilled",
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "terminal-mate",
+      "name": "Recognize checkmate",
+      "fen": "7k/6Q1/6K1/8/8/8/8/8 b - - 0 1",
+      "mode": "direct",
+      "move": null,
+      "san": null,
+      "value": 0,
+      "confidence": 0,
+      "entropy": 0,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 0.012439000000085798,
+      "inferenceCalls": 0,
+      "searched": false,
+      "rootStats": [],
+      "pv": [],
+      "terminal": true,
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Game over"
+      },
+      "expectedMatch": true,
+      "modelId": "v3.1-clean-distilled",
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "italian",
+      "name": "Italian development",
+      "fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+      "mode": "selective",
+      "move": "e1g1",
+      "san": "O-O",
+      "value": 0.05689217893779379,
+      "confidence": 0.2274397452478005,
+      "entropy": 0.7171815470037116,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 22.505025999999816,
+      "inferenceCalls": 1,
+      "searched": false,
+      "pv": [
+        "e1g1"
+      ],
+      "rootStats": [
+        {
+          "uci": "e1g1",
+          "san": "O-O",
+          "probability": 0.2274397452478005,
+          "prior": 0.2274397452478005,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c2c3",
+          "san": "c3",
+          "probability": 0.15651320488100898,
+          "prior": 0.15651320488100898,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d2d3",
+          "san": "d3",
+          "probability": 0.1518936650523104,
+          "prior": 0.1518936650523104,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b1c3",
+          "san": "Nc3",
+          "probability": 0.10304334223820032,
+          "prior": 0.10304334223820032,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a2a3",
+          "san": "a3",
+          "probability": 0.06277408455920486,
+          "prior": 0.06277408455920486,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4f7",
+          "san": "Bxf7+",
+          "probability": 0.04177755158000802,
+          "prior": 0.04177755158000802,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d2d4",
+          "san": "d4",
+          "probability": 0.03899666811498696,
+          "prior": 0.03899666811498696,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f3e5",
+          "san": "Nxe5",
+          "probability": 0.02840381605140172,
+          "prior": 0.02840381605140172,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4d5",
+          "san": "Bd5",
+          "probability": 0.02449276648601818,
+          "prior": 0.02449276648601818,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h2h3",
+          "san": "h3",
+          "probability": 0.024302788034498653,
+          "prior": 0.024302788034498653,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a2a4",
+          "san": "a4",
+          "probability": 0.023790843396703676,
+          "prior": 0.023790843396703676,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1e2",
+          "san": "Qe2",
+          "probability": 0.01739300916815582,
+          "prior": 0.01739300916815582,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4b3",
+          "san": "Bb3",
+          "probability": 0.013215748633614613,
+          "prior": 0.013215748633614613,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h2h4",
+          "san": "h4",
+          "probability": 0.012126868598803416,
+          "prior": 0.012126868598803416,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b2b3",
+          "san": "b3",
+          "probability": 0.011913262700329394,
+          "prior": 0.011913262700329394,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f3g5",
+          "san": "Ng5",
+          "probability": 0.011127354035729689,
+          "prior": 0.011127354035729689,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b2b4",
+          "san": "b4",
+          "probability": 0.010438054869735846,
+          "prior": 0.010438054869735846,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4b5",
+          "san": "Bb5",
+          "probability": 0.008256539272619254,
+          "prior": 0.008256539272619254,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e1f1",
+          "san": "Kf1",
+          "probability": 0.006002731483300946,
+          "prior": 0.006002731483300946,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4e2",
+          "san": "Be2",
+          "probability": 0.0057663410412876655,
+          "prior": 0.0057663410412876655,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4d3",
+          "san": "Bd3",
+          "probability": 0.005745251730665316,
+          "prior": 0.005745251730665316,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b1a3",
+          "san": "Na3",
+          "probability": 0.0031673874946351543,
+          "prior": 0.0031673874946351543,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g2g3",
+          "san": "g3",
+          "probability": 0.002079053687281383,
+          "prior": 0.002079053687281383,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f3h4",
+          "san": "Nh4",
+          "probability": 0.0018835026475548153,
+          "prior": 0.0018835026475548153,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f3g1",
+          "san": "Ng1",
+          "probability": 0.00131490303093575,
+          "prior": 0.00131490303093575,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4f1",
+          "san": "Bf1",
+          "probability": 0.001236610232429708,
+          "prior": 0.001236610232429708,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g2g4",
+          "san": "g4",
+          "probability": 0.0011882722397779306,
+          "prior": 0.0011882722397779306,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4e6",
+          "san": "Be6",
+          "probability": 0.0010347283192069013,
+          "prior": 0.0010347283192069013,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e1e2",
+          "san": "Ke2",
+          "probability": 0.0010052539365383894,
+          "prior": 0.0010052539365383894,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h1g1",
+          "san": "Rg1",
+          "probability": 0.0009280615518694603,
+          "prior": 0.0009280615518694603,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h1f1",
+          "san": "Rf1",
+          "probability": 0.00031664533932225416,
+          "prior": 0.00031664533932225416,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f3d4",
+          "san": "Nd4",
+          "probability": 0.00028937744823893816,
+          "prior": 0.00028937744823893816,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4a6",
+          "san": "Ba6",
+          "probability": 0.00014256689582520934,
+          "prior": 0.00014256689582520934,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": 0.027565228469962268,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "expectedMatch": null,
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "italian",
+      "name": "Italian development",
+      "fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+      "mode": "direct",
+      "move": "e1g1",
+      "san": "O-O",
+      "value": 0.05689217893779379,
+      "confidence": 0.2274397452478005,
+      "entropy": 0.7171815470037116,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 22.386486000000332,
+      "inferenceCalls": 1,
+      "searched": false,
+      "pv": [
+        "e1g1"
+      ],
+      "rootStats": [
+        {
+          "uci": "e1g1",
+          "san": "O-O",
+          "probability": 0.2274397452478005,
+          "prior": 0.2274397452478005,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c2c3",
+          "san": "c3",
+          "probability": 0.15651320488100898,
+          "prior": 0.15651320488100898,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d2d3",
+          "san": "d3",
+          "probability": 0.1518936650523104,
+          "prior": 0.1518936650523104,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b1c3",
+          "san": "Nc3",
+          "probability": 0.10304334223820032,
+          "prior": 0.10304334223820032,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a2a3",
+          "san": "a3",
+          "probability": 0.06277408455920486,
+          "prior": 0.06277408455920486,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4f7",
+          "san": "Bxf7+",
+          "probability": 0.04177755158000802,
+          "prior": 0.04177755158000802,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d2d4",
+          "san": "d4",
+          "probability": 0.03899666811498696,
+          "prior": 0.03899666811498696,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f3e5",
+          "san": "Nxe5",
+          "probability": 0.02840381605140172,
+          "prior": 0.02840381605140172,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4d5",
+          "san": "Bd5",
+          "probability": 0.02449276648601818,
+          "prior": 0.02449276648601818,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h2h3",
+          "san": "h3",
+          "probability": 0.024302788034498653,
+          "prior": 0.024302788034498653,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a2a4",
+          "san": "a4",
+          "probability": 0.023790843396703676,
+          "prior": 0.023790843396703676,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1e2",
+          "san": "Qe2",
+          "probability": 0.01739300916815582,
+          "prior": 0.01739300916815582,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4b3",
+          "san": "Bb3",
+          "probability": 0.013215748633614613,
+          "prior": 0.013215748633614613,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h2h4",
+          "san": "h4",
+          "probability": 0.012126868598803416,
+          "prior": 0.012126868598803416,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b2b3",
+          "san": "b3",
+          "probability": 0.011913262700329394,
+          "prior": 0.011913262700329394,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f3g5",
+          "san": "Ng5",
+          "probability": 0.011127354035729689,
+          "prior": 0.011127354035729689,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b2b4",
+          "san": "b4",
+          "probability": 0.010438054869735846,
+          "prior": 0.010438054869735846,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4b5",
+          "san": "Bb5",
+          "probability": 0.008256539272619254,
+          "prior": 0.008256539272619254,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e1f1",
+          "san": "Kf1",
+          "probability": 0.006002731483300946,
+          "prior": 0.006002731483300946,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4e2",
+          "san": "Be2",
+          "probability": 0.0057663410412876655,
+          "prior": 0.0057663410412876655,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4d3",
+          "san": "Bd3",
+          "probability": 0.005745251730665316,
+          "prior": 0.005745251730665316,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b1a3",
+          "san": "Na3",
+          "probability": 0.0031673874946351543,
+          "prior": 0.0031673874946351543,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g2g3",
+          "san": "g3",
+          "probability": 0.002079053687281383,
+          "prior": 0.002079053687281383,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f3h4",
+          "san": "Nh4",
+          "probability": 0.0018835026475548153,
+          "prior": 0.0018835026475548153,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f3g1",
+          "san": "Ng1",
+          "probability": 0.00131490303093575,
+          "prior": 0.00131490303093575,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4f1",
+          "san": "Bf1",
+          "probability": 0.001236610232429708,
+          "prior": 0.001236610232429708,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g2g4",
+          "san": "g4",
+          "probability": 0.0011882722397779306,
+          "prior": 0.0011882722397779306,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4e6",
+          "san": "Be6",
+          "probability": 0.0010347283192069013,
+          "prior": 0.0010347283192069013,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e1e2",
+          "san": "Ke2",
+          "probability": 0.0010052539365383894,
+          "prior": 0.0010052539365383894,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h1g1",
+          "san": "Rg1",
+          "probability": 0.0009280615518694603,
+          "prior": 0.0009280615518694603,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h1f1",
+          "san": "Rf1",
+          "probability": 0.00031664533932225416,
+          "prior": 0.00031664533932225416,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f3d4",
+          "san": "Nd4",
+          "probability": 0.00028937744823893816,
+          "prior": 0.00028937744823893816,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4a6",
+          "san": "Ba6",
+          "probability": 0.00014256689582520934,
+          "prior": 0.00014256689582520934,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "expectedMatch": null,
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "italian",
+      "name": "Italian development",
+      "fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+      "mode": "search",
+      "move": "e1g1",
+      "san": "O-O",
+      "value": 0.013825834924523078,
+      "confidence": 0.2274397452478005,
+      "entropy": 0.7171815470037116,
+      "nodes": 20,
+      "simulations": 19,
+      "elapsedMs": 475.34582299999965,
+      "inferenceCalls": 20,
+      "searched": true,
+      "pv": [
+        "e1g1",
+        "d7d6",
+        "c2c3",
+        "g8f6"
+      ],
+      "rootStats": [
+        {
+          "uci": "e1g1",
+          "san": "O-O",
+          "prior": 0.2274397452478005,
+          "probability": 0.2274397452478005,
+          "visits": 7,
+          "value": 0.013825834924523078
+        },
+        {
+          "uci": "c2c3",
+          "san": "c3",
+          "prior": 0.15651320488100898,
+          "probability": 0.15651320488100898,
+          "visits": 4,
+          "value": 0.012055832554815604
+        },
+        {
+          "uci": "d2d3",
+          "san": "d3",
+          "prior": 0.1518936650523104,
+          "probability": 0.1518936650523104,
+          "visits": 4,
+          "value": 0.0026333842559852407
+        },
+        {
+          "uci": "b1c3",
+          "san": "Nc3",
+          "prior": 0.10304334223820032,
+          "probability": 0.10304334223820032,
+          "visits": 3,
+          "value": 0.015213297299601252
+        },
+        {
+          "uci": "a2a3",
+          "san": "a3",
+          "prior": 0.06277408455920486,
+          "probability": 0.06277408455920486,
+          "visits": 1,
+          "value": 0.001642586583064316
+        },
+        {
+          "uci": "c4f7",
+          "san": "Bxf7+",
+          "prior": 0.04177755158000802,
+          "probability": 0.04177755158000802,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d2d4",
+          "san": "d4",
+          "prior": 0.03899666811498696,
+          "probability": 0.03899666811498696,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f3e5",
+          "san": "Nxe5",
+          "prior": 0.02840381605140172,
+          "probability": 0.02840381605140172,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4d5",
+          "san": "Bd5",
+          "prior": 0.02449276648601818,
+          "probability": 0.02449276648601818,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h2h3",
+          "san": "h3",
+          "prior": 0.024302788034498653,
+          "probability": 0.024302788034498653,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a2a4",
+          "san": "a4",
+          "prior": 0.023790843396703676,
+          "probability": 0.023790843396703676,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1e2",
+          "san": "Qe2",
+          "prior": 0.01739300916815582,
+          "probability": 0.01739300916815582,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4b3",
+          "san": "Bb3",
+          "prior": 0.013215748633614613,
+          "probability": 0.013215748633614613,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h2h4",
+          "san": "h4",
+          "prior": 0.012126868598803416,
+          "probability": 0.012126868598803416,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b2b3",
+          "san": "b3",
+          "prior": 0.011913262700329394,
+          "probability": 0.011913262700329394,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f3g5",
+          "san": "Ng5",
+          "prior": 0.011127354035729689,
+          "probability": 0.011127354035729689,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b2b4",
+          "san": "b4",
+          "prior": 0.010438054869735846,
+          "probability": 0.010438054869735846,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4b5",
+          "san": "Bb5",
+          "prior": 0.008256539272619254,
+          "probability": 0.008256539272619254,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e1f1",
+          "san": "Kf1",
+          "prior": 0.006002731483300946,
+          "probability": 0.006002731483300946,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4e2",
+          "san": "Be2",
+          "prior": 0.0057663410412876655,
+          "probability": 0.0057663410412876655,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4d3",
+          "san": "Bd3",
+          "prior": 0.005745251730665316,
+          "probability": 0.005745251730665316,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b1a3",
+          "san": "Na3",
+          "prior": 0.0031673874946351543,
+          "probability": 0.0031673874946351543,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g2g3",
+          "san": "g3",
+          "prior": 0.002079053687281383,
+          "probability": 0.002079053687281383,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f3h4",
+          "san": "Nh4",
+          "prior": 0.0018835026475548153,
+          "probability": 0.0018835026475548153,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f3g1",
+          "san": "Ng1",
+          "prior": 0.00131490303093575,
+          "probability": 0.00131490303093575,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4f1",
+          "san": "Bf1",
+          "prior": 0.001236610232429708,
+          "probability": 0.001236610232429708,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g2g4",
+          "san": "g4",
+          "prior": 0.0011882722397779306,
+          "probability": 0.0011882722397779306,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4e6",
+          "san": "Be6",
+          "prior": 0.0010347283192069013,
+          "probability": 0.0010347283192069013,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e1e2",
+          "san": "Ke2",
+          "prior": 0.0010052539365383894,
+          "probability": 0.0010052539365383894,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h1g1",
+          "san": "Rg1",
+          "prior": 0.0009280615518694603,
+          "probability": 0.0009280615518694603,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h1f1",
+          "san": "Rf1",
+          "prior": 0.00031664533932225416,
+          "probability": 0.00031664533932225416,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f3d4",
+          "san": "Nd4",
+          "prior": 0.00028937744823893816,
+          "probability": 0.00028937744823893816,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4a6",
+          "san": "Ba6",
+          "prior": 0.00014256689582520934,
+          "probability": 0.00014256689582520934,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "depth": 4,
+      "budgetMs": 500,
+      "maxNodes": 128,
+      "stopReason": "time-limit",
+      "expectedMatch": null
+    },
+    {
+      "positionId": "queens-gambit",
+      "name": "Queen’s Gambit structure",
+      "fen": "rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+      "mode": "direct",
+      "move": "g1f3",
+      "san": "Nf3",
+      "value": 0.06899301049081209,
+      "confidence": 0.1589019364123742,
+      "entropy": 0.7613407076622636,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 22.074883999999656,
+      "inferenceCalls": 1,
+      "searched": false,
+      "pv": [
+        "g1f3"
+      ],
+      "rootStats": [
+        {
+          "uci": "g1f3",
+          "san": "Nf3",
+          "probability": 0.1589019364123742,
+          "prior": 0.1589019364123742,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4d5",
+          "san": "cxd5",
+          "probability": 0.15857449172998045,
+          "prior": 0.15857449172998045,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c1g5",
+          "san": "Bg5",
+          "probability": 0.1299744107821476,
+          "prior": 0.1299744107821476,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e2e3",
+          "san": "e3",
+          "probability": 0.11360000449295533,
+          "prior": 0.11360000449295533,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c1f4",
+          "san": "Bf4",
+          "probability": 0.0675750667667005,
+          "prior": 0.0675750667667005,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g2g3",
+          "san": "g3",
+          "probability": 0.05853921025406374,
+          "prior": 0.05853921025406374,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4c5",
+          "san": "c5",
+          "probability": 0.047268129746587034,
+          "prior": 0.047268129746587034,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e2e4",
+          "san": "e4",
+          "probability": 0.0438520805340377,
+          "prior": 0.0438520805340377,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a2a3",
+          "san": "a3",
+          "probability": 0.034472190062072916,
+          "prior": 0.034472190062072916,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f3",
+          "san": "f3",
+          "probability": 0.02369036709055149,
+          "prior": 0.02369036709055149,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1b3",
+          "san": "Qb3",
+          "probability": 0.021026306559697647,
+          "prior": 0.021026306559697647,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1c2",
+          "san": "Qc2",
+          "probability": 0.018523127068792132,
+          "prior": 0.018523127068792132,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b2b3",
+          "san": "b3",
+          "probability": 0.01654181472720687,
+          "prior": 0.01654181472720687,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h2h3",
+          "san": "h3",
+          "probability": 0.01528236755354489,
+          "prior": 0.01528236755354489,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f4",
+          "san": "f4",
+          "probability": 0.014674024831578225,
+          "prior": 0.014674024831578225,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h2h4",
+          "san": "h4",
+          "probability": 0.013613675128652688,
+          "prior": 0.013613675128652688,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g2g4",
+          "san": "g4",
+          "probability": 0.011338888516910365,
+          "prior": 0.011338888516910365,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1a4",
+          "san": "Qa4+",
+          "probability": 0.010935886017344477,
+          "prior": 0.010935886017344477,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c1e3",
+          "san": "Be3",
+          "probability": 0.010388867975329848,
+          "prior": 0.010388867975329848,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g1h3",
+          "san": "Nh3",
+          "probability": 0.007507699615588084,
+          "prior": 0.007507699615588084,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c1d2",
+          "san": "Bd2",
+          "probability": 0.005931833799220769,
+          "prior": 0.005931833799220769,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1d3",
+          "san": "Qd3",
+          "probability": 0.004101557693424916,
+          "prior": 0.004101557693424916,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a2a4",
+          "san": "a4",
+          "probability": 0.0036974108719539994,
+          "prior": 0.0036974108719539994,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1b1",
+          "san": "Rb1",
+          "probability": 0.0033399851466354713,
+          "prior": 0.0033399851466354713,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c3a4",
+          "san": "Na4",
+          "probability": 0.001678405251238841,
+          "prior": 0.001678405251238841,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1d2",
+          "san": "Qd2",
+          "probability": 0.001148822570067915,
+          "prior": 0.001148822570067915,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b2b4",
+          "san": "b4",
+          "probability": 0.0009247375830430272,
+          "prior": 0.0009247375830430272,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c3b5",
+          "san": "Nb5",
+          "probability": 0.0008121184989993117,
+          "prior": 0.0008121184989993117,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c1h6",
+          "san": "Bh6",
+          "probability": 0.0006258292970329291,
+          "prior": 0.0006258292970329291,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c3d5",
+          "san": "Nxd5",
+          "probability": 0.0006037914093293699,
+          "prior": 0.0006037914093293699,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c3b1",
+          "san": "Nb1",
+          "probability": 0.0003721138936994233,
+          "prior": 0.0003721138936994233,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e1d2",
+          "san": "Kd2",
+          "probability": 0.000353741458956388,
+          "prior": 0.000353741458956388,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c3e4",
+          "san": "Ne4",
+          "probability": 0.00012910666028140297,
+          "prior": 0.00012910666028140297,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "expectedMatch": null,
+      "budgetMs": 500,
+      "maxNodes": 128
+    },
+    {
+      "positionId": "queens-gambit",
+      "name": "Queen’s Gambit structure",
+      "fen": "rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+      "mode": "search",
+      "move": "g1f3",
+      "san": "Nf3",
+      "value": 0.07737066190683188,
+      "confidence": 0.1589019364123742,
+      "entropy": 0.7613407076622636,
+      "nodes": 21,
+      "simulations": 20,
+      "elapsedMs": 482.04122199999983,
+      "inferenceCalls": 21,
+      "searched": true,
+      "pv": [
+        "g1f3",
+        "c7c6",
+        "e2e3"
+      ],
+      "rootStats": [
+        {
+          "uci": "g1f3",
+          "san": "Nf3",
+          "prior": 0.1589019364123742,
+          "probability": 0.1589019364123742,
+          "visits": 6,
+          "value": 0.07737066190683188
+        },
+        {
+          "uci": "c4d5",
+          "san": "cxd5",
+          "prior": 0.15857449172998045,
+          "probability": 0.15857449172998045,
+          "visits": 5,
+          "value": 0.029531460603736553
+        },
+        {
+          "uci": "c1g5",
+          "san": "Bg5",
+          "prior": 0.1299744107821476,
+          "probability": 0.1299744107821476,
+          "visits": 4,
+          "value": 0.05216522080868921
+        },
+        {
+          "uci": "e2e3",
+          "san": "e3",
+          "prior": 0.11360000449295533,
+          "probability": 0.11360000449295533,
+          "visits": 3,
+          "value": 0.058171994895196096
+        },
+        {
+          "uci": "c1f4",
+          "san": "Bf4",
+          "prior": 0.0675750667667005,
+          "probability": 0.0675750667667005,
+          "visits": 1,
+          "value": 0.013422311674231384
+        },
+        {
+          "uci": "g2g3",
+          "san": "g3",
+          "prior": 0.05853921025406374,
+          "probability": 0.05853921025406374,
+          "visits": 1,
+          "value": 0.0418181441115496
+        },
+        {
+          "uci": "c4c5",
+          "san": "c5",
+          "prior": 0.047268129746587034,
+          "probability": 0.047268129746587034,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e2e4",
+          "san": "e4",
+          "prior": 0.0438520805340377,
+          "probability": 0.0438520805340377,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a2a3",
+          "san": "a3",
+          "prior": 0.034472190062072916,
+          "probability": 0.034472190062072916,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f3",
+          "san": "f3",
+          "prior": 0.02369036709055149,
+          "probability": 0.02369036709055149,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1b3",
+          "san": "Qb3",
+          "prior": 0.021026306559697647,
+          "probability": 0.021026306559697647,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1c2",
+          "san": "Qc2",
+          "prior": 0.018523127068792132,
+          "probability": 0.018523127068792132,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b2b3",
+          "san": "b3",
+          "prior": 0.01654181472720687,
+          "probability": 0.01654181472720687,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h2h3",
+          "san": "h3",
+          "prior": 0.01528236755354489,
+          "probability": 0.01528236755354489,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f4",
+          "san": "f4",
+          "prior": 0.014674024831578225,
+          "probability": 0.014674024831578225,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h2h4",
+          "san": "h4",
+          "prior": 0.013613675128652688,
+          "probability": 0.013613675128652688,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g2g4",
+          "san": "g4",
+          "prior": 0.011338888516910365,
+          "probability": 0.011338888516910365,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1a4",
+          "san": "Qa4+",
+          "prior": 0.010935886017344477,
+          "probability": 0.010935886017344477,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c1e3",
+          "san": "Be3",
+          "prior": 0.010388867975329848,
+          "probability": 0.010388867975329848,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g1h3",
+          "san": "Nh3",
+          "prior": 0.007507699615588084,
+          "probability": 0.007507699615588084,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c1d2",
+          "san": "Bd2",
+          "prior": 0.005931833799220769,
+          "probability": 0.005931833799220769,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1d3",
+          "san": "Qd3",
+          "prior": 0.004101557693424916,
+          "probability": 0.004101557693424916,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a2a4",
+          "san": "a4",
+          "prior": 0.0036974108719539994,
+          "probability": 0.0036974108719539994,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1b1",
+          "san": "Rb1",
+          "prior": 0.0033399851466354713,
+          "probability": 0.0033399851466354713,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c3a4",
+          "san": "Na4",
+          "prior": 0.001678405251238841,
+          "probability": 0.001678405251238841,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1d2",
+          "san": "Qd2",
+          "prior": 0.001148822570067915,
+          "probability": 0.001148822570067915,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b2b4",
+          "san": "b4",
+          "prior": 0.0009247375830430272,
+          "probability": 0.0009247375830430272,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c3b5",
+          "san": "Nb5",
+          "prior": 0.0008121184989993117,
+          "probability": 0.0008121184989993117,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c1h6",
+          "san": "Bh6",
+          "prior": 0.0006258292970329291,
+          "probability": 0.0006258292970329291,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c3d5",
+          "san": "Nxd5",
+          "prior": 0.0006037914093293699,
+          "probability": 0.0006037914093293699,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c3b1",
+          "san": "Nb1",
+          "prior": 0.0003721138936994233,
+          "probability": 0.0003721138936994233,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e1d2",
+          "san": "Kd2",
+          "prior": 0.000353741458956388,
+          "probability": 0.000353741458956388,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c3e4",
+          "san": "Ne4",
+          "prior": 0.00012910666028140297,
+          "probability": 0.00012910666028140297,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "depth": 3,
+      "budgetMs": 500,
+      "maxNodes": 128,
+      "stopReason": "time-limit",
+      "expectedMatch": null
+    },
+    {
+      "positionId": "queens-gambit",
+      "name": "Queen’s Gambit structure",
+      "fen": "rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+      "mode": "selective",
+      "move": "g1f3",
+      "san": "Nf3",
+      "value": 0.06899301049081209,
+      "confidence": 0.1589019364123742,
+      "entropy": 0.7613407076622636,
+      "nodes": 0,
+      "simulations": 0,
+      "elapsedMs": 22.089697000000342,
+      "inferenceCalls": 1,
+      "searched": false,
+      "pv": [
+        "g1f3"
+      ],
+      "rootStats": [
+        {
+          "uci": "g1f3",
+          "san": "Nf3",
+          "probability": 0.1589019364123742,
+          "prior": 0.1589019364123742,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4d5",
+          "san": "cxd5",
+          "probability": 0.15857449172998045,
+          "prior": 0.15857449172998045,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c1g5",
+          "san": "Bg5",
+          "probability": 0.1299744107821476,
+          "prior": 0.1299744107821476,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e2e3",
+          "san": "e3",
+          "probability": 0.11360000449295533,
+          "prior": 0.11360000449295533,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c1f4",
+          "san": "Bf4",
+          "probability": 0.0675750667667005,
+          "prior": 0.0675750667667005,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g2g3",
+          "san": "g3",
+          "probability": 0.05853921025406374,
+          "prior": 0.05853921025406374,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c4c5",
+          "san": "c5",
+          "probability": 0.047268129746587034,
+          "prior": 0.047268129746587034,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e2e4",
+          "san": "e4",
+          "probability": 0.0438520805340377,
+          "prior": 0.0438520805340377,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a2a3",
+          "san": "a3",
+          "probability": 0.034472190062072916,
+          "prior": 0.034472190062072916,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f3",
+          "san": "f3",
+          "probability": 0.02369036709055149,
+          "prior": 0.02369036709055149,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1b3",
+          "san": "Qb3",
+          "probability": 0.021026306559697647,
+          "prior": 0.021026306559697647,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1c2",
+          "san": "Qc2",
+          "probability": 0.018523127068792132,
+          "prior": 0.018523127068792132,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b2b3",
+          "san": "b3",
+          "probability": 0.01654181472720687,
+          "prior": 0.01654181472720687,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h2h3",
+          "san": "h3",
+          "probability": 0.01528236755354489,
+          "prior": 0.01528236755354489,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "f2f4",
+          "san": "f4",
+          "probability": 0.014674024831578225,
+          "prior": 0.014674024831578225,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "h2h4",
+          "san": "h4",
+          "probability": 0.013613675128652688,
+          "prior": 0.013613675128652688,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g2g4",
+          "san": "g4",
+          "probability": 0.011338888516910365,
+          "prior": 0.011338888516910365,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1a4",
+          "san": "Qa4+",
+          "probability": 0.010935886017344477,
+          "prior": 0.010935886017344477,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c1e3",
+          "san": "Be3",
+          "probability": 0.010388867975329848,
+          "prior": 0.010388867975329848,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "g1h3",
+          "san": "Nh3",
+          "probability": 0.007507699615588084,
+          "prior": 0.007507699615588084,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c1d2",
+          "san": "Bd2",
+          "probability": 0.005931833799220769,
+          "prior": 0.005931833799220769,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1d3",
+          "san": "Qd3",
+          "probability": 0.004101557693424916,
+          "prior": 0.004101557693424916,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a2a4",
+          "san": "a4",
+          "probability": 0.0036974108719539994,
+          "prior": 0.0036974108719539994,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "a1b1",
+          "san": "Rb1",
+          "probability": 0.0033399851466354713,
+          "prior": 0.0033399851466354713,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c3a4",
+          "san": "Na4",
+          "probability": 0.001678405251238841,
+          "prior": 0.001678405251238841,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "d1d2",
+          "san": "Qd2",
+          "probability": 0.001148822570067915,
+          "prior": 0.001148822570067915,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "b2b4",
+          "san": "b4",
+          "probability": 0.0009247375830430272,
+          "prior": 0.0009247375830430272,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c3b5",
+          "san": "Nb5",
+          "probability": 0.0008121184989993117,
+          "prior": 0.0008121184989993117,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c1h6",
+          "san": "Bh6",
+          "probability": 0.0006258292970329291,
+          "prior": 0.0006258292970329291,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c3d5",
+          "san": "Nxd5",
+          "probability": 0.0006037914093293699,
+          "prior": 0.0006037914093293699,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c3b1",
+          "san": "Nb1",
+          "probability": 0.0003721138936994233,
+          "prior": 0.0003721138936994233,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "e1d2",
+          "san": "Kd2",
+          "probability": 0.000353741458956388,
+          "prior": 0.000353741458956388,
+          "visits": 0,
+          "value": null
+        },
+        {
+          "uci": "c3e4",
+          "san": "Ne4",
+          "probability": 0.00012910666028140297,
+          "prior": 0.00012910666028140297,
+          "visits": 0,
+          "value": null
+        }
+      ],
+      "modelId": "v3.1-clean-distilled",
+      "engineVersion": "intuition-mcts-1",
+      "gate": {
+        "risk": 0.032387518148942786,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "expectedMatch": null,
+      "budgetMs": 500,
+      "maxNodes": 128
+    }
+  ],
+  "summary": [
+    {
+      "mode": "direct",
+      "positions": 10,
+      "averageMs": 17.460267399999974,
+      "averageNodes": 0,
+      "searched": 0,
+      "expectedCorrect": 5,
+      "expectedTotal": 6
+    },
+    {
+      "mode": "search",
+      "positions": 10,
+      "averageMs": 351.3176989,
+      "averageNodes": 43.6,
+      "searched": 8,
+      "expectedCorrect": 6,
+      "expectedTotal": 6
+    },
+    {
+      "mode": "selective",
+      "positions": 10,
+      "averageMs": 111.02387630000005,
+      "averageNodes": 5.1,
+      "searched": 2,
+      "expectedCorrect": 5,
+      "expectedTotal": 6
+    }
+  ],
+  "settings": {
+    "budgetMs": 500,
+    "maxNodes": 128,
+    "threshold": 0.5,
+    "suite": "mixed",
+    "modes": [
+      "direct",
+      "search",
+      "selective"
+    ],
+    "timing": "same per-move wall-time cap and search node cap; direct uses no tree search"
+  },
+  "modelId": "v3.1-clean-distilled",
+  "createdAt": "2026-10-30T06:56:52.493Z"
+}

@@ -1,72 +1,84 @@
-# Hulkbuster & Titan Breaker — Combat Lab
+# INTUITION — Chess research lab
 
-[Play on GitHub Pages](https://cory56626-art.github.io/THEBOBSBATH/)
+[Open the experiment on GitHub Pages](https://cory56626-art.github.io/THEBOBSBATH/)
 
-A self-contained 3D spectator combat sandbox. Choose the movie-inspired Mark XLIV Hulkbuster or **Titan Breaker, Elias Vane’s original autonomous containment armor**, and watch it fight **Hulk, Venom, Ultron, Carnage, The Thing, or Wolverine** in a city or a flat grass arena. The city includes evacuating civilians, soldiers, tanks, physical cars and destructible buildings.
+A browser experiment comparing **direct neural play**, **always searching**, and **selective searching** with the same pretrained chess model. The previous game has been replaced; its earlier versions remain in Git history.
 
-- Ten rigid bodies per fighter, constrained joints, motor-assisted walking and balance, force-driven strikes, impact damage, physical projectiles and debris. Launches suspend locomotion motors so fighters travel ballistically, tumble and recover. No timed or predetermined winner.
-- Film-inspired loadouts: charged repulsor blasts, rapid hydraulic combinations and rocket charges; Hulk leaps with landing shockwaves, smashes and thunderclaps; Venom tendril pulls, wall-directed throws, pounces and healing; Ultron energy salvos, gravity lift-and-throw, flight and sentries.
-- Physical impacts fracture building collision cells and matching facade geometry. Concrete chunks, dust clouds, fireballs, smoke, shockwaves and glowing energy trails make heavy hits visible. Upper structures remain simplified static towers.
-- Per-limb damage, progressive armor shedding, bruises, cuts and blood. Severe joint failure can separate limbs. Hulk's optional limb regrowth takes longer than normal healing; Venom naturally reforms.
-- Veronica carries six replacement modules. Repairs consume stock, and enemy attacks can destroy her pod. No infinite repair supply.
-- Optional Ultron transfer consumes a surviving sentry to provide one backup body.
-- Hulkbuster flight is limited to 2.8 seconds; Ultron gets 3.5 seconds. Both must land and recharge for 14 seconds before taking off again.
-- Go to Sleep is a close-range gas discharge with target-dependent success chances. Successful exposure produces a temporary limp ragdoll, followed by resistance to immediate repeats. Robots are immune.
-- Match health is independent of local part durability. Depleted head/core integrity cannot secretly end a fight while the visible bar remains high. Single hits are capped at 6.5% of maximum match health.
-- Hulk gains resistance and strength as rage grows. Carnage uses tendrils and blades, The Thing relies on rock armor and weight, and Wolverine uses claws, pounces and healing. Military tanks and infantry deal meaningful damage with finite armor.
+This is an experiment, **not a claim to have surpassed Stockfish**. The small pretrained model makes the project practical on ordinary devices. Its playing strength must be measured rather than inferred from model size, a puzzle result, or an unrelated published Elo rating.
 
-## Titan Breaker
+## Try it
 
-Titan Breaker is a silent, 3.35 m metallic dark-grey machine with cyan eyes and a cyan chest reactor. Its Zeno armor is slightly more durable than vibranium, but plates and components can still fracture or be torn away. Its mission is live capture, with an onboard AI independent from Sunday.
+- **Play:** choose a decision mode, your side, and a search budget. Click a piece and a destination to make a legal move. Start a new game, undo, flip the board, or export the game as PGN.
+- **Position lab:** load a FEN position and compare all three modes. Inspect each move, its inference/search time, and its search work. Scores are predictions from this model, not an independent assessment of correctness.
+- **Benchmark:** run the supplied position suite or paired games. A game pair uses the same opening with colors reversed. Export raw results instead of relying only on the summary.
+- **Controller:** inspect or calibrate the selective-search controller. Training examples and held-out evaluation have different roles; controller labels come from additional model-guided search, which is a reference procedure rather than a perfect chess oracle.
 
-Its established systems are heavy grappling and strikes, bilateral piston punches, separate Red Thruster punches, palm repulsors, 30 homing missiles split 15 per forearm, a breakable body-wrapping Zeno restraint rope, wrist shields, sustained flight, ground-based air-suction stabilizers and optical camouflage. Sunday scans and delivers replacement components from above Veronica’s altitude using Red Thrusters. Optical stealth does not defeat every sensor, and large amounts of water compromise the machine’s effectiveness.
+The model and engine run locally in your browser. No API key, account, paid inference service, or backend is required. Once all assets are loaded, model decisions do not require a remote model request. Refreshing the site still requires the static files to be available.
 
-Dual-arm pistons block simultaneous repulsor fire. One arm may use pistons while the opposite palm fires. Red Thruster punches cannot stack with the piston mechanism in the same attack. These are separate attacks, not additive damage modes. Missile ammunition and damaged arms are tracked; neither Zeno nor the restraint rope is indestructible. Full flight is part of Titan Breaker’s supplied design and is separate from Hulkbuster’s and Ultron’s short flight bursts.
+## What the three modes mean
 
-The supplied character design and reference image are the source for Titan Breaker. [Design and simulation notes](arena/RESEARCH.md#titan-breaker--original-character-design) preserve its limits. No additional weapons or transformations are assumed.
+| Mode | Decision procedure | What it tests |
+| --- | --- | --- |
+| Direct | Select the strongest legal move predicted by the policy, without expanding a future-position search tree. | What the pretrained model can do directly. |
+| Search | Use model-guided tree search within the configured limits. | Whether additional computation improves the policy's decisions. |
+| Selective | Use the direct policy unless the controller decides additional computation is worthwhile. | Whether an allocation rule can save computation while preserving decision quality. |
 
-## Controls
+Every mode uses the same model weights, legal-move rules, and initial position. The direct mode still performs neural inference and legal move generation; “no search” does not mean zero computation. A high policy probability is not a calibrated guarantee that a move is correct. Two methods can also agree on a mistake.
 
-Choose your hero, opponent and battlefield, then **Begin engagement**. AI controls both fighters. Drag to orbit and scroll/pinch to zoom. Camera presets follow either fighter or the fight. Manual command buttons request the selected hero’s abilities; range, charge, equipment and cooldowns still apply.
+The included model is Peter Baer's **v3.1-clean-distilled** transformer: 116,266 parameters and 464,936 weight bytes. It was distilled from a larger model trained on human Lichess games. It is not a Stockfish-trained model. Exact source revision, fingerprint, and license information are in [model/provenance.json](model/provenance.json).
 
-**Space** pauses; **C** changes camera; **R** resets the fight. Numbered commands follow the selected hero’s on-screen loadout. Hulkbuster’s **1–6** commands are repulsor, jackhammer, boost, repair, flight and Go to Sleep. Use quarter speed for slow motion. Settings include limb regrowth, severe separation, injury effects, network transfer, military response, graphics quality and optional 2.4 m battlefield flooding. Flooding provides a way to test Titan Breaker’s established water weakness. Touch controls are included. Combat sound starts with the engagement; use ♪ to mute it. Leaving the tab pauses the simulation.
+## Read results carefully
 
-## Scope and research
+1. **Budget both time and work.** Node limits make repeated comparisons easier to interpret. The wall-clock cap is soft: synchronous neural inference cannot be interrupted, and the engine checks time between search iterations. It reserves an estimate of observed inference/iteration cost before starting another simulation to reduce overruns, but pauses, throttling, and changing inference costs can still exceed a cap. Paired games deduct actual measured decision time from equal starting clocks. Record browser and settings with results.
+2. **Keep the opponent and openings fixed.** Compare game pairs with colors reversed. Do not mix settings or device classes into one strength claim.
+3. **Separate training and testing.** Evaluate a fitted controller on held-out opening groups. The split is selected for label availability before fitting, never by its accuracy. If one class cannot be represented in both splits, the report includes an explicit limited-holdout warning. Selecting thresholds on a test suite and then reporting the same suite as independent evidence overstates generalization.
+4. **Treat search labels as provisional.** The controller learns whether deeper search changes the policy's first choice. A changed move does not automatically prove an improvement. Search can also miss the best move.
+5. **Distinguish agreement from strength.** Policy agreement, puzzle accuracy, and reduced node count are useful diagnostics. Match results and severe mistakes are separate outcomes.
+6. **Avoid unsupported Elo claims.** Small browser matches are noisy. Draws, move-cap adjudications, and unfinished games need to remain visible. There is no automatic conversion from this experiment's scores to Lichess or Stockfish Elo.
 
-[Research and sources](arena/RESEARCH.md) are also linked from the in-game Field notes. MCU film references inform Hulkbuster, Hulk and Ultron. Sony films supply Venom and Carnage; The Thing uses The Fantastic Four: First Steps, and Wolverine uses the healthy Hugh Jackman movie portrayal with the yellow-and-blue suit. Extended abilities are selectable; numerical durability, masses, regeneration times and repair stock are gameplay tuning.
+The supplied controller is an initial pilot fitted from only 40 reference-labelled positions, with opening groups held out for evaluation. Its small-sample metrics do not establish generalization or a playing-strength gain. Changing search caps invalidates its reference-budget match; selective mode then requests search until a compatible controller is trained. Personalities, opponent exploitation, a committee of independent models, and a claim of superiority to a full-strength engine are outside this first experiment.
 
-Models are detailed procedural likenesses, not film meshes or photoreal scans. Titan Breaker is based on the original design supplied in this conversation, attributed to Elias Vane. Physics uses simplified rigid collision shapes and assisted locomotion. Organic damage is a visual game system rather than anatomical simulation. Ability and repair effects follow explicit game rules. This is an unofficial fan experiment.
+The shipped pilot uses a 500 ms search cap and 128-node cap. Only 3 of its 40 reference decisions changed the direct move. Its held-out Brier score is about 0.123, compared with 0.077 for the constant training-prior baseline (lower is better). This controller currently underperforms that simple calibration baseline; the dashboard reports the limitation. Those results motivate collecting more independent, varied reference examples rather than claiming the controller is proven.
 
-## Development
+## Develop and test
 
-No build step or runtime CDN dependency. Three.js r169 is shared with the archived house game; Cannon-es 0.20.0, fonts, and licenses are vendored in `arena/vendor/`. All character/environment geometry and textures are generated locally.
+Requires Node.js 24 or a compatible current Node.js release and npm.
 
 ```sh
+npm ci
 npm test
-npm run serve
-# In another terminal, with Python Playwright and Chromium installed:
-python tests/arena_browser.py
-python tests/arena_pace.py
-python tests/arena_roster.py
-python tests/titan_browser.py
+npm run build
+npx playwright install chromium
+npm run test:e2e
 ```
 
-Open `http://localhost:8000/`. The site needs WebGL and JavaScript. Graphics automatically lower resolution and mesh detail on software renderers and smaller devices. The simulation retains elapsed wall time when rendering slows. Character surfaces and physical rubble use batched geometry and instancing. `ARENA_BASE_URL` selects another deployment for browser checks.
+For local development:
 
-- `arena/simulation.js`: physical rigs, collisions, AI, abilities, damage, regrowth, repairs, city response.
-- `arena/models.js`: characters, armor loss, injury overlays and aerial repair platforms.
-- `arena/environment.js`: city/grass, vehicles, civilians, soldiers and sentries.
-- `arena/main.js`: rendering, clear-sight director camera, UI and wall-time-preserving fixed-step loop.
-- `arena/effects.js`: fixed particle/instance pools for fire, dust, smoke, beams and shockwaves.
-- `arena/simulation.test.js`: physics and game-rule regression tests.
-- `tests/arena_browser.py`: desktop/mobile browser integration checks.
+```sh
+npm run dev -- --host 127.0.0.1
+```
 
-GitHub Pages serves `main` from the root. All asset paths work under `/THEBOBSBATH/`.
+The Vite base path is `/THEBOBSBATH/`, matching the repository's GitHub Pages URL. Browser tests start their own local server; set `CHESS_LAB_BASE_URL` to test a running deployment instead:
 
-## Preserved games
+```sh
+CHESS_LAB_BASE_URL=https://cory56626-art.github.io/THEBOBSBATH/ npm run test:e2e
+```
 
-- [House Observatory](https://cory56626-art.github.io/THEBOBSBATH/observatory/) — previous front page, with original assets under `house/`.
-- [Meridian — Open City](https://cory56626-art.github.io/THEBOBSBATH/meridian/)
-- [LATCH — The Appeals Desk](https://cory56626-art.github.io/THEBOBSBATH/appeals/)
+Unit tests cover the decision engine and controller, including chess rule edge cases and computation limits. Chromium tests load the actual browser model and exercise the playable board, position comparison, exports, and benchmark controls. CI runs installation, unit tests, the production build, and browser tests before deploying the generated `dist/` artifact.
 
-Original house simulation tests remain part of `npm test`; its browser check defaults to `/observatory/`.
+## GitHub Pages
+
+`.github/workflows/pages.yml` publishes verified pushes to `main` using GitHub Actions. Repository Settings → Pages must use **GitHub Actions** as its source. The workflow does not change repository visibility or credentials. Pull requests run verification without publishing.
+
+## Sources and attribution
+
+The inference implementation, pretrained weights, source revision, licenses, and model fingerprint are recorded under `model/`; see also [THIRD_PARTY.txt](THIRD_PARTY.txt).
+
+Research informing the comparison:
+
+- [Amortized Planning with Large-Scale Transformers: A Case Study on Chess](https://arxiv.org/html/2402.04494v2) — strong search-free play and its remaining limitations.
+- [Leela Chess Zero architecture](https://lczero.org/dev/overview/) — separate policy/value predictions and tree search.
+- [Chessformer: A Unified Architecture for Chess Modeling](https://arxiv.org/abs/2605.19091) — chess-specific neural representations.
+- [Engineering Efficient Self-Play Chess](https://arxiv.org/html/2609.37447v1) — why local efficiency improvements require full-system evaluation.
+
+Results in those papers belong to their own models, data, hardware, and evaluation protocols. They are not results achieved by this project.

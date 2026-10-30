@@ -1,0 +1,4 @@
+docs/pilot-*-results.json linguist-generated=true
+model/runtime.js linguist-generated=true
+src/default-controller.json linguist-generated=true
+model/weights.bin binary

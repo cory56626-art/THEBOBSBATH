@@ -1,0 +1,23 @@
+{
+  "name": "Neural Chess v3.1 clean-distilled",
+  "modelId": "v3.1-clean-distilled",
+  "upstreamCapsuleId": "v3.1-nano",
+  "source": "https://github.com/pbaer/neural-chess",
+  "sourceCommit": "524ba14d4af3b739cbe19bd8cd0b14892e6305ca",
+  "sourcePath": "viz/public/weights/v3.1-nano/",
+  "parameters": 116266,
+  "weightsBytes": 464936,
+  "weightsSHA256": "5b584935b8a23a662096d2ecc34f2af8c580058252ef0567194b080187945468",
+  "sourceLicense": "MIT",
+  "weightsLicense": "CC0-1.0",
+  "trainingData": "CC0 Lichess human games; distilled from upstream 37.4M-parameter teacher. No Stockfish training labels.",
+  "architecture": "8-block, 32-wide square-token transformer with four attention heads, geometry bias, policy and value heads.",
+  "valuePerspective": "side to move, in [-1,1]",
+  "limitations": [
+    "Compact research baseline, not a demonstrated Stockfish competitor.",
+    "Published upstream strength estimates are not this experiment's measured ratings.",
+    "Raw policy probabilities are move preferences, not calibrated correctness confidence.",
+    "Full history is available only when infer receives a Chess instance or explicit repetitionCount."
+  ],
+  "adaptation": "Unmodified upstream inference core bundled into runtime.js; local index.js adds chess.js adapter, stable legal softmax, optional history, integrity check and experiment-facing API."
+}

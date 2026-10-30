@@ -1,0 +1,17 @@
+import { readFile, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import { createModelFromBytes, MODEL_METADATA } from '../model/index.js';
+import { runSuite, runPairedMatches } from '../src/benchmark.js';
+const root = new URL('../', import.meta.url);
+const manifest = JSON.parse(await readFile(new URL('model/capsule.json', root), 'utf8'));
+const weights = await readFile(new URL('model/weights.bin', root));
+const model = createModelFromBytes(manifest, weights);
+const gate = JSON.parse(await readFile(new URL('src/default-controller.json', root), 'utf8'));
+const settings = { budgetMs: 500, maxNodes: 128, threshold: 0.5, gate };
+const started = new Date().toISOString();
+const suite = await runSuite(model, { ...settings, suite: 'mixed', onProgress: p => { if (p.completed % 6 === 0) console.log(`Position decisions ${p.completed}/${p.total}`); } });
+console.log('Position suite:', JSON.stringify(suite.summary));
+await writeFile(new URL('docs/pilot-position-results.json', root), JSON.stringify({ started, environment: { node: process.version, platform: os.platform(), cpu: os.cpus()[0]?.model }, model: MODEL_METADATA, ...suite }, null, 2) + '\n');
+const matches = await runPairedMatches(model, { ...settings, rounds: 2, maxPlies: 40, onProgress: p => { if (p.game) console.log(`Game ${p.completed}/${p.total}: ${p.game.result} (${p.game.status})`); } });
+await writeFile(new URL('docs/pilot-match-results.json', root), JSON.stringify({ started, environment: { node: process.version, platform: os.platform(), cpu: os.cpus()[0]?.model }, model: MODEL_METADATA, ...matches }, null, 2) + '\n');
+console.log('Match standings:', JSON.stringify(matches.standings));

@@ -1,0 +1,52 @@
+MIT License
+
+Copyright (c) 2026 Peter Baer
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+Scope note (what the MIT grant above covers, and the rest):
+
+- SOURCE CODE — the MIT license above. © Peter Baer. Reuse freely with
+  attribution.
+
+- TRAINED MODEL WEIGHTS (the browser Model Capsule under viz/public/weights/,
+  and the larger models under model/) — dedicated to the PUBLIC DOMAIN under
+  CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/),
+  matching their training data. You may use, copy, modify, and distribute them
+  for any purpose, including commercially, with no conditions. (Only the small
+  browser model is committed here; the large models are gitignored for size.)
+
+- TRAINING DATA — entirely openly-licensed human games from Lichess (the Lichess
+  Elite database and the Lichess standard monthly database), which Lichess
+  dedicates to the public domain under CC0. The corpus and shards under data/
+  are gitignored only for size; they carry no licensing encumbrance.
+
+- THIRD-PARTY components keep their own licenses (not covered by the grants
+  above):
+    * Stockfish (bin/stockfish-*.exe) — GPLv3, © the Stockfish developers. Used
+      only as a separate program for strength evaluation; not linked into this
+      code and not used in training. Source: https://github.com/official-stockfish/Stockfish
+    * pgn-extract (bin/pgn-extract.exe) — GPL, © David J. Barnes.
+      https://www.cs.kent.ac.uk/people/staff/djb/pgn-extract/
+    * cburnett chess pieces (web tool) — BSD, © Colin M.L. Burnett. Full terms
+      and attribution in viz/THIRD_PARTY.md.
+
+See the README "Provenance and license" section.

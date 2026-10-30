@@ -1,0 +1,92 @@
+{
+  "description": "Small initial calibration for the selective-computation experiment; not a validated chess-strength improvement.",
+  "labelDefinition": "Reference search chooses a different move than direct policy",
+  "startedAt": "2026-10-30T06:55:39.789Z",
+  "completedAt": "2026-10-30T06:56:00.786Z",
+  "durationMs": 20996.499798,
+  "model": {
+    "name": "Neural Chess v3.1 clean-distilled",
+    "modelId": "v3.1-clean-distilled",
+    "parameters": 116266,
+    "weightsBytes": 464936,
+    "weightsSHA256": "5b584935b8a23a662096d2ecc34f2af8c580058252ef0567194b080187945468",
+    "source": "https://github.com/pbaer/neural-chess",
+    "sourceCommit": "524ba14d4af3b739cbe19bd8cd0b14892e6305ca",
+    "sourceLicense": "MIT",
+    "weightsLicense": "CC0-1.0",
+    "valuePerspective": "side to move"
+  },
+  "requestedSettings": {
+    "budgetMs": 500,
+    "maxNodes": 128,
+    "seed": 42
+  },
+  "actualSettings": {
+    "budgetMs": 500,
+    "maxNodes": 128,
+    "seed": 42
+  },
+  "fallbackReason": null,
+  "positionGenerationSeed": 20261030,
+  "positionCount": 40,
+  "sampleCount": 40,
+  "changedMoves": 3,
+  "unchangedMoves": 37,
+  "split": {
+    "trainGroups": [
+      "calibration-game-0",
+      "calibration-game-2",
+      "calibration-game-1",
+      "calibration-game-8",
+      "calibration-game-9",
+      "calibration-game-4",
+      "calibration-game-6"
+    ],
+    "testGroups": [
+      "calibration-game-7",
+      "calibration-game-3",
+      "calibration-game-5"
+    ],
+    "trainCount": 28,
+    "testCount": 12,
+    "splitPolicy": "First deterministic cyclic group split with both label classes in train and holdout; otherwise first train-valid split with an explicit insufficient-holdout warning. No metric-based split selection.",
+    "splitOffset": 1,
+    "holdoutHasBothClasses": true,
+    "warnings": []
+  },
+  "heldoutMetrics": {
+    "accuracy": 0.8333333333333334,
+    "brier": 0.12279205850212481,
+    "falseNegatives": 1,
+    "falsePositives": 1,
+    "truePositives": 0,
+    "trueNegatives": 10,
+    "testCount": 12,
+    "trainCount": 28,
+    "positiveRate": 0.07142857142857142,
+    "testPositiveRate": 0.08333333333333333,
+    "baselineBrier": 0.07653061224489795,
+    "majorityClassAccuracy": 0.9166666666666666,
+    "brierBeatsConstantTrainRate": false
+  },
+  "runtime": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "release": "6.18.55",
+    "architecture": "x64",
+    "cpuModel": "AMD EPYC 9V74 80-Core Processor",
+    "logicalCPUs": 3
+  },
+  "sourceSHA256": {
+    "src/engine.js": "dd9c32e1f565101f184efd25cb361613bbd0ce534eb22197cdba3e1ad647be4e",
+    "src/benchmark.js": "8057d0bc0835eb646971cec23455bf0f95aba759bd3b7e298b601363bcfc36ce",
+    "src/controller.js": "77d6ff8b271939fff79cc65c21c68137b6b8258964b6db577c0aa7f2121c4dbd"
+  },
+  "limitations": [
+    "Only 40 calibration positions, grouped by 10 generated games; the heldout set is small.",
+    "Labels measure disagreement with bounded same-model search, not objective errors or proven move improvements.",
+    "Reference labels depend on CPU speed and process scheduling because the reference has a wall-time cap.",
+    "The controller is tied to the stated model and reference settings; different budgets require recalibration.",
+    "No match-strength gain or Stockfish superiority is established by this calibration."
+  ]
+}

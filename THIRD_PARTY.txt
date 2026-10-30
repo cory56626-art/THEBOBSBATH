@@ -1,37 +1,37 @@
-The MIT License
+INTUITION — third-party attribution
+================================
 
-Copyright © 2010-2025 three.js authors
+Pretrained neural chess model and inference implementation
+---------------------------------------------------------
+Upstream: https://github.com/pbaer/neural-chess
+Author: Peter Baer
+Source revision: 524ba14d4af3b739cbe19bd8cd0b14892e6305ca
+Model: v3.1-clean-distilled, 116,266 parameters, 464,936 weight bytes
+SHA-256: 5b584935b8a23a662096d2ecc34f2af8c580058252ef0567194b080187945468
+Source license: MIT. Weight/data release: CC0-1.0.
+Preserve model/LICENSE.upstream.txt when redistributing source or weights.
+The model was distilled from a larger model trained on human Lichess games;
+it is not a model trained on Stockfish analysis labels.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+chess.js
+--------
+https://github.com/jhlywa/chess.js
+BSD-2-Clause. Used for legal move generation, FEN/PGN, history, and chess rules.
+The installed package includes the complete license text.
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+Vite
+----
+https://github.com/vitejs/vite
+MIT. Development server and production bundler; not a remote runtime service.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+Playwright
+----------
+https://github.com/microsoft/playwright
+Apache-2.0. Browser testing dependency, not part of the deployed chess model.
 
-ARENA ADDITIONS
+Research references
+-------------------
+Research papers linked in README.md provide context only. No Elo result or
+strength claim from an external paper is attributed to this implementation.
 
-Cannon-es 0.20.0 — MIT License. License: arena/vendor/CANNON-LICENSE.txt.
-https://github.com/pmndrs/cannon-es
-
-Barlow and Barlow Condensed — SIL Open Font License 1.1.
-Licenses: arena/vendor/barlow-OFL.txt, arena/vendor/barlowcondensed-OFL.txt.
-IBM Plex Mono — SIL Open Font License 1.1.
-License: arena/vendor/ibmplexmono-OFL.txt.
-Font sources: https://github.com/google/fonts
-
-Character names and film designs belong to their respective owners. Procedural
-fan artwork is authored for this non-official browser experiment; no film meshes,
-textures, recordings, or music are included. The repository's software license
-does not grant rights to Marvel/Sony characters or trademarks.
+The old combat, house, and archived game assets are not used by this replacement.
