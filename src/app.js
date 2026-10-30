@@ -1,6 +1,6 @@
 import { Chess } from 'chess.js';
 import { renderBoard } from './board.js';
-import { serializePosition, playUci } from './engine.js';
+import { serializePosition, playUci, ENGINE_VERSION } from './engine.js';
 import { BENCHMARK_SUITES, rowsToCSV } from './benchmark.js';
 import defaultGate from './default-controller.json';
 
@@ -251,7 +251,7 @@ function renderGate() {
   if (gate.trained && metrics.brier > metrics.baselineBrier) $('controller-results').insertAdjacentHTML('beforeend', '<p class="warning">On this small holdout, the constant predictor scored better. Treat this controller as an experimental baseline.</p>');
 }
 function reportEnvelope(data) {
-  return { experimentVersion: '0.1.0', engineVersion: 'intuition-mcts-1', createdAt: new Date().toISOString(), model: modelMetadata, environment: { userAgent: navigator.userAgent, hardwareConcurrency: navigator.hardwareConcurrency, deviceMemory: navigator.deviceMemory || null }, controller: gate, ...data };
+  return { experimentVersion: '0.1.0', engineVersion: ENGINE_VERSION, createdAt: new Date().toISOString(), model: modelMetadata, environment: { userAgent: navigator.userAgent, hardwareConcurrency: navigator.hardwareConcurrency, deviceMemory: navigator.deviceMemory || null }, controller: gate, ...data };
 }
 function keepReport(result) {
   latestReport = reportEnvelope(result); reports.push(latestReport);

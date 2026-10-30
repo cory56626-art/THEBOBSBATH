@@ -68,6 +68,7 @@ test('real pretrained model plays locally, exports legal PGN, flips, and undoes'
 
 test('New game confirms a restart even at the initial position and leaves the board playable', async ({ page }) => {
   await openLab(page);
+  await page.locator('#mode').selectOption('direct');
   await tab(page, 'controller');
   await page.locator('#new-game').click();
   await expect(page.locator('#toast')).toBeVisible();
@@ -88,6 +89,7 @@ test('New game confirms a restart even at the initial position and leaves the bo
 
 test('New game clears played moves, highlights and stale decision telemetry before fresh play', async ({ page }) => {
   await openLab(page);
+  await page.locator('#mode').selectOption('direct');
   await page.locator('#board [data-square="e2"]').click();
   await page.locator('#board [data-square="e4"]').click();
   await expect.poll(() => page.evaluate(() => window.__INTUITION__.latestDecision?.mode)).toBe('direct');
@@ -120,6 +122,7 @@ test('New game clears played moves, highlights and stale decision telemetry befo
 
 test('New game as Black preserves settings and orientation and plays exactly one new White opening move', async ({ page }) => {
   await openLab(page);
+  await page.locator('#mode').selectOption('direct');
   await page.locator('#side').selectOption('b');
   await expect.poll(() => page.evaluate(() => window.__INTUITION__.fen.split(' ')[1])).toBe('b');
   await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(false);

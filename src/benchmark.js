@@ -1,5 +1,5 @@
 import { Chess } from 'chess.js';
-import { chooseMove, playUci, throwIfAborted } from './engine.js';
+import { chooseMove, playUci, throwIfAborted, ENGINE_VERSION } from './engine.js';
 import { extractFeatures, trainController, canonicalPositionKey } from './controller.js';
 
 export const MODES = Object.freeze(['direct', 'search', 'selective']);
@@ -111,6 +111,7 @@ export async function calibrateController(model, options = {}) {
   throwIfAborted(signal);
   const gate = trainController(samples, { seed: options.seed ?? 42, iterations: options.iterations ?? 600 });
   gate.referenceSettings = { budgetMs: settings.budgetMs, maxNodes: settings.maxNodes };
+  gate.referenceEngineVersion = ENGINE_VERSION;
   gate.createdAt = new Date().toISOString();
   return gate;
 }

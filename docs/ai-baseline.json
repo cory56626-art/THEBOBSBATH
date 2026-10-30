@@ -1,0 +1,4797 @@
+{
+  "createdAt": "2026-10-30T16:33:58.623Z",
+  "gitCommit": "8915eb4915b43120828f8a6f8a89737521b33244",
+  "engineVersion": "intuition-mcts-1",
+  "engineSourceSHA256": "dd9c32e1f565101f184efd25cb361613bbd0ce534eb22197cdba3e1ad647be4e",
+  "model": {
+    "name": "Neural Chess v3.1 clean-distilled",
+    "modelId": "v3.1-clean-distilled",
+    "parameters": 116266,
+    "weightsBytes": 464936,
+    "weightsSHA256": "5b584935b8a23a662096d2ecc34f2af8c580058252ef0567194b080187945468",
+    "source": "https://github.com/pbaer/neural-chess",
+    "sourceCommit": "524ba14d4af3b739cbe19bd8cd0b14892e6305ca",
+    "sourceLicense": "MIT",
+    "weightsLicense": "CC0-1.0",
+    "valuePerspective": "side to move"
+  },
+  "controllerSHA256": "91f1808a87f841606eecc5fec87540aed1b33f56af14da81df033dd40fb6e21e",
+  "positionSetSHA256": "afa87855d5dc20ccf33ec0a7f0f1d4ecdab9ca1c94c00eb7287d1a630df06f1a",
+  "settings": {
+    "budgetMs": 500,
+    "maxNodes": 128,
+    "threshold": 0.5,
+    "modes": [
+      "direct",
+      "search",
+      "selective"
+    ],
+    "oracleNodes": 100000,
+    "oracleThreads": 1,
+    "oracleHashMB": 16,
+    "oracleHashClearedPerQuery": true
+  },
+  "oracle": {
+    "source": "https://github.com/official-stockfish/Stockfish/releases/tag/sf_19",
+    "releaseArchiveSHA256": "9defc0d4e55d49c65a6d042f3e571a39fcea499ade6dbe741b53b8c65e03611f",
+    "executableSHA256": "0f83d24cc46d2c66c60f16001af5444873bc112b7d028594513426894c12da19",
+    "name": "Stockfish 19"
+  },
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "architecture": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor"
+  },
+  "positions": [
+    {
+      "id": "white-mate-one",
+      "name": "White immediate mate",
+      "fen": "7k/5Q2/6K1/8/8/8/8/8 w - - 0 1",
+      "split": "development",
+      "group": "white-mate-one",
+      "source": "Authored legal tactical stress position"
+    },
+    {
+      "id": "corner-mate-one",
+      "name": "Corner immediate mate",
+      "fen": "k7/8/1QK5/8/8/8/8/8 w - - 0 1",
+      "split": "development",
+      "group": "corner-mate-one",
+      "source": "Authored legal tactical stress position"
+    },
+    {
+      "id": "hanging-queen",
+      "name": "Pawn can capture queen",
+      "fen": "7k/8/8/4q3/3P4/8/8/K7 w - - 0 1",
+      "split": "development",
+      "group": "hanging-queen",
+      "source": "Authored legal tactical stress position"
+    },
+    {
+      "id": "black-mate-one",
+      "name": "Black immediate mate",
+      "fen": "8/8/8/8/8/6k1/5q2/7K b - - 0 1",
+      "split": "heldout",
+      "group": "black-mate-one",
+      "source": "Authored legal tactical stress position"
+    },
+    {
+      "id": "promotion-mate-one",
+      "name": "Promotion immediate mate",
+      "fen": "7k/P7/6K1/8/8/8/8/8 w - - 0 1",
+      "split": "heldout",
+      "group": "promotion-mate-one",
+      "source": "Authored legal tactical stress position"
+    },
+    {
+      "id": "rook-takes-queen",
+      "name": "Rook can capture queen",
+      "fen": "4k3/8/8/8/4q3/8/4R3/4K3 w - - 0 1",
+      "split": "heldout",
+      "group": "rook-takes-queen",
+      "source": "Authored legal tactical stress position"
+    },
+    {
+      "id": "generated-0-1",
+      "name": "Ruy Lopez independent continuation 1",
+      "fen": "1rb1kb1r/n1pq1p1p/p4n2/4p1p1/4P3/4KN2/PPPP1PPP/RNB2Q1R w k - 0 10",
+      "split": "development",
+      "group": "generated-game-0",
+      "source": "New seeded legal continuation, seed 0xA17E2026; excludes all controller calibration FENs"
+    },
+    {
+      "id": "generated-0-2",
+      "name": "Ruy Lopez independent continuation 2",
+      "fen": "2bk1b1r/n1p2p1p/p4nN1/4p1p1/4P3/8/PrPqKPPP/RNB2Q1R w - - 0 13",
+      "split": "development",
+      "group": "generated-game-0",
+      "source": "New seeded legal continuation, seed 0xA17E2026; excludes all controller calibration FENs"
+    },
+    {
+      "id": "generated-1-1",
+      "name": "Queen’s Gambit independent continuation 1",
+      "fen": "r1b2rk1/pppq1p1p/n3pp2/1N1p4/2PP1P2/b5P1/PP1QP2P/R3KBNR w KQ - 2 10",
+      "split": "development",
+      "group": "generated-game-1",
+      "source": "New seeded legal continuation, seed 0xA17E2026; excludes all controller calibration FENs"
+    },
+    {
+      "id": "generated-1-2",
+      "name": "Queen’s Gambit independent continuation 2",
+      "fen": "r1b3rk/pppq1p1p/n3pp2/1Nbp1P2/2PP4/3Q1NP1/PP2P2P/R3KB1R w KQ - 5 13",
+      "split": "development",
+      "group": "generated-game-1",
+      "source": "New seeded legal continuation, seed 0xA17E2026; excludes all controller calibration FENs"
+    },
+    {
+      "id": "generated-2-1",
+      "name": "Sicilian independent continuation 1",
+      "fen": "r1b1kb1r/pp1npppp/Q2p1n2/8/4P3/5N2/PPqB1PPP/RN1K1B1R w kq - 0 10",
+      "split": "development",
+      "group": "generated-game-2",
+      "source": "New seeded legal continuation, seed 0xA17E2026; excludes all controller calibration FENs"
+    },
+    {
+      "id": "generated-2-2",
+      "name": "Sicilian independent continuation 2",
+      "fen": "r1b1kb1r/pp1npppp/Q2p4/8/4n3/5NP1/PP1B1K1P/RN3B1R w kq - 0 13",
+      "split": "development",
+      "group": "generated-game-2",
+      "source": "New seeded legal continuation, seed 0xA17E2026; excludes all controller calibration FENs"
+    },
+    {
+      "id": "generated-3-1",
+      "name": "French independent continuation 1",
+      "fen": "rn1qkbr1/pp3p1p/4bn2/2pp2p1/3PP3/2N5/PPPB1PPP/2RK1BNR w q - 0 10",
+      "split": "heldout",
+      "group": "generated-game-3",
+      "source": "New seeded legal continuation, seed 0xA17E2026; excludes all controller calibration FENs"
+    },
+    {
+      "id": "generated-3-2",
+      "name": "French independent continuation 2",
+      "fen": "rn2k1r1/1pq2p1p/p3bn1b/2pp2p1/3PPP2/2N4N/PPPB2PP/1R1K1B1R w q - 2 13",
+      "split": "heldout",
+      "group": "generated-game-3",
+      "source": "New seeded legal continuation, seed 0xA17E2026; excludes all controller calibration FENs"
+    },
+    {
+      "id": "generated-4-1",
+      "name": "King’s Indian independent continuation 1",
+      "fen": "rn1qk2r/ppp1ppb1/3pb3/6pp/1PPPP1n1/2NB2P1/P3NP1P/R1BQK2R w KQkq - 1 10",
+      "split": "heldout",
+      "group": "generated-game-4",
+      "source": "New seeded legal continuation, seed 0xA17E2026; excludes all controller calibration FENs"
+    },
+    {
+      "id": "generated-4-2",
+      "name": "King’s Indian independent continuation 2",
+      "fen": "rn1qkbr1/1pp1pp2/p2pb3/1P4pp/N1PPP1n1/3B1PP1/P3N2P/R1BQK2R w KQq - 2 13",
+      "split": "heldout",
+      "group": "generated-game-4",
+      "source": "New seeded legal continuation, seed 0xA17E2026; excludes all controller calibration FENs"
+    },
+    {
+      "id": "generated-5-1",
+      "name": "English independent continuation 1",
+      "fen": "r2qkb1r/1p3pp1/p1npbn2/3Pp1Np/3P4/6P1/PP2PP1P/R1BQKB1R w KQkq - 1 10",
+      "split": "heldout",
+      "group": "generated-game-5",
+      "source": "New seeded legal continuation, seed 0xA17E2026; excludes all controller calibration FENs"
+    },
+    {
+      "id": "generated-5-2",
+      "name": "English independent continuation 2",
+      "fen": "r3kbr1/1p1q1pp1/p2pbn2/3Pp1Np/1n1P4/1Q3PP1/PP2P2P/R1B1KB1R w KQq - 5 13",
+      "split": "heldout",
+      "group": "generated-game-5",
+      "source": "New seeded legal continuation, seed 0xA17E2026; excludes all controller calibration FENs"
+    },
+    {
+      "id": "generated-6-1",
+      "name": "Caro-Kann independent continuation 1",
+      "fen": "r3kbnr/p2bpppp/B1p5/q7/1p1P1P2/2N4P/PPP1K1P1/R1BQ2NR w kq - 3 10",
+      "split": "heldout",
+      "group": "generated-game-6",
+      "source": "New seeded legal continuation, seed 0xA17E2026; excludes all controller calibration FENs"
+    },
+    {
+      "id": "generated-6-2",
+      "name": "Caro-Kann independent continuation 2",
+      "fen": "r3kbnr/p3pppp/q7/1p3b2/1p1P1P2/2P4P/PP2K1PR/R1BQ2N1 w kq - 0 13",
+      "split": "heldout",
+      "group": "generated-game-6",
+      "source": "New seeded legal continuation, seed 0xA17E2026; excludes all controller calibration FENs"
+    }
+  ],
+  "rows": [
+    {
+      "positionId": "white-mate-one",
+      "name": "White immediate mate",
+      "split": "development",
+      "group": "white-mate-one",
+      "fen": "7k/5Q2/6K1/8/8/8/8/8 w - - 0 1",
+      "mode": "direct",
+      "move": "f7h7",
+      "san": "Qh7#",
+      "elapsedMs": 25.447359000000006,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 6372,
+        "timeMs": 3,
+        "pv": [
+          "f7g7"
+        ],
+        "bestMove": "f7g7",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 245,
+        "timeMs": 1,
+        "pv": [
+          "f7h7"
+        ],
+        "bestMove": "f7h7",
+        "forcedMove": "f7h7"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": true,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "white-mate-one",
+      "name": "White immediate mate",
+      "split": "development",
+      "group": "white-mate-one",
+      "fen": "7k/5Q2/6K1/8/8/8/8/8 w - - 0 1",
+      "mode": "search",
+      "move": "f7h7",
+      "san": "Qh7#",
+      "elapsedMs": 296.08823500000005,
+      "nodes": 128,
+      "inferenceCalls": 11,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 6372,
+        "timeMs": 3,
+        "pv": [
+          "f7g7"
+        ],
+        "bestMove": "f7g7",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 245,
+        "timeMs": 1,
+        "pv": [
+          "f7h7"
+        ],
+        "bestMove": "f7h7",
+        "forcedMove": "f7h7"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": true,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "white-mate-one",
+      "name": "White immediate mate",
+      "split": "development",
+      "group": "white-mate-one",
+      "fen": "7k/5Q2/6K1/8/8/8/8/8 w - - 0 1",
+      "mode": "selective",
+      "move": "f7h7",
+      "san": "Qh7#",
+      "elapsedMs": 23.177625000000035,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.032152408808492614,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 6372,
+        "timeMs": 3,
+        "pv": [
+          "f7g7"
+        ],
+        "bestMove": "f7g7",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 245,
+        "timeMs": 1,
+        "pv": [
+          "f7h7"
+        ],
+        "bestMove": "f7h7",
+        "forcedMove": "f7h7"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": true,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "corner-mate-one",
+      "name": "Corner immediate mate",
+      "split": "development",
+      "group": "corner-mate-one",
+      "fen": "k7/8/1QK5/8/8/8/8/8 w - - 0 1",
+      "mode": "direct",
+      "move": "c6c7",
+      "san": "Kc7",
+      "elapsedMs": 21.6930490000002,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 5640,
+        "timeMs": 3,
+        "pv": [
+          "b6b7"
+        ],
+        "bestMove": "b6b7",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 0,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 253,
+        "timeMs": 2,
+        "pv": [
+          "c6c7"
+        ],
+        "bestMove": "c6c7",
+        "forcedMove": "c6c7"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": true,
+      "missedMateInOne": true,
+      "winningMateNotConfirmed": true,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "corner-mate-one",
+      "name": "Corner immediate mate",
+      "split": "development",
+      "group": "corner-mate-one",
+      "fen": "k7/8/1QK5/8/8/8/8/8 w - - 0 1",
+      "mode": "search",
+      "move": "b6b7",
+      "san": "Qb7#",
+      "elapsedMs": 472.724557,
+      "nodes": 63,
+      "inferenceCalls": 22,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 5640,
+        "timeMs": 3,
+        "pv": [
+          "b6b7"
+        ],
+        "bestMove": "b6b7",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 5640,
+        "timeMs": 3,
+        "pv": [
+          "b6b7"
+        ],
+        "bestMove": "b6b7",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": true,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "corner-mate-one",
+      "name": "Corner immediate mate",
+      "split": "development",
+      "group": "corner-mate-one",
+      "fen": "k7/8/1QK5/8/8/8/8/8 w - - 0 1",
+      "mode": "selective",
+      "move": "c6c7",
+      "san": "Kc7",
+      "elapsedMs": 21.275512000000163,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.04246034424743695,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 5640,
+        "timeMs": 3,
+        "pv": [
+          "b6b7"
+        ],
+        "bestMove": "b6b7",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 0,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 253,
+        "timeMs": 2,
+        "pv": [
+          "c6c7"
+        ],
+        "bestMove": "c6c7",
+        "forcedMove": "c6c7"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": true,
+      "missedMateInOne": true,
+      "winningMateNotConfirmed": true,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "hanging-queen",
+      "name": "Pawn can capture queen",
+      "split": "development",
+      "group": "hanging-queen",
+      "fen": "7k/8/8/4q3/3P4/8/8/K7 w - - 0 1",
+      "mode": "direct",
+      "move": "d4e5",
+      "san": "dxe5",
+      "elapsedMs": 18.425422000000026,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 11,
+          "bound": "upperbound"
+        },
+        "depth": 20,
+        "nodes": 100066,
+        "timeMs": 23,
+        "pv": [
+          "d4e5",
+          "h8g7"
+        ],
+        "bestMove": "d4e5",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 11,
+          "bound": "upperbound"
+        },
+        "depth": 20,
+        "nodes": 100066,
+        "timeMs": 23,
+        "pv": [
+          "d4e5",
+          "h8g7"
+        ],
+        "bestMove": "d4e5",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "hanging-queen",
+      "name": "Pawn can capture queen",
+      "split": "development",
+      "group": "hanging-queen",
+      "fen": "7k/8/8/4q3/3P4/8/8/K7 w - - 0 1",
+      "mode": "search",
+      "move": "d4e5",
+      "san": "dxe5",
+      "elapsedMs": 481.1778079999999,
+      "nodes": 25,
+      "inferenceCalls": 25,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 11,
+          "bound": "upperbound"
+        },
+        "depth": 20,
+        "nodes": 100066,
+        "timeMs": 23,
+        "pv": [
+          "d4e5",
+          "h8g7"
+        ],
+        "bestMove": "d4e5",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 11,
+          "bound": "upperbound"
+        },
+        "depth": 20,
+        "nodes": 100066,
+        "timeMs": 23,
+        "pv": [
+          "d4e5",
+          "h8g7"
+        ],
+        "bestMove": "d4e5",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "hanging-queen",
+      "name": "Pawn can capture queen",
+      "split": "development",
+      "group": "hanging-queen",
+      "fen": "7k/8/8/4q3/3P4/8/8/K7 w - - 0 1",
+      "mode": "selective",
+      "move": "d4e5",
+      "san": "dxe5",
+      "elapsedMs": 478.8729510000003,
+      "nodes": 25,
+      "inferenceCalls": 25,
+      "searched": true,
+      "gate": {
+        "risk": 0.7721148592149373,
+        "threshold": 0.5,
+        "triggered": true,
+        "reason": "Controller predicts reference-search disagreement"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 11,
+          "bound": "upperbound"
+        },
+        "depth": 20,
+        "nodes": 100066,
+        "timeMs": 23,
+        "pv": [
+          "d4e5",
+          "h8g7"
+        ],
+        "bestMove": "d4e5",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 11,
+          "bound": "upperbound"
+        },
+        "depth": 20,
+        "nodes": 100066,
+        "timeMs": 23,
+        "pv": [
+          "d4e5",
+          "h8g7"
+        ],
+        "bestMove": "d4e5",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "black-mate-one",
+      "name": "Black immediate mate",
+      "split": "heldout",
+      "group": "black-mate-one",
+      "fen": "8/8/8/8/8/6k1/5q2/7K b - - 0 1",
+      "mode": "direct",
+      "move": "f2h2",
+      "san": "Qh2#",
+      "elapsedMs": 24.34409599999981,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 6372,
+        "timeMs": 3,
+        "pv": [
+          "f2e1"
+        ],
+        "bestMove": "f2e1",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 245,
+        "timeMs": 2,
+        "pv": [
+          "f2h2"
+        ],
+        "bestMove": "f2h2",
+        "forcedMove": "f2h2"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": true,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "black-mate-one",
+      "name": "Black immediate mate",
+      "split": "heldout",
+      "group": "black-mate-one",
+      "fen": "8/8/8/8/8/6k1/5q2/7K b - - 0 1",
+      "mode": "search",
+      "move": "f2h2",
+      "san": "Qh2#",
+      "elapsedMs": 279.77236300000004,
+      "nodes": 128,
+      "inferenceCalls": 11,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 6372,
+        "timeMs": 3,
+        "pv": [
+          "f2e1"
+        ],
+        "bestMove": "f2e1",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 245,
+        "timeMs": 2,
+        "pv": [
+          "f2h2"
+        ],
+        "bestMove": "f2h2",
+        "forcedMove": "f2h2"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": true,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "black-mate-one",
+      "name": "Black immediate mate",
+      "split": "heldout",
+      "group": "black-mate-one",
+      "fen": "8/8/8/8/8/6k1/5q2/7K b - - 0 1",
+      "mode": "selective",
+      "move": "f2h2",
+      "san": "Qh2#",
+      "elapsedMs": 22.533340999999837,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.032152408808492614,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 6372,
+        "timeMs": 3,
+        "pv": [
+          "f2e1"
+        ],
+        "bestMove": "f2e1",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 245,
+        "timeMs": 2,
+        "pv": [
+          "f2h2"
+        ],
+        "bestMove": "f2h2",
+        "forcedMove": "f2h2"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": true,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "promotion-mate-one",
+      "name": "Promotion immediate mate",
+      "split": "heldout",
+      "group": "promotion-mate-one",
+      "fen": "7k/P7/6K1/8/8/8/8/8 w - - 0 1",
+      "mode": "direct",
+      "move": "a7a8q",
+      "san": "a8=Q#",
+      "elapsedMs": 18.912424999999985,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 2450,
+        "timeMs": 2,
+        "pv": [
+          "a7a8q"
+        ],
+        "bestMove": "a7a8q",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 2450,
+        "timeMs": 2,
+        "pv": [
+          "a7a8q"
+        ],
+        "bestMove": "a7a8q",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": true,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "promotion-mate-one",
+      "name": "Promotion immediate mate",
+      "split": "heldout",
+      "group": "promotion-mate-one",
+      "fen": "7k/P7/6K1/8/8/8/8/8 w - - 0 1",
+      "mode": "search",
+      "move": "a7a8q",
+      "san": "a8=Q#",
+      "elapsedMs": 288.07816,
+      "nodes": 128,
+      "inferenceCalls": 13,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 2450,
+        "timeMs": 2,
+        "pv": [
+          "a7a8q"
+        ],
+        "bestMove": "a7a8q",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 2450,
+        "timeMs": 2,
+        "pv": [
+          "a7a8q"
+        ],
+        "bestMove": "a7a8q",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": true,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "promotion-mate-one",
+      "name": "Promotion immediate mate",
+      "split": "heldout",
+      "group": "promotion-mate-one",
+      "fen": "7k/P7/6K1/8/8/8/8/8 w - - 0 1",
+      "mode": "selective",
+      "move": "a7a8q",
+      "san": "a8=Q#",
+      "elapsedMs": 18.75564600000007,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.01515358146233164,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 2450,
+        "timeMs": 2,
+        "pv": [
+          "a7a8q"
+        ],
+        "bestMove": "a7a8q",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "mate",
+          "value": 1,
+          "bound": null
+        },
+        "depth": 245,
+        "nodes": 2450,
+        "timeMs": 2,
+        "pv": [
+          "a7a8q"
+        ],
+        "bestMove": "a7a8q",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": true,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "rook-takes-queen",
+      "name": "Rook can capture queen",
+      "split": "heldout",
+      "group": "rook-takes-queen",
+      "fen": "4k3/8/8/8/4q3/8/4R3/4K3 w - - 0 1",
+      "mode": "direct",
+      "move": "e2e4",
+      "san": "Rxe4+",
+      "elapsedMs": 18.593137999999726,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 422,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100011,
+        "timeMs": 42,
+        "pv": [
+          "e2e4",
+          "e8d7",
+          "e4e2",
+          "d7d6",
+          "e1f2",
+          "d6d5",
+          "f2g2",
+          "d5c4",
+          "g2h2",
+          "c4d4"
+        ],
+        "bestMove": "e2e4",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 422,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100011,
+        "timeMs": 42,
+        "pv": [
+          "e2e4",
+          "e8d7",
+          "e4e2",
+          "d7d6",
+          "e1f2",
+          "d6d5",
+          "f2g2",
+          "d5c4",
+          "g2h2",
+          "c4d4"
+        ],
+        "bestMove": "e2e4",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "rook-takes-queen",
+      "name": "Rook can capture queen",
+      "split": "heldout",
+      "group": "rook-takes-queen",
+      "fen": "4k3/8/8/8/4q3/8/4R3/4K3 w - - 0 1",
+      "mode": "search",
+      "move": "e2e4",
+      "san": "Rxe4+",
+      "elapsedMs": 473.57710799999995,
+      "nodes": 24,
+      "inferenceCalls": 24,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 422,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100011,
+        "timeMs": 42,
+        "pv": [
+          "e2e4",
+          "e8d7",
+          "e4e2",
+          "d7d6",
+          "e1f2",
+          "d6d5",
+          "f2g2",
+          "d5c4",
+          "g2h2",
+          "c4d4"
+        ],
+        "bestMove": "e2e4",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 422,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100011,
+        "timeMs": 42,
+        "pv": [
+          "e2e4",
+          "e8d7",
+          "e4e2",
+          "d7d6",
+          "e1f2",
+          "d6d5",
+          "f2g2",
+          "d5c4",
+          "g2h2",
+          "c4d4"
+        ],
+        "bestMove": "e2e4",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "rook-takes-queen",
+      "name": "Rook can capture queen",
+      "split": "heldout",
+      "group": "rook-takes-queen",
+      "fen": "4k3/8/8/8/4q3/8/4R3/4K3 w - - 0 1",
+      "mode": "selective",
+      "move": "e2e4",
+      "san": "Rxe4+",
+      "elapsedMs": 18.84099699999979,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.19685797855263187,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 422,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100011,
+        "timeMs": 42,
+        "pv": [
+          "e2e4",
+          "e8d7",
+          "e4e2",
+          "d7d6",
+          "e1f2",
+          "d6d5",
+          "f2g2",
+          "d5c4",
+          "g2h2",
+          "c4d4"
+        ],
+        "bestMove": "e2e4",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 422,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100011,
+        "timeMs": 42,
+        "pv": [
+          "e2e4",
+          "e8d7",
+          "e4e2",
+          "d7d6",
+          "e1f2",
+          "d6d5",
+          "f2g2",
+          "d5c4",
+          "g2h2",
+          "c4d4"
+        ],
+        "bestMove": "e2e4",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-0-1",
+      "name": "Ruy Lopez independent continuation 1",
+      "split": "development",
+      "group": "generated-game-0",
+      "fen": "1rb1kb1r/n1pq1p1p/p4n2/4p1p1/4P3/4KN2/PPPP1PPP/RNB2Q1R w k - 0 10",
+      "mode": "direct",
+      "move": "d2d3",
+      "san": "d3",
+      "elapsedMs": 21.733901999999944,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -560,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100065,
+        "timeMs": 112,
+        "pv": [
+          "d2d3",
+          "a7c6",
+          "h2h3",
+          "g5g4",
+          "h3g4",
+          "f6g4",
+          "e3e2",
+          "h7h5",
+          "b1c3",
+          "f8c5",
+          "b2b3",
+          "c6d4",
+          "f3d4",
+          "c5d4"
+        ],
+        "bestMove": "d2d3",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -560,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100065,
+        "timeMs": 112,
+        "pv": [
+          "d2d3",
+          "a7c6",
+          "h2h3",
+          "g5g4",
+          "h3g4",
+          "f6g4",
+          "e3e2",
+          "h7h5",
+          "b1c3",
+          "f8c5",
+          "b2b3",
+          "c6d4",
+          "f3d4",
+          "c5d4"
+        ],
+        "bestMove": "d2d3",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-0-1",
+      "name": "Ruy Lopez independent continuation 1",
+      "split": "development",
+      "group": "generated-game-0",
+      "fen": "1rb1kb1r/n1pq1p1p/p4n2/4p1p1/4P3/4KN2/PPPP1PPP/RNB2Q1R w k - 0 10",
+      "mode": "search",
+      "move": "d2d3",
+      "san": "d3",
+      "elapsedMs": 465.64509099999987,
+      "nodes": 19,
+      "inferenceCalls": 19,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -560,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100065,
+        "timeMs": 112,
+        "pv": [
+          "d2d3",
+          "a7c6",
+          "h2h3",
+          "g5g4",
+          "h3g4",
+          "f6g4",
+          "e3e2",
+          "h7h5",
+          "b1c3",
+          "f8c5",
+          "b2b3",
+          "c6d4",
+          "f3d4",
+          "c5d4"
+        ],
+        "bestMove": "d2d3",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -560,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100065,
+        "timeMs": 112,
+        "pv": [
+          "d2d3",
+          "a7c6",
+          "h2h3",
+          "g5g4",
+          "h3g4",
+          "f6g4",
+          "e3e2",
+          "h7h5",
+          "b1c3",
+          "f8c5",
+          "b2b3",
+          "c6d4",
+          "f3d4",
+          "c5d4"
+        ],
+        "bestMove": "d2d3",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-0-1",
+      "name": "Ruy Lopez independent continuation 1",
+      "split": "development",
+      "group": "generated-game-0",
+      "fen": "1rb1kb1r/n1pq1p1p/p4n2/4p1p1/4P3/4KN2/PPPP1PPP/RNB2Q1R w k - 0 10",
+      "mode": "selective",
+      "move": "d2d3",
+      "san": "d3",
+      "elapsedMs": 21.246718000000328,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.026107284377757584,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -560,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100065,
+        "timeMs": 112,
+        "pv": [
+          "d2d3",
+          "a7c6",
+          "h2h3",
+          "g5g4",
+          "h3g4",
+          "f6g4",
+          "e3e2",
+          "h7h5",
+          "b1c3",
+          "f8c5",
+          "b2b3",
+          "c6d4",
+          "f3d4",
+          "c5d4"
+        ],
+        "bestMove": "d2d3",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -560,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100065,
+        "timeMs": 112,
+        "pv": [
+          "d2d3",
+          "a7c6",
+          "h2h3",
+          "g5g4",
+          "h3g4",
+          "f6g4",
+          "e3e2",
+          "h7h5",
+          "b1c3",
+          "f8c5",
+          "b2b3",
+          "c6d4",
+          "f3d4",
+          "c5d4"
+        ],
+        "bestMove": "d2d3",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-0-2",
+      "name": "Ruy Lopez independent continuation 2",
+      "split": "development",
+      "group": "generated-game-0",
+      "fen": "2bk1b1r/n1p2p1p/p4nN1/4p1p1/4P3/8/PrPqKPPP/RNB2Q1R w - - 0 13",
+      "mode": "direct",
+      "move": "b1d2",
+      "san": "Nxd2",
+      "elapsedMs": 18.779982999999447,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 837,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100119,
+        "timeMs": 94,
+        "pv": [
+          "b1d2",
+          "b2c2",
+          "g6h8",
+          "a7c6",
+          "f1d1",
+          "c8g4",
+          "f2f3",
+          "c6d4",
+          "e2f1",
+          "d8e8",
+          "f3g4"
+        ],
+        "bestMove": "b1d2",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 837,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100119,
+        "timeMs": 94,
+        "pv": [
+          "b1d2",
+          "b2c2",
+          "g6h8",
+          "a7c6",
+          "f1d1",
+          "c8g4",
+          "f2f3",
+          "c6d4",
+          "e2f1",
+          "d8e8",
+          "f3g4"
+        ],
+        "bestMove": "b1d2",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-0-2",
+      "name": "Ruy Lopez independent continuation 2",
+      "split": "development",
+      "group": "generated-game-0",
+      "fen": "2bk1b1r/n1p2p1p/p4nN1/4p1p1/4P3/8/PrPqKPPP/RNB2Q1R w - - 0 13",
+      "mode": "search",
+      "move": "b1d2",
+      "san": "Nxd2",
+      "elapsedMs": 487.9818030000006,
+      "nodes": 22,
+      "inferenceCalls": 22,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 837,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100119,
+        "timeMs": 94,
+        "pv": [
+          "b1d2",
+          "b2c2",
+          "g6h8",
+          "a7c6",
+          "f1d1",
+          "c8g4",
+          "f2f3",
+          "c6d4",
+          "e2f1",
+          "d8e8",
+          "f3g4"
+        ],
+        "bestMove": "b1d2",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 837,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100119,
+        "timeMs": 94,
+        "pv": [
+          "b1d2",
+          "b2c2",
+          "g6h8",
+          "a7c6",
+          "f1d1",
+          "c8g4",
+          "f2f3",
+          "c6d4",
+          "e2f1",
+          "d8e8",
+          "f3g4"
+        ],
+        "bestMove": "b1d2",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-0-2",
+      "name": "Ruy Lopez independent continuation 2",
+      "split": "development",
+      "group": "generated-game-0",
+      "fen": "2bk1b1r/n1p2p1p/p4nN1/4p1p1/4P3/8/PrPqKPPP/RNB2Q1R w - - 0 13",
+      "mode": "selective",
+      "move": "b1d2",
+      "san": "Nxd2",
+      "elapsedMs": 489.1897770000005,
+      "nodes": 22,
+      "inferenceCalls": 22,
+      "searched": true,
+      "gate": {
+        "risk": 0.8058175488160791,
+        "threshold": 0.5,
+        "triggered": true,
+        "reason": "Controller predicts reference-search disagreement"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 837,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100119,
+        "timeMs": 94,
+        "pv": [
+          "b1d2",
+          "b2c2",
+          "g6h8",
+          "a7c6",
+          "f1d1",
+          "c8g4",
+          "f2f3",
+          "c6d4",
+          "e2f1",
+          "d8e8",
+          "f3g4"
+        ],
+        "bestMove": "b1d2",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 837,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100119,
+        "timeMs": 94,
+        "pv": [
+          "b1d2",
+          "b2c2",
+          "g6h8",
+          "a7c6",
+          "f1d1",
+          "c8g4",
+          "f2f3",
+          "c6d4",
+          "e2f1",
+          "d8e8",
+          "f3g4"
+        ],
+        "bestMove": "b1d2",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-1-1",
+      "name": "Queen’s Gambit independent continuation 1",
+      "split": "development",
+      "group": "generated-game-1",
+      "fen": "r1b2rk1/pppq1p1p/n3pp2/1N1p4/2PP1P2/b5P1/PP1QP2P/R3KBNR w KQ - 2 10",
+      "mode": "direct",
+      "move": "b2a3",
+      "san": "bxa3",
+      "elapsedMs": 22.449273000000176,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 678,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100093,
+        "timeMs": 103,
+        "pv": [
+          "b5a3",
+          "d5c4",
+          "f1g2",
+          "f8d8",
+          "a1c1",
+          "c7c5",
+          "a3c4",
+          "d7d4",
+          "g1f3",
+          "d4d2",
+          "f3d2",
+          "a6b4",
+          "a2a3",
+          "b4d5",
+          "g2e4",
+          "f6f5"
+        ],
+        "bestMove": "b5a3",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 542,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100025,
+        "timeMs": 105,
+        "pv": [
+          "b2a3",
+          "d5c4",
+          "a1b1",
+          "c7c6",
+          "b5c3",
+          "c6c5",
+          "g1f3",
+          "f8d8",
+          "d4c5",
+          "d7e7",
+          "d2e3",
+          "a6c5",
+          "e1f2"
+        ],
+        "bestMove": "b2a3",
+        "forcedMove": "b2a3"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": 136,
+      "cpLoss": 136,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-1-1",
+      "name": "Queen’s Gambit independent continuation 1",
+      "split": "development",
+      "group": "generated-game-1",
+      "fen": "r1b2rk1/pppq1p1p/n3pp2/1N1p4/2PP1P2/b5P1/PP1QP2P/R3KBNR w KQ - 2 10",
+      "mode": "search",
+      "move": "b5a3",
+      "san": "Nxa3",
+      "elapsedMs": 481.2481150000003,
+      "nodes": 22,
+      "inferenceCalls": 22,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 678,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100093,
+        "timeMs": 103,
+        "pv": [
+          "b5a3",
+          "d5c4",
+          "f1g2",
+          "f8d8",
+          "a1c1",
+          "c7c5",
+          "a3c4",
+          "d7d4",
+          "g1f3",
+          "d4d2",
+          "f3d2",
+          "a6b4",
+          "a2a3",
+          "b4d5",
+          "g2e4",
+          "f6f5"
+        ],
+        "bestMove": "b5a3",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 678,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100093,
+        "timeMs": 103,
+        "pv": [
+          "b5a3",
+          "d5c4",
+          "f1g2",
+          "f8d8",
+          "a1c1",
+          "c7c5",
+          "a3c4",
+          "d7d4",
+          "g1f3",
+          "d4d2",
+          "f3d2",
+          "a6b4",
+          "a2a3",
+          "b4d5",
+          "g2e4",
+          "f6f5"
+        ],
+        "bestMove": "b5a3",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-1-1",
+      "name": "Queen’s Gambit independent continuation 1",
+      "split": "development",
+      "group": "generated-game-1",
+      "fen": "r1b2rk1/pppq1p1p/n3pp2/1N1p4/2PP1P2/b5P1/PP1QP2P/R3KBNR w KQ - 2 10",
+      "mode": "selective",
+      "move": "b2a3",
+      "san": "bxa3",
+      "elapsedMs": 23.64348600000085,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.10992664059199012,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 678,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100093,
+        "timeMs": 103,
+        "pv": [
+          "b5a3",
+          "d5c4",
+          "f1g2",
+          "f8d8",
+          "a1c1",
+          "c7c5",
+          "a3c4",
+          "d7d4",
+          "g1f3",
+          "d4d2",
+          "f3d2",
+          "a6b4",
+          "a2a3",
+          "b4d5",
+          "g2e4",
+          "f6f5"
+        ],
+        "bestMove": "b5a3",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 542,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100025,
+        "timeMs": 105,
+        "pv": [
+          "b2a3",
+          "d5c4",
+          "a1b1",
+          "c7c6",
+          "b5c3",
+          "c6c5",
+          "g1f3",
+          "f8d8",
+          "d4c5",
+          "d7e7",
+          "d2e3",
+          "a6c5",
+          "e1f2"
+        ],
+        "bestMove": "b2a3",
+        "forcedMove": "b2a3"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": 136,
+      "cpLoss": 136,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-1-2",
+      "name": "Queen’s Gambit independent continuation 2",
+      "split": "development",
+      "group": "generated-game-1",
+      "fen": "r1b3rk/pppq1p1p/n3pp2/1Nbp1P2/2PP4/3Q1NP1/PP2P2P/R3KB1R w KQ - 5 13",
+      "mode": "direct",
+      "move": "d4c5",
+      "san": "dxc5",
+      "elapsedMs": 24.489825000000565,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 589,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100072,
+        "timeMs": 110,
+        "pv": [
+          "d4c5",
+          "c7c6",
+          "b5c3",
+          "d7e7",
+          "d3e3",
+          "a6b4",
+          "e1c1",
+          "e6e5",
+          "c4d5",
+          "c6d5",
+          "a2a3",
+          "a7a5",
+          "c3d5",
+          "c8f5",
+          "d5e7",
+          "b4a2",
+          "c1d2"
+        ],
+        "bestMove": "d4c5",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 589,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100072,
+        "timeMs": 110,
+        "pv": [
+          "d4c5",
+          "c7c6",
+          "b5c3",
+          "d7e7",
+          "d3e3",
+          "a6b4",
+          "e1c1",
+          "e6e5",
+          "c4d5",
+          "c6d5",
+          "a2a3",
+          "a7a5",
+          "c3d5",
+          "c8f5",
+          "d5e7",
+          "b4a2",
+          "c1d2"
+        ],
+        "bestMove": "d4c5",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-1-2",
+      "name": "Queen’s Gambit independent continuation 2",
+      "split": "development",
+      "group": "generated-game-1",
+      "fen": "r1b3rk/pppq1p1p/n3pp2/1Nbp1P2/2PP4/3Q1NP1/PP2P2P/R3KB1R w KQ - 5 13",
+      "mode": "search",
+      "move": "d4c5",
+      "san": "dxc5",
+      "elapsedMs": 478.3581610000001,
+      "nodes": 19,
+      "inferenceCalls": 19,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 589,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100072,
+        "timeMs": 110,
+        "pv": [
+          "d4c5",
+          "c7c6",
+          "b5c3",
+          "d7e7",
+          "d3e3",
+          "a6b4",
+          "e1c1",
+          "e6e5",
+          "c4d5",
+          "c6d5",
+          "a2a3",
+          "a7a5",
+          "c3d5",
+          "c8f5",
+          "d5e7",
+          "b4a2",
+          "c1d2"
+        ],
+        "bestMove": "d4c5",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 589,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100072,
+        "timeMs": 110,
+        "pv": [
+          "d4c5",
+          "c7c6",
+          "b5c3",
+          "d7e7",
+          "d3e3",
+          "a6b4",
+          "e1c1",
+          "e6e5",
+          "c4d5",
+          "c6d5",
+          "a2a3",
+          "a7a5",
+          "c3d5",
+          "c8f5",
+          "d5e7",
+          "b4a2",
+          "c1d2"
+        ],
+        "bestMove": "d4c5",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-1-2",
+      "name": "Queen’s Gambit independent continuation 2",
+      "split": "development",
+      "group": "generated-game-1",
+      "fen": "r1b3rk/pppq1p1p/n3pp2/1Nbp1P2/2PP4/3Q1NP1/PP2P2P/R3KB1R w KQ - 5 13",
+      "mode": "selective",
+      "move": "d4c5",
+      "san": "dxc5",
+      "elapsedMs": 24.058022999999594,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.11114302936179848,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 589,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100072,
+        "timeMs": 110,
+        "pv": [
+          "d4c5",
+          "c7c6",
+          "b5c3",
+          "d7e7",
+          "d3e3",
+          "a6b4",
+          "e1c1",
+          "e6e5",
+          "c4d5",
+          "c6d5",
+          "a2a3",
+          "a7a5",
+          "c3d5",
+          "c8f5",
+          "d5e7",
+          "b4a2",
+          "c1d2"
+        ],
+        "bestMove": "d4c5",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 589,
+          "bound": null
+        },
+        "depth": 16,
+        "nodes": 100072,
+        "timeMs": 110,
+        "pv": [
+          "d4c5",
+          "c7c6",
+          "b5c3",
+          "d7e7",
+          "d3e3",
+          "a6b4",
+          "e1c1",
+          "e6e5",
+          "c4d5",
+          "c6d5",
+          "a2a3",
+          "a7a5",
+          "c3d5",
+          "c8f5",
+          "d5e7",
+          "b4a2",
+          "c1d2"
+        ],
+        "bestMove": "d4c5",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-2-1",
+      "name": "Sicilian independent continuation 1",
+      "split": "development",
+      "group": "generated-game-2",
+      "fen": "r1b1kb1r/pp1npppp/Q2p1n2/8/4P3/5N2/PPqB1PPP/RN1K1B1R w kq - 0 10",
+      "mode": "direct",
+      "move": "d1e1",
+      "san": "Ke1",
+      "elapsedMs": 18.970320999999785,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -160,
+          "bound": null
+        },
+        "depth": 18,
+        "nodes": 100060,
+        "timeMs": 106,
+        "pv": [
+          "d1c2",
+          "b7a6",
+          "b1c3",
+          "c8b7",
+          "a1e1",
+          "a8c8",
+          "c2b1",
+          "f6g4",
+          "e1e2",
+          "g7g6",
+          "f3d4",
+          "g4e5",
+          "d4b3",
+          "e5c4",
+          "d2e1",
+          "f8g7",
+          "e2c2",
+          "d7b6",
+          "c3d5",
+          "b6d5",
+          "f1c4",
+          "d5f4",
+          "f2f3",
+          "f4g2"
+        ],
+        "bestMove": "d1c2",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -855,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100037,
+        "timeMs": 103,
+        "pv": [
+          "d1e1",
+          "b7a6",
+          "b1c3",
+          "c2d2",
+          "e1d2",
+          "d7c5",
+          "a1c1",
+          "a8b8"
+        ],
+        "bestMove": "d1e1",
+        "forcedMove": "d1e1"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": 695,
+      "cpLoss": 695,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-2-1",
+      "name": "Sicilian independent continuation 1",
+      "split": "development",
+      "group": "generated-game-2",
+      "fen": "r1b1kb1r/pp1npppp/Q2p1n2/8/4P3/5N2/PPqB1PPP/RN1K1B1R w kq - 0 10",
+      "mode": "search",
+      "move": "d1c2",
+      "san": "Kxc2",
+      "elapsedMs": 482.05897599999935,
+      "nodes": 21,
+      "inferenceCalls": 21,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -160,
+          "bound": null
+        },
+        "depth": 18,
+        "nodes": 100060,
+        "timeMs": 106,
+        "pv": [
+          "d1c2",
+          "b7a6",
+          "b1c3",
+          "c8b7",
+          "a1e1",
+          "a8c8",
+          "c2b1",
+          "f6g4",
+          "e1e2",
+          "g7g6",
+          "f3d4",
+          "g4e5",
+          "d4b3",
+          "e5c4",
+          "d2e1",
+          "f8g7",
+          "e2c2",
+          "d7b6",
+          "c3d5",
+          "b6d5",
+          "f1c4",
+          "d5f4",
+          "f2f3",
+          "f4g2"
+        ],
+        "bestMove": "d1c2",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -160,
+          "bound": null
+        },
+        "depth": 18,
+        "nodes": 100060,
+        "timeMs": 106,
+        "pv": [
+          "d1c2",
+          "b7a6",
+          "b1c3",
+          "c8b7",
+          "a1e1",
+          "a8c8",
+          "c2b1",
+          "f6g4",
+          "e1e2",
+          "g7g6",
+          "f3d4",
+          "g4e5",
+          "d4b3",
+          "e5c4",
+          "d2e1",
+          "f8g7",
+          "e2c2",
+          "d7b6",
+          "c3d5",
+          "b6d5",
+          "f1c4",
+          "d5f4",
+          "f2f3",
+          "f4g2"
+        ],
+        "bestMove": "d1c2",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-2-1",
+      "name": "Sicilian independent continuation 1",
+      "split": "development",
+      "group": "generated-game-2",
+      "fen": "r1b1kb1r/pp1npppp/Q2p1n2/8/4P3/5N2/PPqB1PPP/RN1K1B1R w kq - 0 10",
+      "mode": "selective",
+      "move": "d1e1",
+      "san": "Ke1",
+      "elapsedMs": 18.624228000000585,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.04916443794519473,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -160,
+          "bound": null
+        },
+        "depth": 18,
+        "nodes": 100060,
+        "timeMs": 106,
+        "pv": [
+          "d1c2",
+          "b7a6",
+          "b1c3",
+          "c8b7",
+          "a1e1",
+          "a8c8",
+          "c2b1",
+          "f6g4",
+          "e1e2",
+          "g7g6",
+          "f3d4",
+          "g4e5",
+          "d4b3",
+          "e5c4",
+          "d2e1",
+          "f8g7",
+          "e2c2",
+          "d7b6",
+          "c3d5",
+          "b6d5",
+          "f1c4",
+          "d5f4",
+          "f2f3",
+          "f4g2"
+        ],
+        "bestMove": "d1c2",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -855,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100037,
+        "timeMs": 103,
+        "pv": [
+          "d1e1",
+          "b7a6",
+          "b1c3",
+          "c2d2",
+          "e1d2",
+          "d7c5",
+          "a1c1",
+          "a8b8"
+        ],
+        "bestMove": "d1e1",
+        "forcedMove": "d1e1"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": 695,
+      "cpLoss": 695,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-2-2",
+      "name": "Sicilian independent continuation 2",
+      "split": "development",
+      "group": "generated-game-2",
+      "fen": "r1b1kb1r/pp1npppp/Q2p4/8/4n3/5NP1/PP1B1K1P/RN3B1R w kq - 0 13",
+      "mode": "direct",
+      "move": "f2g2",
+      "san": "Kg2",
+      "elapsedMs": 19.126186000000416,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -25,
+          "bound": "upperbound"
+        },
+        "depth": 14,
+        "nodes": 100100,
+        "timeMs": 93,
+        "pv": [
+          "f2e3",
+          "b7a6"
+        ],
+        "bestMove": "f2e3",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -626,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100156,
+        "timeMs": 101,
+        "pv": [
+          "f2g2",
+          "b7a6",
+          "f1c4",
+          "c8b7",
+          "b1c3",
+          "e4d2",
+          "c4d5",
+          "a8b8",
+          "d5b7",
+          "b8b7",
+          "f3d2",
+          "e7e6",
+          "d2c4",
+          "b7c7"
+        ],
+        "bestMove": "f2g2",
+        "forcedMove": "f2g2"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-2-2",
+      "name": "Sicilian independent continuation 2",
+      "split": "development",
+      "group": "generated-game-2",
+      "fen": "r1b1kb1r/pp1npppp/Q2p4/8/4n3/5NP1/PP1B1K1P/RN3B1R w kq - 0 13",
+      "mode": "search",
+      "move": "f2g2",
+      "san": "Kg2",
+      "elapsedMs": 490.71569400000044,
+      "nodes": 23,
+      "inferenceCalls": 23,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -25,
+          "bound": "upperbound"
+        },
+        "depth": 14,
+        "nodes": 100100,
+        "timeMs": 93,
+        "pv": [
+          "f2e3",
+          "b7a6"
+        ],
+        "bestMove": "f2e3",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -626,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100156,
+        "timeMs": 101,
+        "pv": [
+          "f2g2",
+          "b7a6",
+          "f1c4",
+          "c8b7",
+          "b1c3",
+          "e4d2",
+          "c4d5",
+          "a8b8",
+          "d5b7",
+          "b8b7",
+          "f3d2",
+          "e7e6",
+          "d2c4",
+          "b7c7"
+        ],
+        "bestMove": "f2g2",
+        "forcedMove": "f2g2"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-2-2",
+      "name": "Sicilian independent continuation 2",
+      "split": "development",
+      "group": "generated-game-2",
+      "fen": "r1b1kb1r/pp1npppp/Q2p4/8/4n3/5NP1/PP1B1K1P/RN3B1R w kq - 0 13",
+      "mode": "selective",
+      "move": "f2g2",
+      "san": "Kg2",
+      "elapsedMs": 19.15468999999939,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.029638671112341444,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -25,
+          "bound": "upperbound"
+        },
+        "depth": 14,
+        "nodes": 100100,
+        "timeMs": 93,
+        "pv": [
+          "f2e3",
+          "b7a6"
+        ],
+        "bestMove": "f2e3",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -626,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100156,
+        "timeMs": 101,
+        "pv": [
+          "f2g2",
+          "b7a6",
+          "f1c4",
+          "c8b7",
+          "b1c3",
+          "e4d2",
+          "c4d5",
+          "a8b8",
+          "d5b7",
+          "b8b7",
+          "f3d2",
+          "e7e6",
+          "d2c4",
+          "b7c7"
+        ],
+        "bestMove": "f2g2",
+        "forcedMove": "f2g2"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-3-1",
+      "name": "French independent continuation 1",
+      "split": "heldout",
+      "group": "generated-game-3",
+      "fen": "rn1qkbr1/pp3p1p/4bn2/2pp2p1/3PP3/2N5/PPPB1PPP/2RK1BNR w q - 0 10",
+      "mode": "direct",
+      "move": "e4e5",
+      "san": "e5",
+      "elapsedMs": 22.88579099999879,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -911,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100112,
+        "timeMs": 101,
+        "pv": [
+          "e4d5",
+          "e6d7",
+          "g1f3",
+          "f6g4",
+          "f3e5",
+          "d8f6",
+          "e5g4",
+          "d7g4",
+          "f2f3",
+          "g4f3",
+          "g2f3",
+          "f6f3",
+          "d1e1"
+        ],
+        "bestMove": "e4d5",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -975,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100095,
+        "timeMs": 102,
+        "pv": [
+          "e4e5",
+          "f6g4",
+          "d1e1",
+          "g8g6",
+          "c3d1",
+          "b8d7",
+          "f2f3",
+          "d8b8",
+          "d1f2",
+          "g4f2"
+        ],
+        "bestMove": "e4e5",
+        "forcedMove": "e4e5"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": 64,
+      "cpLoss": 64,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-3-1",
+      "name": "French independent continuation 1",
+      "split": "heldout",
+      "group": "generated-game-3",
+      "fen": "rn1qkbr1/pp3p1p/4bn2/2pp2p1/3PP3/2N5/PPPB1PPP/2RK1BNR w q - 0 10",
+      "mode": "search",
+      "move": "e4e5",
+      "san": "e5",
+      "elapsedMs": 480.1361300000008,
+      "nodes": 21,
+      "inferenceCalls": 21,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -911,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100112,
+        "timeMs": 101,
+        "pv": [
+          "e4d5",
+          "e6d7",
+          "g1f3",
+          "f6g4",
+          "f3e5",
+          "d8f6",
+          "e5g4",
+          "d7g4",
+          "f2f3",
+          "g4f3",
+          "g2f3",
+          "f6f3",
+          "d1e1"
+        ],
+        "bestMove": "e4d5",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -975,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100095,
+        "timeMs": 102,
+        "pv": [
+          "e4e5",
+          "f6g4",
+          "d1e1",
+          "g8g6",
+          "c3d1",
+          "b8d7",
+          "f2f3",
+          "d8b8",
+          "d1f2",
+          "g4f2"
+        ],
+        "bestMove": "e4e5",
+        "forcedMove": "e4e5"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": 64,
+      "cpLoss": 64,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-3-1",
+      "name": "French independent continuation 1",
+      "split": "heldout",
+      "group": "generated-game-3",
+      "fen": "rn1qkbr1/pp3p1p/4bn2/2pp2p1/3PP3/2N5/PPPB1PPP/2RK1BNR w q - 0 10",
+      "mode": "selective",
+      "move": "e4e5",
+      "san": "e5",
+      "elapsedMs": 22.360235999998622,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.0195078591176679,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -911,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100112,
+        "timeMs": 101,
+        "pv": [
+          "e4d5",
+          "e6d7",
+          "g1f3",
+          "f6g4",
+          "f3e5",
+          "d8f6",
+          "e5g4",
+          "d7g4",
+          "f2f3",
+          "g4f3",
+          "g2f3",
+          "f6f3",
+          "d1e1"
+        ],
+        "bestMove": "e4d5",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -975,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100095,
+        "timeMs": 102,
+        "pv": [
+          "e4e5",
+          "f6g4",
+          "d1e1",
+          "g8g6",
+          "c3d1",
+          "b8d7",
+          "f2f3",
+          "d8b8",
+          "d1f2",
+          "g4f2"
+        ],
+        "bestMove": "e4e5",
+        "forcedMove": "e4e5"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": 64,
+      "cpLoss": 64,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-3-2",
+      "name": "French independent continuation 2",
+      "split": "heldout",
+      "group": "generated-game-3",
+      "fen": "rn2k1r1/1pq2p1p/p3bn1b/2pp2p1/3PPP2/2N4N/PPPB2PP/1R1K1B1R w q - 2 13",
+      "mode": "direct",
+      "move": "f4g5",
+      "san": "fxg5",
+      "elapsedMs": 23.22694600000068,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -885,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100040,
+        "timeMs": 104,
+        "pv": [
+          "f4g5",
+          "d5e4",
+          "b2b4",
+          "e6h3",
+          "g2h3",
+          "h6g5",
+          "d2g5",
+          "g8g5"
+        ],
+        "bestMove": "f4g5",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -885,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100040,
+        "timeMs": 104,
+        "pv": [
+          "f4g5",
+          "d5e4",
+          "b2b4",
+          "e6h3",
+          "g2h3",
+          "h6g5",
+          "d2g5",
+          "g8g5"
+        ],
+        "bestMove": "f4g5",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-3-2",
+      "name": "French independent continuation 2",
+      "split": "heldout",
+      "group": "generated-game-3",
+      "fen": "rn2k1r1/1pq2p1p/p3bn1b/2pp2p1/3PPP2/2N4N/PPPB2PP/1R1K1B1R w q - 2 13",
+      "mode": "search",
+      "move": "f4g5",
+      "san": "fxg5",
+      "elapsedMs": 468.60937600000034,
+      "nodes": 20,
+      "inferenceCalls": 20,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -885,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100040,
+        "timeMs": 104,
+        "pv": [
+          "f4g5",
+          "d5e4",
+          "b2b4",
+          "e6h3",
+          "g2h3",
+          "h6g5",
+          "d2g5",
+          "g8g5"
+        ],
+        "bestMove": "f4g5",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -885,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100040,
+        "timeMs": 104,
+        "pv": [
+          "f4g5",
+          "d5e4",
+          "b2b4",
+          "e6h3",
+          "g2h3",
+          "h6g5",
+          "d2g5",
+          "g8g5"
+        ],
+        "bestMove": "f4g5",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-3-2",
+      "name": "French independent continuation 2",
+      "split": "heldout",
+      "group": "generated-game-3",
+      "fen": "rn2k1r1/1pq2p1p/p3bn1b/2pp2p1/3PPP2/2N4N/PPPB2PP/1R1K1B1R w q - 2 13",
+      "mode": "selective",
+      "move": "f4g5",
+      "san": "fxg5",
+      "elapsedMs": 21.927538999998433,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.10164658290462884,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -885,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100040,
+        "timeMs": 104,
+        "pv": [
+          "f4g5",
+          "d5e4",
+          "b2b4",
+          "e6h3",
+          "g2h3",
+          "h6g5",
+          "d2g5",
+          "g8g5"
+        ],
+        "bestMove": "f4g5",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -885,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100040,
+        "timeMs": 104,
+        "pv": [
+          "f4g5",
+          "d5e4",
+          "b2b4",
+          "e6h3",
+          "g2h3",
+          "h6g5",
+          "d2g5",
+          "g8g5"
+        ],
+        "bestMove": "f4g5",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-4-1",
+      "name": "King’s Indian independent continuation 1",
+      "split": "heldout",
+      "group": "generated-game-4",
+      "fen": "rn1qk2r/ppp1ppb1/3pb3/6pp/1PPPP1n1/2NB2P1/P3NP1P/R1BQK2R w KQkq - 1 10",
+      "mode": "direct",
+      "move": "h2h3",
+      "san": "h3",
+      "elapsedMs": 22.56658399999833,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 378,
+          "bound": "lowerbound"
+        },
+        "depth": 16,
+        "nodes": 100049,
+        "timeMs": 105,
+        "pv": [
+          "h2h3",
+          "c7c5"
+        ],
+        "bestMove": "h2h3",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 378,
+          "bound": "lowerbound"
+        },
+        "depth": 16,
+        "nodes": 100049,
+        "timeMs": 105,
+        "pv": [
+          "h2h3",
+          "c7c5"
+        ],
+        "bestMove": "h2h3",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-4-1",
+      "name": "King’s Indian independent continuation 1",
+      "split": "heldout",
+      "group": "generated-game-4",
+      "fen": "rn1qk2r/ppp1ppb1/3pb3/6pp/1PPPP1n1/2NB2P1/P3NP1P/R1BQK2R w KQkq - 1 10",
+      "mode": "search",
+      "move": "h2h3",
+      "san": "h3",
+      "elapsedMs": 481.18464099999983,
+      "nodes": 20,
+      "inferenceCalls": 20,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 378,
+          "bound": "lowerbound"
+        },
+        "depth": 16,
+        "nodes": 100049,
+        "timeMs": 105,
+        "pv": [
+          "h2h3",
+          "c7c5"
+        ],
+        "bestMove": "h2h3",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 378,
+          "bound": "lowerbound"
+        },
+        "depth": 16,
+        "nodes": 100049,
+        "timeMs": 105,
+        "pv": [
+          "h2h3",
+          "c7c5"
+        ],
+        "bestMove": "h2h3",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-4-1",
+      "name": "King’s Indian independent continuation 1",
+      "split": "heldout",
+      "group": "generated-game-4",
+      "fen": "rn1qk2r/ppp1ppb1/3pb3/6pp/1PPPP1n1/2NB2P1/P3NP1P/R1BQK2R w KQkq - 1 10",
+      "mode": "selective",
+      "move": "h2h3",
+      "san": "h3",
+      "elapsedMs": 45.59972900000139,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.01543195079573664,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 378,
+          "bound": "lowerbound"
+        },
+        "depth": 16,
+        "nodes": 100049,
+        "timeMs": 105,
+        "pv": [
+          "h2h3",
+          "c7c5"
+        ],
+        "bestMove": "h2h3",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 378,
+          "bound": "lowerbound"
+        },
+        "depth": 16,
+        "nodes": 100049,
+        "timeMs": 105,
+        "pv": [
+          "h2h3",
+          "c7c5"
+        ],
+        "bestMove": "h2h3",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-4-2",
+      "name": "King’s Indian independent continuation 2",
+      "split": "heldout",
+      "group": "generated-game-4",
+      "fen": "rn1qkbr1/1pp1pp2/p2pb3/1P4pp/N1PPP1n1/3B1PP1/P3N2P/R1BQK2R w KQq - 2 13",
+      "mode": "direct",
+      "move": "f3g4",
+      "san": "fxg4",
+      "elapsedMs": 26.612112000000707,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 561,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100009,
+        "timeMs": 146,
+        "pv": [
+          "f3g4",
+          "e6g4",
+          "a4c3",
+          "a6b5",
+          "c4b5",
+          "b8d7",
+          "d1b3",
+          "c7c5",
+          "b5c6",
+          "b7c6",
+          "e1g1",
+          "e7e6",
+          "a2a4",
+          "f8g7",
+          "c1e3",
+          "g8h8"
+        ],
+        "bestMove": "f3g4",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 561,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100009,
+        "timeMs": 146,
+        "pv": [
+          "f3g4",
+          "e6g4",
+          "a4c3",
+          "a6b5",
+          "c4b5",
+          "b8d7",
+          "d1b3",
+          "c7c5",
+          "b5c6",
+          "b7c6",
+          "e1g1",
+          "e7e6",
+          "a2a4",
+          "f8g7",
+          "c1e3",
+          "g8h8"
+        ],
+        "bestMove": "f3g4",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-4-2",
+      "name": "King’s Indian independent continuation 2",
+      "split": "heldout",
+      "group": "generated-game-4",
+      "fen": "rn1qkbr1/1pp1pp2/p2pb3/1P4pp/N1PPP1n1/3B1PP1/P3N2P/R1BQK2R w KQq - 2 13",
+      "mode": "search",
+      "move": "f3g4",
+      "san": "fxg4",
+      "elapsedMs": 482.92708700000003,
+      "nodes": 21,
+      "inferenceCalls": 21,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 561,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100009,
+        "timeMs": 146,
+        "pv": [
+          "f3g4",
+          "e6g4",
+          "a4c3",
+          "a6b5",
+          "c4b5",
+          "b8d7",
+          "d1b3",
+          "c7c5",
+          "b5c6",
+          "b7c6",
+          "e1g1",
+          "e7e6",
+          "a2a4",
+          "f8g7",
+          "c1e3",
+          "g8h8"
+        ],
+        "bestMove": "f3g4",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 561,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100009,
+        "timeMs": 146,
+        "pv": [
+          "f3g4",
+          "e6g4",
+          "a4c3",
+          "a6b5",
+          "c4b5",
+          "b8d7",
+          "d1b3",
+          "c7c5",
+          "b5c6",
+          "b7c6",
+          "e1g1",
+          "e7e6",
+          "a2a4",
+          "f8g7",
+          "c1e3",
+          "g8h8"
+        ],
+        "bestMove": "f3g4",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-4-2",
+      "name": "King’s Indian independent continuation 2",
+      "split": "heldout",
+      "group": "generated-game-4",
+      "fen": "rn1qkbr1/1pp1pp2/p2pb3/1P4pp/N1PPP1n1/3B1PP1/P3N2P/R1BQK2R w KQq - 2 13",
+      "mode": "selective",
+      "move": "f3g4",
+      "san": "fxg4",
+      "elapsedMs": 22.56773599999906,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.0258152281924543,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 561,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100009,
+        "timeMs": 146,
+        "pv": [
+          "f3g4",
+          "e6g4",
+          "a4c3",
+          "a6b5",
+          "c4b5",
+          "b8d7",
+          "d1b3",
+          "c7c5",
+          "b5c6",
+          "b7c6",
+          "e1g1",
+          "e7e6",
+          "a2a4",
+          "f8g7",
+          "c1e3",
+          "g8h8"
+        ],
+        "bestMove": "f3g4",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 561,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100009,
+        "timeMs": 146,
+        "pv": [
+          "f3g4",
+          "e6g4",
+          "a4c3",
+          "a6b5",
+          "c4b5",
+          "b8d7",
+          "d1b3",
+          "c7c5",
+          "b5c6",
+          "b7c6",
+          "e1g1",
+          "e7e6",
+          "a2a4",
+          "f8g7",
+          "c1e3",
+          "g8h8"
+        ],
+        "bestMove": "f3g4",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-5-1",
+      "name": "English independent continuation 1",
+      "split": "heldout",
+      "group": "generated-game-5",
+      "fen": "r2qkb1r/1p3pp1/p1npbn2/3Pp1Np/3P4/6P1/PP2PP1P/R1BQKB1R w KQkq - 1 10",
+      "mode": "direct",
+      "move": "d5e6",
+      "san": "dxe6",
+      "elapsedMs": 21.9955030000001,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 387,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100079,
+        "timeMs": 119,
+        "pv": [
+          "d5e6",
+          "f7e6",
+          "g5e6",
+          "d8b6",
+          "f1g2",
+          "c6d4",
+          "c1e3",
+          "b6a5",
+          "e3d2",
+          "a5b6",
+          "e6d4",
+          "e5d4",
+          "a1c1",
+          "d6d5",
+          "d1c2",
+          "e8f7",
+          "c2c7",
+          "b6c7",
+          "c1c7",
+          "f8e7",
+          "c7b7"
+        ],
+        "bestMove": "d5e6",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 387,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100079,
+        "timeMs": 119,
+        "pv": [
+          "d5e6",
+          "f7e6",
+          "g5e6",
+          "d8b6",
+          "f1g2",
+          "c6d4",
+          "c1e3",
+          "b6a5",
+          "e3d2",
+          "a5b6",
+          "e6d4",
+          "e5d4",
+          "a1c1",
+          "d6d5",
+          "d1c2",
+          "e8f7",
+          "c2c7",
+          "b6c7",
+          "c1c7",
+          "f8e7",
+          "c7b7"
+        ],
+        "bestMove": "d5e6",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-5-1",
+      "name": "English independent continuation 1",
+      "split": "heldout",
+      "group": "generated-game-5",
+      "fen": "r2qkb1r/1p3pp1/p1npbn2/3Pp1Np/3P4/6P1/PP2PP1P/R1BQKB1R w KQkq - 1 10",
+      "mode": "search",
+      "move": "d5e6",
+      "san": "dxe6",
+      "elapsedMs": 471.72636200000125,
+      "nodes": 21,
+      "inferenceCalls": 21,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 387,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100079,
+        "timeMs": 119,
+        "pv": [
+          "d5e6",
+          "f7e6",
+          "g5e6",
+          "d8b6",
+          "f1g2",
+          "c6d4",
+          "c1e3",
+          "b6a5",
+          "e3d2",
+          "a5b6",
+          "e6d4",
+          "e5d4",
+          "a1c1",
+          "d6d5",
+          "d1c2",
+          "e8f7",
+          "c2c7",
+          "b6c7",
+          "c1c7",
+          "f8e7",
+          "c7b7"
+        ],
+        "bestMove": "d5e6",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 387,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100079,
+        "timeMs": 119,
+        "pv": [
+          "d5e6",
+          "f7e6",
+          "g5e6",
+          "d8b6",
+          "f1g2",
+          "c6d4",
+          "c1e3",
+          "b6a5",
+          "e3d2",
+          "a5b6",
+          "e6d4",
+          "e5d4",
+          "a1c1",
+          "d6d5",
+          "d1c2",
+          "e8f7",
+          "c2c7",
+          "b6c7",
+          "c1c7",
+          "f8e7",
+          "c7b7"
+        ],
+        "bestMove": "d5e6",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-5-1",
+      "name": "English independent continuation 1",
+      "split": "heldout",
+      "group": "generated-game-5",
+      "fen": "r2qkb1r/1p3pp1/p1npbn2/3Pp1Np/3P4/6P1/PP2PP1P/R1BQKB1R w KQkq - 1 10",
+      "mode": "selective",
+      "move": "d5e6",
+      "san": "dxe6",
+      "elapsedMs": 22.054253000000244,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.19059475142341348,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 387,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100079,
+        "timeMs": 119,
+        "pv": [
+          "d5e6",
+          "f7e6",
+          "g5e6",
+          "d8b6",
+          "f1g2",
+          "c6d4",
+          "c1e3",
+          "b6a5",
+          "e3d2",
+          "a5b6",
+          "e6d4",
+          "e5d4",
+          "a1c1",
+          "d6d5",
+          "d1c2",
+          "e8f7",
+          "c2c7",
+          "b6c7",
+          "c1c7",
+          "f8e7",
+          "c7b7"
+        ],
+        "bestMove": "d5e6",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 387,
+          "bound": null
+        },
+        "depth": 17,
+        "nodes": 100079,
+        "timeMs": 119,
+        "pv": [
+          "d5e6",
+          "f7e6",
+          "g5e6",
+          "d8b6",
+          "f1g2",
+          "c6d4",
+          "c1e3",
+          "b6a5",
+          "e3d2",
+          "a5b6",
+          "e6d4",
+          "e5d4",
+          "a1c1",
+          "d6d5",
+          "d1c2",
+          "e8f7",
+          "c2c7",
+          "b6c7",
+          "c1c7",
+          "f8e7",
+          "c7b7"
+        ],
+        "bestMove": "d5e6",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-5-2",
+      "name": "English independent continuation 2",
+      "split": "heldout",
+      "group": "generated-game-5",
+      "fen": "r3kbr1/1p1q1pp1/p2pbn2/3Pp1Np/1n1P4/1Q3PP1/PP2P2P/R1B1KB1R w KQq - 5 13",
+      "mode": "direct",
+      "move": "d5e6",
+      "san": "dxe6",
+      "elapsedMs": 22.28711800000019,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 760,
+          "bound": null
+        },
+        "depth": 20,
+        "nodes": 100082,
+        "timeMs": 107,
+        "pv": [
+          "d5e6",
+          "f7e6",
+          "b3b4",
+          "h5h4",
+          "b4b3",
+          "h4g3",
+          "h2g3",
+          "e5d4",
+          "b3e6",
+          "d7e6",
+          "g5e6",
+          "d6d5",
+          "e6c7",
+          "e8d7",
+          "c7a8",
+          "f8b4",
+          "e1d1"
+        ],
+        "bestMove": "d5e6",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 760,
+          "bound": null
+        },
+        "depth": 20,
+        "nodes": 100082,
+        "timeMs": 107,
+        "pv": [
+          "d5e6",
+          "f7e6",
+          "b3b4",
+          "h5h4",
+          "b4b3",
+          "h4g3",
+          "h2g3",
+          "e5d4",
+          "b3e6",
+          "d7e6",
+          "g5e6",
+          "d6d5",
+          "e6c7",
+          "e8d7",
+          "c7a8",
+          "f8b4",
+          "e1d1"
+        ],
+        "bestMove": "d5e6",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-5-2",
+      "name": "English independent continuation 2",
+      "split": "heldout",
+      "group": "generated-game-5",
+      "fen": "r3kbr1/1p1q1pp1/p2pbn2/3Pp1Np/1n1P4/1Q3PP1/PP2P2P/R1B1KB1R w KQq - 5 13",
+      "mode": "search",
+      "move": "d5e6",
+      "san": "dxe6",
+      "elapsedMs": 493.4665750000004,
+      "nodes": 21,
+      "inferenceCalls": 21,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 760,
+          "bound": null
+        },
+        "depth": 20,
+        "nodes": 100082,
+        "timeMs": 107,
+        "pv": [
+          "d5e6",
+          "f7e6",
+          "b3b4",
+          "h5h4",
+          "b4b3",
+          "h4g3",
+          "h2g3",
+          "e5d4",
+          "b3e6",
+          "d7e6",
+          "g5e6",
+          "d6d5",
+          "e6c7",
+          "e8d7",
+          "c7a8",
+          "f8b4",
+          "e1d1"
+        ],
+        "bestMove": "d5e6",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 760,
+          "bound": null
+        },
+        "depth": 20,
+        "nodes": 100082,
+        "timeMs": 107,
+        "pv": [
+          "d5e6",
+          "f7e6",
+          "b3b4",
+          "h5h4",
+          "b4b3",
+          "h4g3",
+          "h2g3",
+          "e5d4",
+          "b3e6",
+          "d7e6",
+          "g5e6",
+          "d6d5",
+          "e6c7",
+          "e8d7",
+          "c7a8",
+          "f8b4",
+          "e1d1"
+        ],
+        "bestMove": "d5e6",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-5-2",
+      "name": "English independent continuation 2",
+      "split": "heldout",
+      "group": "generated-game-5",
+      "fen": "r3kbr1/1p1q1pp1/p2pbn2/3Pp1Np/1n1P4/1Q3PP1/PP2P2P/R1B1KB1R w KQq - 5 13",
+      "mode": "selective",
+      "move": "d5e6",
+      "san": "dxe6",
+      "elapsedMs": 22.273988000000827,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.048414575742015804,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 760,
+          "bound": null
+        },
+        "depth": 20,
+        "nodes": 100082,
+        "timeMs": 107,
+        "pv": [
+          "d5e6",
+          "f7e6",
+          "b3b4",
+          "h5h4",
+          "b4b3",
+          "h4g3",
+          "h2g3",
+          "e5d4",
+          "b3e6",
+          "d7e6",
+          "g5e6",
+          "d6d5",
+          "e6c7",
+          "e8d7",
+          "c7a8",
+          "f8b4",
+          "e1d1"
+        ],
+        "bestMove": "d5e6",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 760,
+          "bound": null
+        },
+        "depth": 20,
+        "nodes": 100082,
+        "timeMs": 107,
+        "pv": [
+          "d5e6",
+          "f7e6",
+          "b3b4",
+          "h5h4",
+          "b4b3",
+          "h4g3",
+          "h2g3",
+          "e5d4",
+          "b3e6",
+          "d7e6",
+          "g5e6",
+          "d6d5",
+          "e6c7",
+          "e8d7",
+          "c7a8",
+          "f8b4",
+          "e1d1"
+        ],
+        "bestMove": "d5e6",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-6-1",
+      "name": "Caro-Kann independent continuation 1",
+      "split": "heldout",
+      "group": "generated-game-6",
+      "fen": "r3kbnr/p2bpppp/B1p5/q7/1p1P1P2/2N4P/PPP1K1P1/R1BQ2NR w kq - 3 10",
+      "mode": "direct",
+      "move": "c3e4",
+      "san": "Ne4",
+      "elapsedMs": 21.957275000000664,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 94,
+          "bound": "lowerbound"
+        },
+        "depth": 16,
+        "nodes": 100049,
+        "timeMs": 100,
+        "pv": [
+          "a6d3",
+          "b4c3"
+        ],
+        "bestMove": "a6d3",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 25,
+          "bound": "upperbound"
+        },
+        "depth": 15,
+        "nodes": 100037,
+        "timeMs": 101,
+        "pv": [
+          "c3e4",
+          "a5a6"
+        ],
+        "bestMove": "c3e4",
+        "forcedMove": "c3e4"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-6-1",
+      "name": "Caro-Kann independent continuation 1",
+      "split": "heldout",
+      "group": "generated-game-6",
+      "fen": "r3kbnr/p2bpppp/B1p5/q7/1p1P1P2/2N4P/PPP1K1P1/R1BQ2NR w kq - 3 10",
+      "mode": "search",
+      "move": "c3e4",
+      "san": "Ne4",
+      "elapsedMs": 473.53912499999933,
+      "nodes": 20,
+      "inferenceCalls": 20,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 94,
+          "bound": "lowerbound"
+        },
+        "depth": 16,
+        "nodes": 100049,
+        "timeMs": 100,
+        "pv": [
+          "a6d3",
+          "b4c3"
+        ],
+        "bestMove": "a6d3",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 25,
+          "bound": "upperbound"
+        },
+        "depth": 15,
+        "nodes": 100037,
+        "timeMs": 101,
+        "pv": [
+          "c3e4",
+          "a5a6"
+        ],
+        "bestMove": "c3e4",
+        "forcedMove": "c3e4"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-6-1",
+      "name": "Caro-Kann independent continuation 1",
+      "split": "heldout",
+      "group": "generated-game-6",
+      "fen": "r3kbnr/p2bpppp/B1p5/q7/1p1P1P2/2N4P/PPP1K1P1/R1BQ2NR w kq - 3 10",
+      "mode": "selective",
+      "move": "c3e4",
+      "san": "Ne4",
+      "elapsedMs": 22.859470000001238,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.028805561348325587,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": 94,
+          "bound": "lowerbound"
+        },
+        "depth": 16,
+        "nodes": 100049,
+        "timeMs": 100,
+        "pv": [
+          "a6d3",
+          "b4c3"
+        ],
+        "bestMove": "a6d3",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": 25,
+          "bound": "upperbound"
+        },
+        "depth": 15,
+        "nodes": 100037,
+        "timeMs": 101,
+        "pv": [
+          "c3e4",
+          "a5a6"
+        ],
+        "bestMove": "c3e4",
+        "forcedMove": "c3e4"
+      },
+      "agreesWithOracleBest": false,
+      "rawCpDelta": null,
+      "cpLoss": null,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-6-2",
+      "name": "Caro-Kann independent continuation 2",
+      "split": "heldout",
+      "group": "generated-game-6",
+      "fen": "r3kbnr/p3pppp/q7/1p3b2/1p1P1P2/2P4P/PP2K1PR/R1BQ2N1 w kq - 0 13",
+      "mode": "direct",
+      "move": "g2g4",
+      "san": "g4",
+      "elapsedMs": 20.975908999998865,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": null,
+        "triggered": false,
+        "reason": "Direct policy; no tree search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -767,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100185,
+        "timeMs": 102,
+        "pv": [
+          "g2g4",
+          "f5e4",
+          "a2a4",
+          "b4a3",
+          "a1a3",
+          "a6b7",
+          "a3a1",
+          "g8f6",
+          "e2e1",
+          "a7a6"
+        ],
+        "bestMove": "g2g4",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -767,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100185,
+        "timeMs": 102,
+        "pv": [
+          "g2g4",
+          "f5e4",
+          "a2a4",
+          "b4a3",
+          "a1a3",
+          "a6b7",
+          "a3a1",
+          "g8f6",
+          "e2e1",
+          "a7a6"
+        ],
+        "bestMove": "g2g4",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-6-2",
+      "name": "Caro-Kann independent continuation 2",
+      "split": "heldout",
+      "group": "generated-game-6",
+      "fen": "r3kbnr/p3pppp/q7/1p3b2/1p1P1P2/2P4P/PP2K1PR/R1BQ2N1 w kq - 0 13",
+      "mode": "search",
+      "move": "g2g4",
+      "san": "g4",
+      "elapsedMs": 469.03375699999924,
+      "nodes": 20,
+      "inferenceCalls": 20,
+      "searched": true,
+      "gate": {
+        "risk": null,
+        "triggered": true,
+        "reason": "Always search"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -767,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100185,
+        "timeMs": 102,
+        "pv": [
+          "g2g4",
+          "f5e4",
+          "a2a4",
+          "b4a3",
+          "a1a3",
+          "a6b7",
+          "a3a1",
+          "g8f6",
+          "e2e1",
+          "a7a6"
+        ],
+        "bestMove": "g2g4",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -767,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100185,
+        "timeMs": 102,
+        "pv": [
+          "g2g4",
+          "f5e4",
+          "a2a4",
+          "b4a3",
+          "a1a3",
+          "a6b7",
+          "a3a1",
+          "g8f6",
+          "e2e1",
+          "a7a6"
+        ],
+        "bestMove": "g2g4",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    },
+    {
+      "positionId": "generated-6-2",
+      "name": "Caro-Kann independent continuation 2",
+      "split": "heldout",
+      "group": "generated-game-6",
+      "fen": "r3kbnr/p3pppp/q7/1p3b2/1p1P1P2/2P4P/PP2K1PR/R1BQ2N1 w kq - 0 13",
+      "mode": "selective",
+      "move": "g2g4",
+      "san": "g4",
+      "elapsedMs": 21.067207999998573,
+      "nodes": 0,
+      "inferenceCalls": 1,
+      "searched": false,
+      "gate": {
+        "risk": 0.00903391753934667,
+        "threshold": 0.5,
+        "triggered": false,
+        "reason": "Controller accepts direct policy"
+      },
+      "oracle": {
+        "score": {
+          "type": "cp",
+          "value": -767,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100185,
+        "timeMs": 102,
+        "pv": [
+          "g2g4",
+          "f5e4",
+          "a2a4",
+          "b4a3",
+          "a1a3",
+          "a6b7",
+          "a3a1",
+          "g8f6",
+          "e2e1",
+          "a7a6"
+        ],
+        "bestMove": "g2g4",
+        "forcedMove": null
+      },
+      "chosenReference": {
+        "score": {
+          "type": "cp",
+          "value": -767,
+          "bound": null
+        },
+        "depth": 15,
+        "nodes": 100185,
+        "timeMs": 102,
+        "pv": [
+          "g2g4",
+          "f5e4",
+          "a2a4",
+          "b4a3",
+          "a1a3",
+          "a6b7",
+          "a3a1",
+          "g8f6",
+          "e2e1",
+          "a7a6"
+        ],
+        "bestMove": "g2g4",
+        "forcedMove": null
+      },
+      "agreesWithOracleBest": true,
+      "rawCpDelta": 0,
+      "cpLoss": 0,
+      "referenceInstability": false,
+      "mateInOneAvailable": false,
+      "missedMateInOne": false,
+      "winningMateNotConfirmed": false,
+      "newlyAllowsForcedMate": false
+    }
+  ],
+  "caveats": [
+    "Offline oracle only: Stockfish is not part of the app or its inference algorithm.",
+    "Fixed-node Stockfish estimates are not perfect chess truth and are not an Elo rating.",
+    "Each chosen move is independently evaluated with the same root node budget; restricted searches can disagree with the unrestricted root estimate. Raw scores and instability flags are retained.",
+    "Centipawn-loss averages exclude mate scores and bound-only estimates. Negative raw differences are flagged and clamped only for the nonnegative regret summary.",
+    "The small authored/generated stress set is not representative of all human chess. Development and held-out groups are fixed before candidate changes; do not tune on held-out outcomes."
+  ],
+  "summary": [
+    {
+      "split": "all",
+      "mode": "direct",
+      "positions": 20,
+      "exactBest": 12,
+      "cpComparable": 12,
+      "averageCpLoss": 74.58333333333333,
+      "severeCpLoss200": 1,
+      "mateInOneAvailable": 4,
+      "missedMateInOne": 1,
+      "winningMateNotConfirmed": 1,
+      "newlyAllowsForcedMate": 0,
+      "referenceInstability": 0,
+      "averageMs": 21.77361084999992
+    },
+    {
+      "split": "all",
+      "mode": "search",
+      "positions": 20,
+      "exactBest": 15,
+      "cpComparable": 12,
+      "averageCpLoss": 5.333333333333333,
+      "severeCpLoss200": 0,
+      "mateInOneAvailable": 4,
+      "missedMateInOne": 0,
+      "winningMateNotConfirmed": 0,
+      "newlyAllowsForcedMate": 0,
+      "referenceInstability": 0,
+      "averageMs": 449.90245620000013
+    },
+    {
+      "split": "all",
+      "mode": "selective",
+      "positions": 20,
+      "exactBest": 12,
+      "cpComparable": 12,
+      "averageCpLoss": 74.58333333333333,
+      "severeCpLoss200": 1,
+      "mateInOneAvailable": 4,
+      "missedMateInOne": 1,
+      "winningMateNotConfirmed": 1,
+      "newlyAllowsForcedMate": 0,
+      "referenceInstability": 0,
+      "averageMs": 69.00415765
+    },
+    {
+      "split": "development",
+      "mode": "direct",
+      "positions": 9,
+      "exactBest": 4,
+      "cpComparable": 5,
+      "averageCpLoss": 166.2,
+      "severeCpLoss200": 1,
+      "mateInOneAvailable": 2,
+      "missedMateInOne": 1,
+      "winningMateNotConfirmed": 1,
+      "newlyAllowsForcedMate": 0,
+      "referenceInstability": 0,
+      "averageMs": 21.23503555555562
+    },
+    {
+      "split": "development",
+      "mode": "search",
+      "positions": 9,
+      "exactBest": 7,
+      "cpComparable": 5,
+      "averageCpLoss": 0,
+      "severeCpLoss200": 0,
+      "mateInOneAvailable": 2,
+      "missedMateInOne": 0,
+      "winningMateNotConfirmed": 0,
+      "newlyAllowsForcedMate": 0,
+      "referenceInstability": 0,
+      "averageMs": 459.55538222222236
+    },
+    {
+      "split": "development",
+      "mode": "selective",
+      "positions": 9,
+      "exactBest": 4,
+      "cpComparable": 5,
+      "averageCpLoss": 166.2,
+      "severeCpLoss200": 1,
+      "mateInOneAvailable": 2,
+      "missedMateInOne": 1,
+      "winningMateNotConfirmed": 1,
+      "newlyAllowsForcedMate": 0,
+      "referenceInstability": 0,
+      "averageMs": 124.36033444444463
+    },
+    {
+      "split": "heldout",
+      "mode": "direct",
+      "positions": 11,
+      "exactBest": 8,
+      "cpComparable": 7,
+      "averageCpLoss": 9.142857142857142,
+      "severeCpLoss200": 0,
+      "mateInOneAvailable": 2,
+      "missedMateInOne": 0,
+      "winningMateNotConfirmed": 0,
+      "newlyAllowsForcedMate": 0,
+      "referenceInstability": 0,
+      "averageMs": 22.214263363636167
+    },
+    {
+      "split": "heldout",
+      "mode": "search",
+      "positions": 11,
+      "exactBest": 8,
+      "cpComparable": 7,
+      "averageCpLoss": 9.142857142857142,
+      "severeCpLoss200": 0,
+      "mateInOneAvailable": 2,
+      "missedMateInOne": 0,
+      "winningMateNotConfirmed": 0,
+      "newlyAllowsForcedMate": 0,
+      "referenceInstability": 0,
+      "averageMs": 442.0046076363638
+    },
+    {
+      "split": "heldout",
+      "mode": "selective",
+      "positions": 11,
+      "exactBest": 8,
+      "cpComparable": 7,
+      "averageCpLoss": 9.142857142857142,
+      "severeCpLoss200": 0,
+      "mateInOneAvailable": 2,
+      "missedMateInOne": 0,
+      "winningMateNotConfirmed": 0,
+      "newlyAllowsForcedMate": 0,
+      "referenceInstability": 0,
+      "averageMs": 23.7127402727271
+    }
+  ]
+}

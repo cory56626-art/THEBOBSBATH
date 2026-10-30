@@ -112,6 +112,21 @@ test('terminal checkmate, stalemate and historical repetition produce no move', 
   }
 });
 
+test('one-time game-history setup does not inflate every later inference reserve', async (t) => {
+  let elapsed = 0;
+  t.mock.method(performance, 'now', () => elapsed);
+  const game = new Chess();
+  const history = game.history.bind(game);
+  t.mock.method(game, 'history', (...args) => { elapsed += 60; return history(...args); });
+  const base = fakeModel();
+  const model = { infer(chess) { elapsed += 20; return base.infer(chess); } };
+  const result = await chooseMove(game, model, { mode: 'search', budgetMs: 150, maxNodes: 100 });
+  assert.ok(result.inferenceCalls > 1, 'Remaining time can buy evaluations after the one-time setup');
+  assert.ok(result.elapsedMs <= 150, 'The observed evaluation reserve still respects the controlled budget');
+  assert.equal(result.inferenceCalls, base.calls);
+  assert.equal(result.stopReason, 'time-limit');
+});
+
 test('an already aborted decision rejects without evaluating the model', async () => {
   const controller = new AbortController();
   controller.abort();
@@ -132,6 +147,8 @@ test('search can be cancelled after it begins', async () => {
 test('selective mode can accept the direct move or request search using the fitted-gate contract', async () => {
   const gate = {
     trained: true, modelId: 'deterministic-test-policy',
+    referenceEngineVersion: 'intuition-mcts-2',
+    metrics: { testCount: 40, testPositiveRate: 0.5, brier: 0.05, baselineBrier: 0.25 },
     featureNames: FEATURE_NAMES, weights: FEATURE_NAMES.map(() => 0),
     means: FEATURE_NAMES.map(() => 0), scales: FEATURE_NAMES.map(() => 1), bias: -20,
   };

@@ -29,6 +29,17 @@ Every mode uses the same model weights, legal-move rules, and initial position. 
 
 The included model is Peter Baer's **v3.1-clean-distilled** transformer: 116,266 parameters and 464,936 weight bytes. It was distilled from a larger model trained on human Lichess games. It is not a Stockfish-trained model. Exact source revision, fingerprint, and license information are in [model/provenance.json](model/provenance.json).
 
+## AI version 2
+
+Search is now the default playing mode. The raw direct policy remains available as the unchanged experimental baseline; this iteration improves move selection and verification with the same pretrained weights.
+
+- Proven checkmates override neural preferences and visit counts. Solved terminal branches are not repeatedly searched while alternatives remain unresolved.
+- Tactical verification checks for immediate opponent mates, including replacement moves chosen after a bad policy suggestion is rejected. Neural tree visits and rule-based tactical probes are recorded separately.
+- A private game board is reused and undone during search, preserving history and repetition without replaying the entire game for every simulation.
+- Selective mode can skip search only with compatible evidence for this engine, at least 30 mixed-class held-out positions, and Brier error below its constant-predictor baseline. The shipped 40-position pilot does not meet this standard, so it falls back to verification.
+
+The independent assessment uses Stockfish 19 as an offline judge and test opponent. Raw before/after position records, controlled color-reversed games, games against two explicitly limited Stockfish opponents, model assessment, and reproduction commands are linked in [AI evaluation](docs/AI-EVALUATION.md). Small experiments do not establish an Elo rating or superiority over Stockfish.
+
 ## Read results carefully
 
 1. **Budget both time and work.** Node limits make repeated comparisons easier to interpret. The wall-clock cap is soft: synchronous neural inference cannot be interrupted, and the engine checks time between search iterations. It reserves an estimate of observed inference/iteration cost before starting another simulation to reduce overruns, but pauses, throttling, and changing inference costs can still exceed a cap. Paired games deduct actual measured decision time from equal starting clocks. Record browser and settings with results.
@@ -38,7 +49,7 @@ The included model is Peter Baer's **v3.1-clean-distilled** transformer: 116,266
 5. **Distinguish agreement from strength.** Policy agreement, puzzle accuracy, and reduced node count are useful diagnostics. Match results and severe mistakes are separate outcomes.
 6. **Avoid unsupported Elo claims.** Small browser matches are noisy. Draws, move-cap adjudications, and unfinished games need to remain visible. There is no automatic conversion from this experiment's scores to Lichess or Stockfish Elo.
 
-The supplied controller is an initial pilot fitted from only 40 reference-labelled positions, with opening groups held out for evaluation. Its small-sample metrics do not establish generalization or a playing-strength gain. Changing search caps invalidates its reference-budget match; selective mode then requests search until a compatible controller is trained. Personalities, opponent exploitation, a committee of independent models, and a claim of superiority to a full-strength engine are outside this first experiment.
+The supplied controller is an initial pilot fitted from only 40 reference-labelled positions, with opening groups held out for evaluation. Its small-sample metrics do not establish generalization or a playing-strength gain. Version 2 declines to use it to skip search. A replacement needs enough independent validation, a compatible reference engine and budget, and better Brier error than its constant baseline. The current calibration button still collects 40 examples for study; that is insufficient to authorize skipping. Personalities, opponent exploitation, a committee of independent models, and a claim of superiority to a full-strength engine are outside this first experiment.
 
 The shipped pilot uses a 500 ms search cap and 128-node cap. Only 3 of its 40 reference decisions changed the direct move. Its held-out Brier score is about 0.123, compared with 0.077 for the constant training-prior baseline (lower is better). This controller currently underperforms that simple calibration baseline; the dashboard reports the limitation. Those results motivate collecting more independent, varied reference examples rather than claiming the controller is proven.
 
