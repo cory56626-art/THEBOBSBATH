@@ -1,37 +1,7 @@
-INTUITION — third-party attribution
-================================
+Web Crawler — Bobs Bath
 
-Pretrained neural chess model and inference implementation
----------------------------------------------------------
-Upstream: https://github.com/pbaer/neural-chess
-Author: Peter Baer
-Source revision: 524ba14d4af3b739cbe19bd8cd0b14892e6305ca
-Model: v3.1-clean-distilled, 116,266 parameters, 464,936 weight bytes
-SHA-256: 5b584935b8a23a662096d2ecc34f2af8c580058252ef0567194b080187945468
-Source license: MIT. Weight/data release: CC0-1.0.
-Preserve model/LICENSE.upstream.txt when redistributing source or weights.
-The model was distilled from a larger model trained on human Lichess games;
-it is not a model trained on Stockfish analysis labels.
+Original web crawler concept and visual inspiration:
+everything.bends — https://www.tiktok.com/@everything.bends
+Reference supplied by the user. Unofficial homage; no copied original assets or source.
 
-chess.js
---------
-https://github.com/jhlywa/chess.js
-BSD-2-Clause. Used for legal move generation, FEN/PGN, history, and chess rules.
-The installed package includes the complete license text.
-
-Vite
-----
-https://github.com/vitejs/vite
-MIT. Development server and production bundler; not a remote runtime service.
-
-Playwright
-----------
-https://github.com/microsoft/playwright
-Apache-2.0. Browser testing dependency, not part of the deployed chess model.
-
-Research references
--------------------
-Research papers linked in README.md provide context only. No Elo result or
-strength claim from an external paper is attributed to this implementation.
-
-The old combat, house, and archived game assets are not used by this replacement.
+This implementation uses only browser APIs and system fonts. There are no bundled third-party runtime libraries.

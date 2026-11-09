@@ -1,4 +1,4 @@
-name: Test and publish chess experiment
+name: Check and publish Web Crawler
 
 on:
   push:
@@ -10,30 +10,26 @@ permissions:
   contents: read
 
 concurrency:
-  group: chess-pages-${{ github.ref }}
+  group: crawler-pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - name: Check reader JavaScript
+        run: |
+          node --check app.js
+          node --check reader-core.js
       - run: npm test
-      - run: npm run build
-      - run: npm run test:e2e
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: browser-test-results
-          path: test-results/
-          if-no-files-found: ignore
+      - name: Stage the static page
+        run: |
+          mkdir -p dist
+          cp index.html style.css app.js reader-core.js LICENSE THIRD_PARTY.txt .nojekyll dist/
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         with:
@@ -50,14 +46,9 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Use verified workflow as Pages source
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh api --method PUT "repos/${{ github.repository }}/pages" -f build_type=workflow
       - uses: actions/configure-pages@v5
         with:
           enablement: false
-      - name: Deploy verified build
+      - name: Deploy verified page
         id: deployment
         uses: actions/deploy-pages@v4
