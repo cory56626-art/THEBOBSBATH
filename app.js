@@ -1,4 +1,5 @@
-import { LIMIT, SAMPLES, tokenize, speechChunk, wordAtBoundary, wordDuration } from './reader-core.js';
+import { LIMIT, SAMPLES, tokenize, speechChunk, wordAtBoundary, wordDuration, huntTargets } from './reader-core.js?v=2';
+import { clamp, createRig, updateRig, translateBodyForScroll, legPose } from './crawler-motion.js?v=2';
 
 const $ = id => document.getElementById(id);
 const input = $('text-input');
@@ -30,25 +31,40 @@ let scrollUntil = 0;
 let lastFrame = 0;
 let width = 0;
 let height = 0;
-let crawler = { x: 130, y: 150, angle: 0, initialized: false };
-let target = { x: 130, y: 150, w: 40, h: 28 };
+let rig = null;
+let rigLastScroll = 0;
+let simulationTime = 0;
+let scanPlan = [];
+let huntIndex = -1;
+let pendingHunt = null;
+let huntHoldUntil = 0;
+let activeSpans = [];
+let seen = new Set();
+let annotations = [];
 let wordRects = [];
 let scrollTarget = null;
 let voices = [];
+let fieldBounds = { left: 0, right: 500, center: 250 };
 
 input.value = typeof saved.text === 'string' ? saved.text.slice(0, LIMIT) : SAMPLES[0];
 $('speed').value = Number.isFinite(Number(saved.speed)) && Number(saved.speed) >= 70 && Number(saved.speed) <= 390 ? String(saved.speed) : '190';
-$('voice').checked = canSpeak && saved.voice !== false;
+$('voice').checked = canSpeak && saved.voice === true;
+$('reading-mode').value = saved.mode === 'all' ? 'all' : 'hunt';
+const hunting = () => $('reading-mode').value === 'hunt';
 
 function save() {
   try {
-    localStorage.setItem(preferenceKey, JSON.stringify({ text: input.value, speed: Number($('speed').value), voice: $('voice').checked, voiceName: $('voice-select').value }));
+    localStorage.setItem(preferenceKey, JSON.stringify({ text: input.value, speed: Number($('speed').value), voice: $('voice').checked, voiceName: $('voice-select').value, mode: $('reading-mode').value }));
   } catch { /* The reader still works without storage. */ }
 }
 
 function announce(message) { $('announcement').textContent = message; }
 function status(label) { $('state-label').textContent = label; }
 function speed() { return Number($('speed').value); }
+function updateSpeedLabel() {
+  $('speed-label').value = hunting() ? `${(speed() / 190).toFixed(1)}×` : `${speed()} WPM`;
+  document.querySelector('.mode-field p').textContent = hunting() ? 'Follows standout words and phrases.' : 'Follows every word, in order.';
+}
 function formatCount(n) { return String(n).padStart(3, '0'); }
 
 function setPhase(value) {
@@ -57,7 +73,7 @@ function setPhase(value) {
   $('pause').disabled = value === 'ready' || value === 'finished' || !words.length;
   $('pause').innerHTML = value === 'paused' ? 'Resume <span aria-hidden="true">▶</span>' : 'Pause <span aria-hidden="true">Ⅱ</span>';
   $('start-label').textContent = value === 'finished' ? 'Crawl again' : value === 'paused' && !dirty ? 'Keep crawling' : value === 'running' && !dirty ? 'Restart crawling' : 'Start crawling';
-  status(value === 'running' ? 'SCANNING YOUR WORDS' : value === 'paused' ? 'TAKING A BREATHER' : value === 'finished' ? 'EVERY WORD FOUND' : 'READY TO READ');
+  status(value === 'running' ? hunting() ? 'HUNTING WORDS & PHRASES' : 'SCANNING YOUR WORDS' : value === 'paused' ? 'TAKING A BREATHER' : value === 'finished' ? hunting() ? 'HUNT COMPLETE' : 'EVERY WORD FOUND' : 'READY TO READ');
 }
 
 function stopSpeech() {
@@ -74,31 +90,44 @@ function renderText(text) {
   stopSpeech();
   const bounded = text.slice(0, LIMIT);
   words = tokenize(bounded);
+  scanPlan = huntTargets(words);
+  huntIndex = -1; pendingHunt = null; huntHoldUntil = 0;
+  seen = new Set(); annotations = []; activeSpans = [];
+  simulationTime = 0;
   spans = [];
   let at = 0;
   const fragment = document.createDocumentFragment();
+  let block = document.createElement('div');
+  block.className = 'passage';
   for (const word of words) {
-    fragment.append(document.createTextNode(bounded.slice(at, word.offset)));
+    let gap = bounded.slice(at, word.offset);
+    if (/\n[ \t]*\n/.test(gap) && block.childNodes.length) {
+      fragment.append(block);
+      block = document.createElement('div'); block.className = 'passage';
+      gap = '';
+    }
+    block.append(document.createTextNode(gap));
     const span = document.createElement('span');
     span.className = `token ${word.signal}`;
     span.textContent = word.text;
     span.dataset.word = String(spans.length);
-    fragment.append(span);
+    block.append(span);
     spans.push(span);
     at = word.offset + word.text.length;
   }
-  fragment.append(document.createTextNode(bounded.slice(at)));
+  block.append(document.createTextNode(bounded.slice(at)));
+  if (words.length) fragment.append(block);
   doc.replaceChildren(fragment);
   cursor = visited = -1;
   positives = negatives = 0;
   viewport.scrollTop = 0;
   scrollTarget = null;
-  crawler.initialized = false;
+  rig = null; rigLastScroll = 0;
   $('love-count').textContent = $('hate-count').textContent = '000';
   $('love-word').textContent = $('hate-word').textContent = '—';
   $('reader-empty').hidden = words.length > 0;
   $('current-word').textContent = words.length ? 'AWAITING INPUT' : 'WAITING FOR WORDS';
-  $('read-count').textContent = `000 / ${formatCount(words.length)} WORDS`;
+  $('read-count').textContent = hunting() ? `TARGET 000 / ${formatCount(scanPlan.length)}` : `000 / ${formatCount(words.length)} WORDS`;
   $('progress').style.width = '0%';
   document.querySelector('[role=progressbar]').setAttribute('aria-valuenow', '0');
   $('start').disabled = words.length === 0;
@@ -125,13 +154,20 @@ function measure() {
     const r = span.getClientRects()[0] || span.getBoundingClientRect();
     return { x: r.left - rect.left, y: r.top - rect.top + viewport.scrollTop, w: r.width, h: r.height };
   });
+  const field = doc.getBoundingClientRect();
+  fieldBounds = { left: field.left - rect.left + 25, right: field.right - rect.left - 25, center: field.left - rect.left + field.width / 2 };
+  rig = null; rigLastScroll = viewport.scrollTop;
   if (cursor >= 0) trackWord(false);
 }
 
 function trackWord(follow = true) {
-  const rect = wordRects[Math.max(0, cursor)];
+  const rect = wordRects[pendingHunt?.target.index ?? Math.max(0, cursor)];
   if (!rect) return;
   if (follow && performance.now() > scrollUntil) {
+    if (hunting()) {
+      scrollTarget = Math.max(0, Math.min(viewport.scrollHeight - height, rect.y - height * .44));
+      return;
+    }
     const top = rect.y - viewport.scrollTop;
     if (top < height * .24 || top > height * .68) {
       scrollTarget = Math.max(0, Math.min(viewport.scrollHeight - height, rect.y - height * .44));
@@ -139,23 +175,30 @@ function trackWord(follow = true) {
   }
 }
 
-function visit(index) {
+function visit(index, end = index) {
   if (!words.length || index < 0 || index >= words.length) return;
-  if (cursor >= 0) spans[cursor]?.classList.remove('active');
+  for (const span of activeSpans) span.classList.remove('active');
+  activeSpans = [];
   cursor = index;
   // Boundary events may skip words; every passed word still counts exactly once.
-  for (let i = visited + 1; i <= index; i++) {
+  for (let i = hunting() ? index : visited + 1; i <= end; i++) {
+    if (seen.has(i)) continue;
+    seen.add(i);
     spans[i].classList.add('read');
     if (words[i].signal === 'positive') { positives++; $('love-word').textContent = words[i].text.toLocaleUpperCase(); }
     if (words[i].signal === 'negative') { negatives++; $('hate-word').textContent = words[i].text.toLocaleUpperCase(); }
   }
-  visited = Math.max(visited, index);
-  spans[index].classList.add('active');
+  visited = Math.max(visited, end);
+  for (let i = index; i <= end; i++) { spans[i].classList.add('active'); activeSpans.push(spans[i]); }
+  if (hunting() || words[index].signal !== 'neutral') {
+    if (!annotations.some(a => a.index === index && a.end === end && simulationTime - a.born < .8)) annotations.push({ index, end, signal: words[index].signal, born: simulationTime });
+    annotations = annotations.slice(-7);
+  }
   $('love-count').textContent = formatCount(positives);
   $('hate-count').textContent = formatCount(negatives);
-  $('read-count').textContent = `${formatCount(index + 1)} / ${formatCount(words.length)} WORDS`;
-  $('current-word').textContent = words[index].text.toLocaleUpperCase();
-  const pct = Math.round((index + 1) / words.length * 100);
+  $('read-count').textContent = hunting() ? `TARGET ${formatCount(huntIndex + 1)} / ${formatCount(scanPlan.length)}` : `${formatCount(index + 1)} / ${formatCount(words.length)} WORDS`;
+  $('current-word').textContent = words.slice(index, end + 1).map(w => w.text).join(' ').toLocaleUpperCase();
+  const pct = Math.round(hunting() ? (huntIndex + 1) / scanPlan.length * 100 : (index + 1) / words.length * 100);
   $('progress').style.width = `${pct}%`;
   document.querySelector('[role=progressbar]').setAttribute('aria-valuenow', String(pct));
   trackWord();
@@ -164,7 +207,9 @@ function visit(index) {
 function finish() {
   stopSpeech();
   setPhase('finished');
-  announce(`Finished reading ${words.length} words.`);
+  pendingHunt = null;
+  scrollTarget = null;
+  announce(hunting() ? `Hunt complete. Found ${scanPlan.length} word and phrase targets.` : `Finished reading ${words.length} words.`);
 }
 
 function speechFailed(message) {
@@ -189,7 +234,7 @@ function speakFrom(index) {
   if (selected) { u.voice = selected; u.lang = selected.lang; }
   u.rate = speed() / 190;
   const now = performance.now();
-  const run = { ...chunk, nativeBoundary: false, started: false, begun: now, lastEvent: now, duration: chunk.text.length * 95 / u.rate + 10000 };
+  const run = { ...chunk, kind: 'all', nativeBoundary: false, started: false, begun: now, lastEvent: now, duration: chunk.text.length * 95 / u.rate + 10000 };
   voiceRun = run;
   nextAt = now + wordDuration(words[index].text, speed());
   u.onstart = () => {
@@ -221,6 +266,38 @@ function speakFrom(index) {
   try { synth.speak(u); } catch { speechFailed('Voice is unavailable here. The crawler will keep reading visually.'); }
 }
 
+function speakTarget(target) {
+  if (!canSpeak || !$('voice').checked || !target || phase !== 'running') return;
+  const text = words.slice(target.index, target.end + 1).map(w => w.text).join(' ');
+  if (text.length > 1000) return;
+  const ticket = generation;
+  const u = new SpeechSynthesisUtterance(text);
+  utterance = u;
+  const selected = voices.find(v => v.name === $('voice-select').value);
+  if (selected) { u.voice = selected; u.lang = selected.lang; }
+  u.rate = clamp(speed() / 190, .7, 1.6);
+  const run = { kind: 'hunt', begun: performance.now(), started: false, duration: 10000 + text.length * 100 / u.rate };
+  voiceRun = run;
+  u.onstart = () => { if (ticket === generation) run.started = true; };
+  u.onend = () => { if (ticket === generation) { voiceRun = null; utterance = null; } };
+  u.onerror = event => {
+    if (ticket === generation && !['canceled', 'interrupted'].includes(event.error)) speechFailed('Voice is unavailable here. The crawler will keep reading visually.');
+  };
+  try { synth.speak(u); } catch { speechFailed('Voice is unavailable here. The crawler will keep reading visually.'); }
+}
+
+function speakCurrent() {
+  if (hunting()) { if (!pendingHunt) speakTarget(scanPlan[huntIndex]); }
+  else speakFrom(Math.max(0, cursor));
+}
+
+function nextHunt() {
+  huntIndex++;
+  if (huntIndex >= scanPlan.length) { finish(); return; }
+  pendingHunt = { target: scanPlan[huntIndex], begun: simulationTime };
+  trackWord();
+}
+
 function begin(resume = false) {
   clearTimeout(inputTimer);
   if (dirty || !resume || phase === 'finished') renderText(input.value);
@@ -228,9 +305,15 @@ function begin(resume = false) {
   stopSpeech();
   scrollUntil = 0;
   setPhase('running');
-  visit(Math.max(0, cursor));
-  nextAt = performance.now() + wordDuration(words[cursor].text, speed());
-  if ($('voice').checked) speakFrom(cursor);
+  if (hunting()) {
+    if (huntIndex < 0) nextHunt();
+    else if (!pendingHunt && $('voice').checked) speakCurrent();
+    trackWord();
+  } else {
+    visit(Math.max(0, cursor));
+    nextAt = performance.now() + wordDuration(words[cursor].text, speed());
+    if ($('voice').checked) speakFrom(cursor);
+  }
   save();
   if (window.matchMedia('(max-width: 600px)').matches) {
     document.querySelector('.reader-panel').scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start' });
@@ -242,6 +325,7 @@ function pause() {
   if (phase === 'running') {
     stopSpeech();
     setPhase('paused');
+    scrollTarget = null;
     announce('Reading paused.');
   } else if (phase === 'paused') begin(true);
 }
@@ -270,26 +354,27 @@ $('sample').addEventListener('click', () => {
   announce('Sample loaded. Press Start crawling.');
 });
 $('speed').addEventListener('input', () => {
-  $('speed-label').value = `${speed()} WPM`;
+  updateSpeedLabel();
   nextAt = performance.now() + wordDuration(words[cursor]?.text || '', speed());
 });
 $('speed').addEventListener('change', () => {
   save();
-  if (phase === 'running' && $('voice').checked) { stopSpeech(); speakFrom(Math.max(0, cursor)); }
+  if (phase === 'running' && $('voice').checked) { stopSpeech(); speakCurrent(); }
 });
+$('reading-mode').addEventListener('change', () => { renderText(input.value); updateSpeedLabel(); save(); });
 $('voice').addEventListener('change', () => {
   $('voice-select').disabled = !$('voice').checked;
   $('voice-note').textContent = $('voice').checked ? 'Uses the voices available on your device.' : 'Sound off. The crawler will read visually.';
   stopSpeech();
   if (phase === 'running') {
     nextAt = performance.now() + wordDuration(words[cursor]?.text || '', speed());
-    if ($('voice').checked) speakFrom(Math.max(0, cursor));
+    if ($('voice').checked) speakCurrent();
   }
   save();
 });
 $('voice-select').addEventListener('change', () => {
   save();
-  if (phase === 'running' && $('voice').checked) { stopSpeech(); speakFrom(Math.max(0, cursor)); }
+  if (phase === 'running' && $('voice').checked) { stopSpeech(); speakCurrent(); }
 });
 
 function loadVoices() {
@@ -337,12 +422,19 @@ doc.addEventListener('click', e => {
   stopSpeech();
   // Rebuild the tally on backward seeks instead of counting the same word twice.
   spans.forEach(s => s.classList.remove('read', 'active'));
-  cursor = visited = -1; positives = negatives = 0;
+  cursor = visited = -1; positives = negatives = 0; seen.clear(); activeSpans = []; annotations = []; rig = null;
   $('love-word').textContent = $('hate-word').textContent = '—';
-  visit(index);
+  if (hunting()) {
+    huntIndex = scanPlan.findIndex(t => t.end >= index);
+    if (huntIndex < 0) huntIndex = scanPlan.length - 1;
+    pendingHunt = null;
+    const t = scanPlan[huntIndex];
+    visit(t.index, t.end);
+    huntHoldUntil = simulationTime + .55;
+  } else visit(index);
   if (wasRunning) {
     nextAt = performance.now() + wordDuration(words[index].text, speed());
-    if ($('voice').checked) speakFrom(index);
+    if ($('voice').checked) speakCurrent();
   } else setPhase('paused');
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden && phase === 'running') pause(); });
@@ -350,95 +442,166 @@ window.addEventListener('pagehide', stopSpeech);
 new ResizeObserver(measure).observe(viewport);
 if (document.fonts?.ready) document.fonts.ready.then(measure);
 
-function draw(now, dt) {
-  ctx.clearRect(0, 0, width, height);
-  if (!words.length || !width || !height) return;
-  const index = Math.max(0, cursor);
-  const rect = wordRects[index];
-  if (!rect) return;
-  const t = now / 1000;
-  const moving = phase === 'running' && !reducedMotion.matches;
-  const centerX = rect.x + rect.w / 2;
-  const centerY = rect.y - viewport.scrollTop + rect.h / 2;
-  const drift = moving ? 1 : reducedMotion.matches ? 0 : .2;
-  const spread = Math.min(1, width / 520);
-  target = { x: centerX + (width < 400 ? 35 : 58) * (centerX > width * .6 ? -1 : 1), y: centerY - 18, w: rect.w, h: rect.h };
-  if (!crawler.initialized) { crawler.x = target.x; crawler.y = target.y; crawler.initialized = true; }
-  const lerp = reducedMotion.matches ? 1 : 1 - Math.exp(-dt * 7);
-  crawler.x += (target.x - crawler.x) * lerp;
-  crawler.y += (target.y - crawler.y) * lerp;
-  if (crawler.y < -180 || crawler.y > height + 180) return;
-  const bx = crawler.x + Math.sin(t * 3.6) * 2 * drift;
-  const by = crawler.y + Math.cos(t * 4.1) * 3 * drift;
-  const color = words[index].signal === 'negative' ? '#6825fa' : '#ed00ac';
-  const points = [];
-  for (let i = 0; i < 8; i++) {
-    const side = i < 4 ? -1 : 1;
-    const leg = i % 4;
-    const linkedIndex = Math.max(0, Math.min(words.length - 1, index + leg * 2 - 2 + (side > 0 ? 3 : 0)));
-    const linked = wordRects[linkedIndex] || rect;
-    const gait = Math.sin(t * (moving ? 5 : 1.1) + i * 2.4) * drift;
-    const footX = Math.max(8, Math.min(width - 8, linked.x + linked.w * (side > 0 ? .9 : .1) + side * (22 + leg * 5) * spread + gait * 10));
-    const footY = linked.y - viewport.scrollTop + linked.h * .7 + ((leg % 2) ? 20 : -16) * spread + Math.cos(t * 3 + i) * 5 * drift;
-    const kneeX = bx + side * (58 + leg * 19) * spread + gait * 14;
-    const kneeY = by + (leg - 1.5) * 39 * spread - Math.abs(gait) * 10;
-    points.push({ footX, footY, kneeX, kneeY, side, leg });
-    ctx.beginPath();ctx.moveTo(bx + side * 4, by + (leg - 1.5) * 5);ctx.lineTo(kneeX, kneeY);ctx.lineTo(footX, footY);
-    ctx.strokeStyle = '#1d201de6';ctx.lineWidth = leg % 2 ? 1 : 1.4;ctx.stroke();
-    ctx.fillStyle = '#ed00ac';ctx.fillRect(kneeX - 1.6, kneeY - 1.6, 3.2, 3.2);
-    ctx.beginPath();ctx.arc(footX, footY, 1.7, 0, Math.PI * 2);ctx.fill();
-    // Faint triangulated threads follow the legs, as in the reference.
-    if (i > 0) {
-      ctx.beginPath();ctx.moveTo(footX, footY);ctx.lineTo(points[i - 1].kneeX, points[i - 1].kneeY);ctx.strokeStyle = '#6825fa32';ctx.lineWidth = .6;ctx.stroke();
-    }
+function goalForTarget() {
+  const target = pendingHunt?.target || (hunting() ? scanPlan[Math.max(0, huntIndex)] : null);
+  const index = target?.index ?? Math.max(0, cursor);
+  const first = wordRects[index];
+  const last = wordRects[target?.end ?? index] || first;
+  if (!first) return null;
+  const center = Math.abs(first.y - last.y) < 15 ? (first.x + last.x + last.w) / 2 : first.x + first.w / 2;
+  const range = Math.max(20, (fieldBounds.right - fieldBounds.left) * .28);
+  return {
+    x: clamp(fieldBounds.center + (center - fieldBounds.center) * .55 + Math.sin(index * 1.73) * 8, fieldBounds.center - range, fieldBounds.center + range),
+    y: viewport.scrollTop + height * .44 + clamp((first.y - viewport.scrollTop - height * .44) * .045, -7, 7),
+  };
+}
+
+function findContact(ideal, leg) {
+  let chosen = { x: clamp(ideal.x, 12, width - 12), y: Math.max(5, ideal.y) };
+  let best = (65 * (rig?.scale || 1)) ** 2;
+  const center = pendingHunt?.target.index ?? Math.max(0, cursor);
+  for (let i = Math.max(0, center - 55); i < Math.min(wordRects.length, center + 65); i++) {
+    const r = wordRects[i];
+    const p = { x: r.x + r.w * (leg.side < 0 ? .18 : .82), y: r.y + r.h + 1 };
+    if (p.x < 9 || p.x > width - 9) continue;
+    let cost = (p.x - ideal.x) ** 2 + (p.y - ideal.y) ** 2;
+    if (rig?.legs.some(other => other !== leg && Math.hypot(other.toe.x - p.x, other.toe.y - p.y) < 10)) cost += 1600;
+    if (cost < best) { best = cost; chosen = p; }
   }
-  ctx.save();ctx.translate(bx, by);
-  const tilt = Math.max(-.32, Math.min(.32, (target.x - crawler.x) * .012)) + Math.sin(t * 1.7) * .05 * drift;
-  ctx.rotate(tilt);
-  ctx.fillStyle = '#191c18';ctx.fillRect(-6, -19, 12, 32);ctx.fillRect(-9, -10, 18, 13);ctx.fillRect(-4, 15, 8, 9);
-  ctx.fillStyle = color;ctx.fillRect(-3, -15, 6, 4);ctx.fillRect(-2, 4, 4, 3);ctx.restore();
-  // A fine reading ring and a tiny specimen tag make its current target legible.
-  ctx.beginPath();ctx.ellipse(centerX, centerY + 3, Math.min(rect.w / 2 + 8, width / 2 - 10), rect.h / 2 - 1, -.06, 0, Math.PI * 2);ctx.strokeStyle = `${color}99`;ctx.lineWidth = .75;ctx.stroke();
-  const labelX = Math.max(8, Math.min(width - 91, bx + 15));
-  const labelY = Math.max(8, Math.min(height - 25, by - 25));
-  ctx.fillStyle = '#08a5c8';ctx.fillRect(labelX, labelY, 77, 23);
-  ctx.font = '6px monospace';ctx.fillStyle = '#fff';ctx.fillText('CRAWLER_01', labelX + 5, labelY + 9);ctx.fillText(`WORD ${formatCount(index + 1)}`, labelX + 5, labelY + 18);
-  if (phase === 'running' && words[index].signal !== 'neutral') {
-    const label = words[index].text.replace(/[^\p{L}\p{N}'’-]/gu, '').toLocaleUpperCase().slice(0, 19);
-    ctx.font = '11px monospace';const lw = ctx.measureText(label).width + 14;
-    const lx = Math.max(7, Math.min(width - lw - 7, centerX - lw / 2));
-    const ly = Math.max(8, centerY - 73);
-    ctx.strokeStyle = color;ctx.lineWidth = .6;ctx.beginPath();ctx.moveTo(centerX, centerY - 15);ctx.lineTo(lx + lw / 2, ly + 24);ctx.stroke();
-    ctx.fillStyle = color;ctx.fillRect(lx, ly, lw, 24);ctx.fillStyle = '#fff';ctx.fillText(label, lx + 7, ly + 16);
+  return chosen;
+}
+
+function phraseBoxes(index, end) {
+  const rows = [];
+  for (let i = index; i <= end; i++) {
+    const r = wordRects[i];
+    if (!r) continue;
+    const row = rows.find(b => Math.abs(b.y - r.y) < r.h * .5);
+    if (row) { row.right = Math.max(row.right, r.x + r.w); row.x = Math.min(row.x, r.x); }
+    else rows.push({ x: r.x, y: r.y, h: r.h, right: r.x + r.w });
+  }
+  return rows;
+}
+
+function drawTargets() {
+  annotations = annotations.filter(a => simulationTime - a.born < 11);
+  const colored = annotations.filter(a => a.signal !== 'neutral').slice(-4);
+  for (const a of annotations) {
+    const boxes = phraseBoxes(a.index, a.end);
+    const color = a.signal === 'positive' ? '#f000c8' : a.signal === 'negative' ? '#5b00ff' : '#28232c';
+    const alpha = clamp((11 - simulationTime + a.born) / 1.5, 0, 1);
+    ctx.save();ctx.globalAlpha = alpha;
+    for (const box of boxes) {
+      const y = box.y - viewport.scrollTop;
+      if (y < -200 || y > height + 200) continue;
+      ctx.beginPath();ctx.ellipse((box.x + box.right) / 2, y + box.h / 2 + 1, (box.right - box.x) / 2 + 6, box.h / 2 + 5, -.06, 0, Math.PI * 2);
+      ctx.strokeStyle = a.signal === 'neutral' ? '#302b315c' : color;ctx.lineWidth = .8;ctx.stroke();
+      ctx.beginPath();ctx.moveTo(box.x, y + box.h + 3);ctx.lineTo(box.right, y + box.h + 3);ctx.strokeStyle = `${color}88`;ctx.lineWidth = .45;ctx.stroke();
+    }
+    if (colored.includes(a) && boxes.length) {
+      const b = boxes[0], x = (b.x + b.right) / 2, y = b.y - viewport.scrollTop;
+      const text = words.slice(a.index, a.end + 1).map(w => w.text.replace(/[^\p{L}\p{N}'’-]/gu, '')).join(' ').toLocaleUpperCase().slice(0, 23);
+      const font = width < 420 ? 13 : 16;
+      ctx.font = `${font}px Arial`;
+      const tw = ctx.measureText(text).width + 13;
+      const lx = clamp(x - tw / 2 + ((a.index % 3) - 1) * 14, 6, width - tw - 6);
+      const ly = y - 60 - (a.index % 3) * 16;
+      ctx.strokeStyle = color;ctx.lineWidth = .65;ctx.beginPath();ctx.moveTo(lx + tw / 2, ly + 27);ctx.lineTo(lx + tw / 2, y + b.h / 2);ctx.lineTo(x, y + b.h / 2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x - 2, y + b.h / 2 - 3);ctx.lineTo(x, y + b.h / 2);ctx.lineTo(x + 2, y + b.h / 2 - 3);ctx.stroke();
+      ctx.fillStyle = color;ctx.fillRect(lx, ly, tw, 24);
+      ctx.strokeRect(lx - 3, ly - 3, tw + 6, 34);ctx.strokeRect(lx, ly + 26, tw, 5);
+      ctx.fillStyle = '#fff';ctx.fillText(text, lx + 6, ly + 17);
+    }
+    ctx.restore();
   }
 }
 
+function taperedSegment(a, b, rootWidth, tipWidth) {
+  const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  const nx = -(b.y - a.y) / len, ny = (b.x - a.x) / len;
+  ctx.beginPath();ctx.moveTo(a.x + nx * rootWidth / 2, a.y - viewport.scrollTop + ny * rootWidth / 2);
+  ctx.lineTo(b.x + nx * tipWidth / 2, b.y - viewport.scrollTop + ny * tipWidth / 2);
+  ctx.lineTo(b.x - nx * tipWidth / 2, b.y - viewport.scrollTop - ny * tipWidth / 2);
+  ctx.lineTo(a.x - nx * rootWidth / 2, a.y - viewport.scrollTop - ny * rootWidth / 2);ctx.closePath();ctx.fill();
+}
+
+function draw(now, dt) {
+  ctx.clearRect(0, 0, width, height);
+  if (!words.length || !width || !height) return;
+  const goal = goalForTarget();
+  if (!goal) return;
+  if (!rig) {
+    rig = createRig(goal.x, goal.y, width < 420 ? 1.05 : 1.3);
+    rigLastScroll = viewport.scrollTop;
+    for (const leg of rig.legs) leg.toe = findContact(leg.toe, leg);
+  }
+  translateBodyForScroll(rig, viewport.scrollTop - rigLastScroll);
+  rigLastScroll = viewport.scrollTop;
+  rig.goal = goal;
+  updateRig(rig, dt, simulationTime, findContact, { running: phase === 'running', reduced: reducedMotion.matches, pace: clamp(speed() / 190, .5, 1.8) });
+  drawTargets();
+  const s = rig.scale, poses = rig.legs.map(leg => legPose(rig, leg));
+  // Sparse, fine triangulation stays behind the eight heavier articulated legs.
+  ctx.strokeStyle = '#3c34482a';ctx.lineWidth = .55;
+  for (const [a, b] of [[0, 5], [2, 7], [1, 3], [4, 6]]) {
+    ctx.beginPath();ctx.moveTo(poses[a].toe.x, poses[a].toe.y - viewport.scrollTop);ctx.lineTo(poses[b].knee.x, poses[b].knee.y - viewport.scrollTop);ctx.stroke();
+  }
+  for (const pose of poses) {
+    ctx.fillStyle = '#080709';
+    taperedSegment(pose.root, pose.knee, 3.8 * s, 1.45 * s);
+    taperedSegment(pose.knee, pose.toe, 1.65 * s, .5 * s);
+    ctx.fillStyle = '#f27ee7';
+    for (const [point, size] of [[pose.root, 2.4], [pose.knee, 3], [pose.toe, 1.5]]) ctx.fillRect(point.x - size * s / 2, point.y - viewport.scrollTop - size * s / 2, size * s, size * s);
+  }
+  const b = rig.body;
+  ctx.save();ctx.translate(b.x, b.y - viewport.scrollTop);ctx.rotate(b.angle);ctx.scale(s, s * .82);ctx.fillStyle = '#050406';
+  // Three distinct angular body segments, small spinnerets, no floating eye box.
+  for (const shape of [ [[-4,-17],[5,-17],[4,-8],[-4,-7]], [[-6,-7],[6,-8],[5,7],[-5,8]], [[-4,10],[4,9],[4,18],[-3,18]] ]) {
+    ctx.beginPath();shape.forEach(([x,y], i) => i ? ctx.lineTo(x,y) : ctx.moveTo(x,y));ctx.closePath();ctx.fill();
+  }
+  ctx.fillRect(-3,19,2,5);ctx.fillRect(1,19,2,4);ctx.fillStyle='#a6a1aa';ctx.fillRect(-1,4,2,2);ctx.restore();
+  const lx = clamp(b.x + 10 * s, 5, width - 62 * s), ly = b.y - viewport.scrollTop - 9 * s;
+  ctx.fillStyle = '#009aca';ctx.fillRect(lx, ly, 55 * s, 19 * s);
+  ctx.strokeStyle = '#40d4ef';ctx.lineWidth = .5;ctx.strokeRect(lx - 1, ly - 1, 57 * s, 21 * s);
+  ctx.fillStyle = '#fff';ctx.font = `${5.4 * s}px monospace`;ctx.fillText('CRAWLER/01', lx + 3 * s, ly + 7 * s);
+  ctx.fillText(`${hunting() ? 'SCAN' : 'WORD'} ${formatCount(hunting() ? Math.max(1, huntIndex + 1) : Math.max(1, cursor + 1))}`, lx + 3 * s, ly + 14 * s);
+}
+
 function frame(now) {
-  const dt = Math.min((now - (lastFrame || now)) / 1000, .05);
+  const dt = Math.min((now - (lastFrame || now)) / 1000, .12);
   lastFrame = now;
   if (phase === 'running') {
-    if (voiceRun) {
-      if (now - voiceRun.begun > voiceRun.duration || (!voiceRun.started && now - voiceRun.begun > 6000)) {
-        speechFailed('The voice did not respond. Continuing with visual reading.');
-      } else if (!voiceRun.nativeBoundary && now >= nextAt && cursor < voiceRun.end) {
-        visit(cursor + 1);
-        nextAt = now + wordDuration(words[cursor].text, speed());
-      }
+    simulationTime += dt;
+    if (voiceRun && (now - voiceRun.begun > voiceRun.duration || (!voiceRun.started && now - voiceRun.begun > 6000))) speechFailed('The voice did not respond. Continuing with visual reading.');
+    if (hunting()) {
+      if (pendingHunt) {
+        const atGoal = rig && Math.hypot(rig.body.x - rig.goal.x, rig.body.y - rig.goal.y) < 9 && (scrollTarget === null || Math.abs(viewport.scrollTop - scrollTarget) < 9);
+        if (atGoal || simulationTime - pendingHunt.begun > 1.7 / Math.max(.6, speed() / 190)) {
+          const target = pendingHunt.target;
+          visit(target.index, target.end);
+          pendingHunt = null;
+          const letters = words.slice(target.index, target.end + 1).map(w => w.text).join(' ').length;
+          huntHoldUntil = simulationTime + clamp(.3 + letters * .019, .4, .85) / (speed() / 190);
+          if ($('voice').checked) speakTarget(target);
+        }
+      } else if (simulationTime >= huntHoldUntil && !voiceRun) nextHunt();
+    } else if (voiceRun) {
+      if (!voiceRun.nativeBoundary && now >= nextAt && cursor < voiceRun.end) { visit(cursor + 1); nextAt = now + wordDuration(words[cursor].text, speed()); }
     } else if (now >= nextAt) {
       if (cursor + 1 >= words.length) finish();
       else { visit(cursor + 1); nextAt = now + wordDuration(words[cursor].text, speed()); }
     }
   }
-  if (scrollTarget !== null) {
+  if (scrollTarget !== null && phase === 'running') {
     const diff = scrollTarget - viewport.scrollTop;
-    viewport.scrollTop = reducedMotion.matches ? scrollTarget : viewport.scrollTop + diff * (1 - Math.exp(-dt * 10));
+    viewport.scrollTop = reducedMotion.matches ? scrollTarget : viewport.scrollTop + diff * (1 - Math.exp(-dt * 8));
     if (Math.abs(diff) < 2) { viewport.scrollTop = scrollTarget; scrollTarget = null; }
   }
   draw(now, dt);
   requestAnimationFrame(frame);
 }
 
-$('speed-label').value = `${speed()} WPM`;
+updateSpeedLabel();
 $('input-count').textContent = `${tokenize(input.value).length} WORDS`;
 if (reducedMotion.matches) $('motion-note').textContent = 'Reduced motion. Same curious creature.';
 renderText(input.value);

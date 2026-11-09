@@ -7,8 +7,8 @@
   <meta name="description" content="Feed a little digital crawler your words. An interactive text reader inspired by everything.bends, with animated legs, word tracking, and optional speech.">
   <title>Web Crawler — Bobs Bath</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23eeeae3'/%3E%3Cg stroke='%231d1d1b' stroke-width='3' fill='none'%3E%3Cpath d='m28 27-15-15-6 20m22-1L10 41l-3 13m29-27 15-15 6 20M35 31l19 10 3 13M28 36l-9 13M36 36l9 13'/%3E%3C/g%3E%3Cpath d='M26 20h12v24H26z' fill='%231d1d1b'/%3E%3Ccircle cx='32' cy='25' r='3' fill='%23ef12b7'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./style.css">
-  <script type="module" src="./app.js"></script>
+  <link rel="stylesheet" href="./style.css?v=2">
+  <script type="module" src="./app.js?v=2"></script>
 </head>
 <body>
 <div class="page-shell">
@@ -21,7 +21,7 @@
   <main>
     <section class="intro" aria-labelledby="title">
       <div><div class="eyebrow"><span class="live-dot"></span> DIGITAL SPECIMEN / 001</div><h1 id="title">Let it read<br><em>between the lines.</em></h1></div>
-      <div class="intro-side"><span class="specimen-label">TEXT → MOTION</span><p>Feed it a thought.<br>Watch a strange little crawler<br>pick through every word.</p><span class="mini-rule">ALIVE IN YOUR BROWSER</span></div>
+      <div class="intro-side"><span class="specimen-label">TEXT → MOTION</span><p>Feed it a thought.<br>Watch a strange little crawler<br>find the words that stand out.</p><span class="mini-rule">ALIVE IN YOUR BROWSER</span></div>
     </section>
 
     <div class="workspace">
@@ -47,17 +47,18 @@
         <div class="sample-row"><span>Need a little inspiration</span><button class="text-button" id="sample">Try a sample ↗</button></div>
 
         <div class="settings">
+          <div class="mode-field"><label for="reading-mode">CRAWLING STYLE</label><select id="reading-mode"><option value="hunt" selected>Hunt words &amp; phrases</option><option value="all">Read every word</option></select><p>Follows standout words and phrases.</p></div>
           <div class="setting-top"><label for="speed">CRAWLING SPEED</label><output id="speed-label" for="speed">190 WPM</output></div>
           <input type="range" id="speed" min="70" max="390" step="10" value="190">
           <div class="range-labels"><span>Taking its time</span><span>Hungry</span></div>
-          <label class="toggle-row" for="voice"><span><strong>Read aloud</strong><small>Give your words a voice.</small></span><input id="voice" type="checkbox" checked><span class="toggle" aria-hidden="true"></span></label>
+          <label class="toggle-row" for="voice"><span><strong>Read aloud</strong><small>Give your words a voice.</small></span><input id="voice" type="checkbox"><span class="toggle" aria-hidden="true"></span></label>
           <div class="voice-field"><label for="voice-select" class="sr-only">Reading voice</label><select id="voice-select"><option value="">Device default voice</option></select></div>
           <p class="voice-note" id="voice-note" role="status">Uses the voices available on your device.</p>
         </div>
         <div class="field-note"><span class="note-index">FIELD NOTE_</span><p>Pink for love. Purple for hate.<br>Everything else is just a word<br>waiting to be found.</p><span class="note-fine">Simple keyword signals, a curious little creature.</span></div>
       </aside>
     </div>
-    <div class="workspace-caption"><span><span class="caption-dot"></span> NO ACCOUNT. NO API KEY.</span><span id="motion-note">Eight legs. One word at a time.</span></div>
+    <div class="workspace-caption"><span><span class="caption-dot"></span> NO ACCOUNT. NO API KEY.</span><span id="motion-note">Eight feet. Words worth chasing.</span></div>
   </main>
 
   <footer><div><span class="footer-index">INSPIRED BY</span><a href="https://www.tiktok.com/@everything.bends" target="_blank" rel="noopener noreferrer">@everything.bends <span aria-hidden="true">↗</span></a><p>Credit for the original web crawler concept and visual inspiration.</p></div><span class="footer-stamp">AN UNOFFICIAL HOMAGE<br>MADE FOR BOBS BATH / 2026</span></footer>

@@ -25,11 +25,12 @@ jobs:
         run: |
           node --check app.js
           node --check reader-core.js
+          node --check crawler-motion.js
       - run: npm test
       - name: Stage the static page
         run: |
           mkdir -p dist
-          cp index.html style.css app.js reader-core.js LICENSE THIRD_PARTY.txt .nojekyll dist/
+          cp index.html style.css app.js reader-core.js crawler-motion.js LICENSE THIRD_PARTY.txt .nojekyll dist/
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         with:
