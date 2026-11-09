@@ -1,4 +1,4 @@
-import { analyzeDocument, normalizeKey } from './text-analysis.js?v=3';
+import { analyzeDocument, normalizeKey } from './text-analysis.js?v=4';
 
 export const LIMIT = 30000;
 

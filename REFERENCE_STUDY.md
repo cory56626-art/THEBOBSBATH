@@ -38,3 +38,11 @@ Automated checks verify bone lengths across quadrants, finite unreachable poses,
 The speed control now reaches 5× (950 words/minute in every-word mode), with quick presets. The body integration, stance cooldowns, foot-swing duration, scheduling, target dwell, and auto-scroll all scale with pace. Device speech engines may enforce their own limits.
 
 Every completed run displays a summary and key ideas. The summary uses representative sentences from the full input, so the animation’s skipped function words are still available to establish meaning. Summary tests include neutral technical text, factual quantities, an explicit approval condition, a stated limit on a robot’s role, abbreviations, empty input, and markup-like text.
+
+## Version 4: pointing and tracing
+
+The user identified an interaction missing from the reconstruction: the creature actively points at words and draws around them. The browser version now reserves its two forelegs for that action. One toe reaches the selected word and holds a pointing pose while the other follows a sampled, slightly irregular circle and then an underline. The visible ink is the completed prefix of that exact toe path. The other six legs support the body, with at most two supporting feet lifted together.
+
+The forelegs reach before ink appears, lift the pen between strokes and wrapped lines, then return to walking. Marks and callouts remain attached to the text. Pause preserves the partial stroke and joints; speed scales the complete gesture through 5×. The summary waits until pending marks finish in every-word mode. Reflow rebuilds paths around their current word boxes while preserving drawing progress. Reduced motion completes the mark without animated tracing.
+
+Ten additional checks cover contact before drawing, matching pen and ink endpoints, underlining, pause, supporting contacts, 5× gesture timing, wrapped phrases, reflow while running or paused, and reduced motion. These gestures are an implementation of the visible behavior described by the user, not a claim about the original creator’s rig.

@@ -52,6 +52,7 @@ export function updateRig(rig, dt, now, findContact, { running = true, reduced =
   if (reduced) {
     b.x = rig.goal.x; b.y = rig.goal.y; b.vx = b.vy = b.angle = 0;
     for (const leg of rig.legs) {
+      if(leg.controlled) continue;
       const p = localPoint(b, leg.rest.x, leg.rest.y);
       leg.toe = findContact(p, leg); leg.stepping = false;
     }
@@ -67,12 +68,12 @@ export function updateRig(rig, dt, now, findContact, { running = true, reduced =
     b.vy += ((rig.goal.y - b.y) * stiffness - b.vy * damping) * h;
     b.x += b.vx * h; b.y += b.vy * h;
   }
-  const tilt = clamp(b.vx / (650 * pace), -.32, .32);
-  b.angle += (tilt - b.angle) * (1 - Math.exp(-dt * 13));
+  const tilt = clamp(clamp(b.vx / (650 * pace), -.32, .32)+(rig.attentionLean||0),-.45,.45);
+  b.angle += (tilt - b.angle) * (1 - Math.exp(-dt * 13 * pace));
   rig.stepDelay = Math.max(-dt, rig.stepDelay - dt);
 
   for (const leg of rig.legs) {
-    if (!leg.stepping) continue;
+    if (!leg.stepping || leg.controlled) continue;
     leg.lift = Math.min(1, leg.lift + dt / leg.duration);
     const u = leg.lift, ease = u * u * (3 - 2 * u);
     leg.toe.x = leg.from.x + (leg.to.x - leg.from.x) * ease + Math.sin(Math.PI * u) * leg.side * 4 * rig.scale;
@@ -80,9 +81,17 @@ export function updateRig(rig, dt, now, findContact, { running = true, reduced =
     if (u >= 1) { leg.toe = copy(leg.to); leg.stepping = false; leg.plantedAt = now; }
   }
 
-  // Stagger the lifts; five or more feet support the body throughout a stride.
-  let moving = rig.legs.filter(l => l.stepping).length;
-  if (moving >= 3 || rig.stepDelay > 0) return;
+  for(const leg of rig.legs) if(!leg.controlled && leg.guidedKnee) {
+    const knee=legPose(rig,leg,{ignoreGuidance:true}).knee;
+    const u=1-Math.exp(-dt*16*pace);
+    leg.guidedKnee.x+=(knee.x-leg.guidedKnee.x)*u;
+    leg.guidedKnee.y+=(knee.y-leg.guidedKnee.y)*u;
+    if(distance(knee,leg.guidedKnee)<.2) delete leg.guidedKnee;
+  }
+  // Six legs support the body when the front pair are inspecting the text.
+  const maxMoving=rig.legs.some(l=>l.controlled)?2:3;
+  let moving = rig.legs.filter(l => l.stepping && !l.controlled).length;
+  if (moving >= maxMoving || rig.stepDelay > 0) return;
   const candidates = rig.legs.map((leg, i) => {
     const rest = localPoint(b, leg.rest.x + clamp(b.vx * .07, -18, 18), leg.rest.y);
     const root = localPoint(b, leg.side * 4 * rig.scale, (leg.pair - 1.5) * 5 * rig.scale);
@@ -90,10 +99,10 @@ export function updateRig(rig, dt, now, findContact, { running = true, reduced =
     const error = distance(rest, leg.toe);
     const priority = reach > .92 ? 100 + reach : error / rig.scale;
     return { leg, i, rest, error, reach, priority };
-  }).filter(c => !c.leg.stepping && now - c.leg.plantedAt > .09 / pace && (c.error > 24 * rig.scale || c.reach > .92));
+  }).filter(c => !c.leg.controlled && !c.leg.stepping && now - c.leg.plantedAt > .09 / pace && (c.error > 24 * rig.scale || c.reach > .92));
   if (!candidates.length) { rig.stepDelay=0; return; }
   candidates.sort((a, b) => b.priority - a.priority || ((order.indexOf(a.i) - rig.sequence + 8) % 8) - ((order.indexOf(b.i) - rig.sequence + 8) % 8));
-  while(candidates.length && moving<3 && rig.stepDelay<=0) {
+  while(candidates.length && moving<maxMoving && rig.stepDelay<=0) {
     const chosen=candidates.shift(),leg=chosen.leg;
     leg.from=copy(leg.toe);leg.to=copy(findContact(chosen.rest,leg));
     if(distance(leg.to,leg.toe)<7*rig.scale) continue;
@@ -104,7 +113,7 @@ export function updateRig(rig, dt, now, findContact, { running = true, reduced =
   }
 }
 
-export function legPose(rig, leg) {
+export function legPose(rig, leg, {ignoreGuidance=false}={}) {
   const root = localPoint(rig.body, leg.side * 4 * rig.scale, (leg.pair - 1.5) * 5 * rig.scale);
   // A small amount of extension matches the elastic, angular digital rig.
   const stretch = Math.max(1, distance(root, leg.toe) / ((leg.upper + leg.lower) * .985));
@@ -116,5 +125,7 @@ export function legPose(rig, leg) {
     upper = (total - reach * .95) / 2;
     lower = (total + reach * .95) / 2;
   }
-  return { root, ...solveLeg(root, leg.toe, upper, lower, leg.bend) };
+  const pose=solveLeg(root,leg.toe,upper,lower,leg.gestureBend??leg.bend);
+  if(leg.guidedKnee && !ignoreGuidance) pose.knee=leg.guidedKnee;
+  return { root, ...pose };
 }
