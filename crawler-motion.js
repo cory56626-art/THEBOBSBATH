@@ -59,7 +59,7 @@ export function updateRig(rig, dt, now, findContact, { running = true, reduced =
   }
   // Small stable integration steps keep frame rate changes from changing gait.
   const elapsed = Math.min(dt, .12);
-  const count = Math.max(1, Math.ceil(elapsed / .008));
+  const count = Math.max(1, Math.ceil(elapsed * pace / .008));
   const h = elapsed / count;
   const stiffness = 180 * pace * pace, damping = 24 * pace;
   for (let k = 0; k < count; k++) {
@@ -69,7 +69,7 @@ export function updateRig(rig, dt, now, findContact, { running = true, reduced =
   }
   const tilt = clamp(b.vx / (650 * pace), -.32, .32);
   b.angle += (tilt - b.angle) * (1 - Math.exp(-dt * 13));
-  rig.stepDelay = Math.max(0, rig.stepDelay - dt);
+  rig.stepDelay = Math.max(-dt, rig.stepDelay - dt);
 
   for (const leg of rig.legs) {
     if (!leg.stepping) continue;
@@ -90,17 +90,18 @@ export function updateRig(rig, dt, now, findContact, { running = true, reduced =
     const error = distance(rest, leg.toe);
     const priority = reach > .92 ? 100 + reach : error / rig.scale;
     return { leg, i, rest, error, reach, priority };
-  }).filter(c => !c.leg.stepping && now - c.leg.plantedAt > .09 && (c.error > 24 * rig.scale || c.reach > .92));
-  if (!candidates.length) return;
+  }).filter(c => !c.leg.stepping && now - c.leg.plantedAt > .09 / pace && (c.error > 24 * rig.scale || c.reach > .92));
+  if (!candidates.length) { rig.stepDelay=0; return; }
   candidates.sort((a, b) => b.priority - a.priority || ((order.indexOf(a.i) - rig.sequence + 8) % 8) - ((order.indexOf(b.i) - rig.sequence + 8) % 8));
-  const chosen = candidates[0], leg = chosen.leg;
-  leg.from = copy(leg.toe);
-  leg.to = copy(findContact(chosen.rest, leg));
-  if (distance(leg.to, leg.toe) < 7 * rig.scale) return;
-  leg.lift = 0; leg.stepping = true;
-  leg.duration = clamp(.14 / pace + distance(leg.from, leg.to) * .0004, .095, .23);
-  leg.steps++; rig.steps++; rig.sequence = (order.indexOf(chosen.i) + 1) % 8;
-  rig.stepDelay = .045 / pace;
+  while(candidates.length && moving<3 && rig.stepDelay<=0) {
+    const chosen=candidates.shift(),leg=chosen.leg;
+    leg.from=copy(leg.toe);leg.to=copy(findContact(chosen.rest,leg));
+    if(distance(leg.to,leg.toe)<7*rig.scale) continue;
+    leg.lift=0;leg.stepping=true;
+    leg.duration=clamp(.14+distance(leg.from,leg.to)*.0004,.095,.23)/pace;
+    leg.steps++;rig.steps++;rig.sequence=(order.indexOf(chosen.i)+1)%8;moving++;
+    rig.stepDelay+=.045/pace;
+  }
 }
 
 export function legPose(rig, leg) {

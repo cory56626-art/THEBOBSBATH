@@ -19,7 +19,7 @@ The source credit visible in the recording is **everything.bends**. Its caption 
 
 ## Limits of the reconstruction
 
-Skipping words is visible, but it does not establish that the original understands semantic context. This implementation uses a local English stop-word and salience heuristic, keeps nearby content words as phrases, and prioritizes recognized positive/negative terms. It is not an AI model or a reconstruction of the creator's unknown classifier. The LOVE/HATE counters report recognized terms actually visited by this implementation.
+Skipping words is visible, but it does not establish that the original understands semantic context. The current implementation ranks document topics and nearby phrases using local English token filtering, term co-occurrence, repeated concepts, and sentence coverage. Positive and negative vocabulary receives no ranking bonus. Cyan labels give neutral ideas equal visibility; pink/purple still mark recognized tone. It is not an AI model or a reconstruction of the creator's unknown classifier. The LOVE/HATE counters report recognized terms actually visited by this implementation.
 
 The reference is a brief, compressed recording. Exact hidden leg parameters, complete target timing, unrecorded behavior, and the original synth patch cannot be recovered from it. No original source code, footage, or sound is bundled with the site.
 
@@ -32,3 +32,9 @@ The reference is a brief, compressed recording. Exact hidden leg parameters, com
 ## Verification
 
 Automated checks verify bone lengths across quadrants, finite unreachable poses, eight legs, fixed document contacts during scroll, planted-foot invariance during a moving stride, a maximum of three lifted feet, an exact pause, ordered sparse targets, phrase boundaries, and the existing speech/text checks. Browser checks exercise both crawling styles, phrase highlights, completion, pause/resume, scrolling, and the narrow layout. These checks establish the implemented behavior; visual similarity is judged against the supplied frames, not by the number of tests.
+
+## Version 3 additions
+
+The speed control now reaches 5× (950 words/minute in every-word mode), with quick presets. The body integration, stance cooldowns, foot-swing duration, scheduling, target dwell, and auto-scroll all scale with pace. Device speech engines may enforce their own limits.
+
+Every completed run displays a summary and key ideas. The summary uses representative sentences from the full input, so the animation’s skipped function words are still available to establish meaning. Summary tests include neutral technical text, factual quantities, an explicit approval condition, a stated limit on a robot’s role, abbreviations, empty input, and markup-like text.

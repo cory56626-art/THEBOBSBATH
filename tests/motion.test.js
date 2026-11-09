@@ -82,16 +82,31 @@ test('body motion takes the same time at 15, 30, and 120 frames per second', () 
   assert.ok(dist(poses[0],poses[2])<.02);
 });
 
-test('the default hunt skips connecting words while retaining strong terms and phrases', () => {
+test('the default hunt keeps topic phrases without requiring emotional words', () => {
   const words=tokenize('The web crawler follows visual representation. I love this beautiful idea, but I hate the terrible noise.');
   const targets=huntTargets(words);
   const text=targets.map(t=>words.slice(t.index,t.end+1).map(w=>w.text).join(' '));
   assert.ok(text.includes('web crawler'));
   assert.ok(text.includes('visual representation.'));
-  for (const term of ['love','beautiful','hate','terrible']) assert.ok(text.includes(term));
+  assert.ok(targets.some(t=>t.signal==='neutral'));
   assert.ok(targets.length<words.length/2);
   for (let i=1;i<targets.length;i++) assert.ok(targets[i].index>targets[i-1].end);
   assert.ok(!text.includes('The'));assert.ok(!text.includes('I'));assert.ok(!text.includes('the'));
+});
+
+test('5× accelerates the body and leg swing instead of hiding a lower speed cap', () => {
+  function settle(pace) {
+    const rig=createRig(100,100,1);rig.goal={x:210,y:125};
+    for(let i=0;i<2000;i++) {
+      updateRig(rig,1/1200,i/1200,p=>p,{pace});
+      if(dist(rig.body,rig.goal)<1 && Math.hypot(rig.body.vx,rig.body.vy)<15*pace) return {time:i/1200,rig};
+    }
+    assert.fail('Body did not settle');
+  }
+  const normal=settle(1),fast=settle(5);
+  assert.ok(normal.time/fast.time>4.7 && normal.time/fast.time<5.3);
+  assert.ok(fast.rig.legs.some(l=>l.duration<.05));
+  assert.ok(fast.rig.legs.filter(l=>l.stepping).length<=3);
 });
 
 test('phrase targets respect paragraph breaks and empty/function-word inputs do not stall', () => {

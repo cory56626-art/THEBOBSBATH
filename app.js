@@ -1,5 +1,6 @@
-import { LIMIT, SAMPLES, tokenize, speechChunk, wordAtBoundary, wordDuration, huntTargets } from './reader-core.js?v=2';
-import { clamp, createRig, updateRig, translateBodyForScroll, legPose } from './crawler-motion.js?v=2';
+import { LIMIT, SAMPLES, tokenize, speechChunk, wordAtBoundary, wordDuration } from './reader-core.js?v=3';
+import { clamp, createRig, updateRig, translateBodyForScroll, legPose } from './crawler-motion.js?v=3';
+import { analyzeDocument, summarizeDocument } from './text-analysis.js?v=3';
 
 const $ = id => document.getElementById(id);
 const input = $('text-input');
@@ -35,6 +36,10 @@ let rig = null;
 let rigLastScroll = 0;
 let simulationTime = 0;
 let scanPlan = [];
+let textModel = null;
+let targetEnds = new Map();
+let foundTargets = new Set();
+let summaryText = '';
 let huntIndex = -1;
 let pendingHunt = null;
 let huntHoldUntil = 0;
@@ -47,7 +52,7 @@ let voices = [];
 let fieldBounds = { left: 0, right: 500, center: 250 };
 
 input.value = typeof saved.text === 'string' ? saved.text.slice(0, LIMIT) : SAMPLES[0];
-$('speed').value = Number.isFinite(Number(saved.speed)) && Number(saved.speed) >= 70 && Number(saved.speed) <= 390 ? String(saved.speed) : '190';
+$('speed').value = Number.isFinite(Number(saved.speed)) && Number(saved.speed) >= 70 && Number(saved.speed) <= 950 ? String(saved.speed) : '190';
 $('voice').checked = canSpeak && saved.voice === true;
 $('reading-mode').value = saved.mode === 'all' ? 'all' : 'hunt';
 const hunting = () => $('reading-mode').value === 'hunt';
@@ -61,8 +66,10 @@ function save() {
 function announce(message) { $('announcement').textContent = message; }
 function status(label) { $('state-label').textContent = label; }
 function speed() { return Number($('speed').value); }
+function pace() { return speed() / 190; }
 function updateSpeedLabel() {
-  $('speed-label').value = hunting() ? `${(speed() / 190).toFixed(1)}×` : `${speed()} WPM`;
+  $('speed-label').value = `${pace().toFixed(1)}×`;
+  for (const button of document.querySelectorAll('[data-speed]')) button.setAttribute('aria-pressed', String(Number(button.dataset.speed) === speed()));
   document.querySelector('.mode-field p').textContent = hunting() ? 'Follows standout words and phrases.' : 'Follows every word, in order.';
 }
 function formatCount(n) { return String(n).padStart(3, '0'); }
@@ -90,7 +97,16 @@ function renderText(text) {
   stopSpeech();
   const bounded = text.slice(0, LIMIT);
   words = tokenize(bounded);
-  scanPlan = huntTargets(words);
+  textModel = analyzeDocument(words, bounded);
+  scanPlan = textModel.targets;
+  targetEnds = new Map(scanPlan.map((t,i)=>[t.end,i]));
+  foundTargets = new Set();
+  summaryText = '';
+  $('read-summary').hidden = true;
+  $('summary-text').textContent = '';
+  $('summary-topics').replaceChildren();
+  $('summary-copy').textContent = 'Copy summary';
+  const keyIndices = new Set(scanPlan.flatMap(t=>Array.from({length:t.end-t.index+1},(_,i)=>t.index+i)));
   huntIndex = -1; pendingHunt = null; huntHoldUntil = 0;
   seen = new Set(); annotations = []; activeSpans = [];
   simulationTime = 0;
@@ -108,7 +124,7 @@ function renderText(text) {
     }
     block.append(document.createTextNode(gap));
     const span = document.createElement('span');
-    span.className = `token ${word.signal}`;
+    span.className = `token ${word.signal}${keyIndices.has(spans.length) ? ' key' : ''}`;
     span.textContent = word.text;
     span.dataset.word = String(spans.length);
     block.append(span);
@@ -122,9 +138,11 @@ function renderText(text) {
   positives = negatives = 0;
   viewport.scrollTop = 0;
   scrollTarget = null;
-  rig = null; rigLastScroll = 0;
+  rig = null; rigLastScroll = 0; wordRects = [];
   $('love-count').textContent = $('hate-count').textContent = '000';
   $('love-word').textContent = $('hate-word').textContent = '—';
+  $('topic-word').textContent = 'WAITING FOR IDEAS';
+  $('topic-count').textContent = `0 / ${scanPlan.length}`;
   $('reader-empty').hidden = words.length > 0;
   $('current-word').textContent = words.length ? 'AWAITING INPUT' : 'WAITING FOR WORDS';
   $('read-count').textContent = hunting() ? `TARGET 000 / ${formatCount(scanPlan.length)}` : `000 / ${formatCount(words.length)} WORDS`;
@@ -187,15 +205,25 @@ function visit(index, end = index) {
     spans[i].classList.add('read');
     if (words[i].signal === 'positive') { positives++; $('love-word').textContent = words[i].text.toLocaleUpperCase(); }
     if (words[i].signal === 'negative') { negatives++; $('hate-word').textContent = words[i].text.toLocaleUpperCase(); }
+    const targetId = targetEnds.get(i);
+    if (targetId !== undefined && !foundTargets.has(targetId)) {
+      const t = scanPlan[targetId];
+      if (Array.from({length:t.end-t.index+1},(_,j)=>t.index+j).every(j=>seen.has(j))) {
+        foundTargets.add(targetId);
+        $('topic-word').textContent = words.slice(t.index,t.end+1).map(w=>w.text).join(' ').toLocaleUpperCase();
+      }
+    }
   }
   visited = Math.max(visited, end);
   for (let i = index; i <= end; i++) { spans[i].classList.add('active'); activeSpans.push(spans[i]); }
   if (hunting() || words[index].signal !== 'neutral') {
-    if (!annotations.some(a => a.index === index && a.end === end && simulationTime - a.born < .8)) annotations.push({ index, end, signal: words[index].signal, born: simulationTime });
-    annotations = annotations.slice(-7);
+    const signal = hunting() ? scanPlan[huntIndex]?.signal || 'neutral' : words[index].signal;
+    if (!annotations.some(a => a.index === index && a.end === end && simulationTime - a.born < .8)) annotations.push({ index, end, signal, born: simulationTime });
+    annotations = annotations.slice(-10);
   }
   $('love-count').textContent = formatCount(positives);
   $('hate-count').textContent = formatCount(negatives);
+  $('topic-count').textContent = `${foundTargets.size} / ${scanPlan.length}`;
   $('read-count').textContent = hunting() ? `TARGET ${formatCount(huntIndex + 1)} / ${formatCount(scanPlan.length)}` : `${formatCount(index + 1)} / ${formatCount(words.length)} WORDS`;
   $('current-word').textContent = words.slice(index, end + 1).map(w => w.text).join(' ').toLocaleUpperCase();
   const pct = Math.round(hunting() ? (huntIndex + 1) / scanPlan.length * 100 : (index + 1) / words.length * 100);
@@ -209,8 +237,29 @@ function finish() {
   setPhase('finished');
   pendingHunt = null;
   scrollTarget = null;
-  announce(hunting() ? `Hunt complete. Found ${scanPlan.length} word and phrase targets.` : `Finished reading ${words.length} words.`);
+  showSummary();
+  announce((hunting() ? `Hunt complete. Found ${scanPlan.length} word and phrase targets.` : `Finished reading ${words.length} words.`) + ' Summary ready.');
 }
+
+function showSummary() {
+  const result = summarizeDocument(textModel);
+  summaryText = result.text;
+  $('summary-text').textContent = summaryText;
+  $('summary-meta').textContent = `${words.length} words in the text · ${foundTargets.size} key ideas followed`;
+  const fragment = document.createDocumentFragment();
+  for (const topic of result.topics) {
+    const chip = document.createElement('span'); chip.textContent = topic.text; fragment.append(chip);
+  }
+  $('summary-topics').replaceChildren(fragment);
+  $('summary-topics-label').hidden = !result.topics.length;
+  $('read-summary').hidden = false;
+  if (!document.body.classList.contains('focus-mode')) requestAnimationFrame(()=>$('read-summary').scrollIntoView({behavior:reducedMotion.matches?'instant':'smooth',block:'nearest'}));
+}
+
+$('summary-copy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(summaryText); $('summary-copy').textContent = 'Copied'; }
+  catch { $('summary-copy').textContent = 'Select the text to copy'; }
+});
 
 function speechFailed(message) {
   stopSpeech();
@@ -275,7 +324,7 @@ function speakTarget(target) {
   utterance = u;
   const selected = voices.find(v => v.name === $('voice-select').value);
   if (selected) { u.voice = selected; u.lang = selected.lang; }
-  u.rate = clamp(speed() / 190, .7, 1.6);
+  u.rate = clamp(pace(), .35, 5);
   const run = { kind: 'hunt', begun: performance.now(), started: false, duration: 10000 + text.length * 100 / u.rate };
   voiceRun = run;
   u.onstart = () => { if (ticket === generation) run.started = true; };
@@ -334,6 +383,7 @@ $('start').addEventListener('click', () => begin(phase === 'paused' && !dirty));
 $('pause').addEventListener('click', pause);
 $('restart').addEventListener('click', () => begin(false));
 input.addEventListener('input', () => {
+  $('read-summary').hidden = true;
   if (phase === 'running') { stopSpeech(); setPhase('paused'); }
   dirty = true;
   $('input-count').textContent = `${tokenize(input.value).length} WORDS`;
@@ -358,6 +408,13 @@ $('speed').addEventListener('input', () => {
   nextAt = performance.now() + wordDuration(words[cursor]?.text || '', speed());
 });
 $('speed').addEventListener('change', () => {
+  save();
+  if (phase === 'running' && $('voice').checked) { stopSpeech(); speakCurrent(); }
+});
+for (const button of document.querySelectorAll('[data-speed]')) button.addEventListener('click', () => {
+  $('speed').value = button.dataset.speed;
+  updateSpeedLabel();
+  nextAt = performance.now() + wordDuration(words[cursor]?.text || '', speed());
   save();
   if (phase === 'running' && $('voice').checked) { stopSpeech(); speakCurrent(); }
 });
@@ -422,7 +479,8 @@ doc.addEventListener('click', e => {
   stopSpeech();
   // Rebuild the tally on backward seeks instead of counting the same word twice.
   spans.forEach(s => s.classList.remove('read', 'active'));
-  cursor = visited = -1; positives = negatives = 0; seen.clear(); activeSpans = []; annotations = []; rig = null;
+  cursor = visited = -1; positives = negatives = 0; seen.clear(); foundTargets.clear(); activeSpans = []; annotations = []; rig = null;
+  $('read-summary').hidden = true;
   $('love-word').textContent = $('hate-word').textContent = '—';
   if (hunting()) {
     huntIndex = scanPlan.findIndex(t => t.end >= index);
@@ -430,7 +488,7 @@ doc.addEventListener('click', e => {
     pendingHunt = null;
     const t = scanPlan[huntIndex];
     visit(t.index, t.end);
-    huntHoldUntil = simulationTime + .55;
+    huntHoldUntil = simulationTime + .55 / pace();
   } else visit(index);
   if (wasRunning) {
     nextAt = performance.now() + wordDuration(words[index].text, speed());
@@ -465,7 +523,7 @@ function findContact(ideal, leg) {
     const p = { x: r.x + r.w * (leg.side < 0 ? .18 : .82), y: r.y + r.h + 1 };
     if (p.x < 9 || p.x > width - 9) continue;
     let cost = (p.x - ideal.x) ** 2 + (p.y - ideal.y) ** 2;
-    if (rig?.legs.some(other => other !== leg && Math.hypot(other.toe.x - p.x, other.toe.y - p.y) < 10)) cost += 1600;
+    if (rig?.legs.some(other => { const foot=other.stepping?other.to:other.toe;return other!==leg && Math.hypot(foot.x-p.x,foot.y-p.y)<10; })) cost += 1600;
     if (cost < best) { best = cost; chosen = p; }
   }
   return chosen;
@@ -485,20 +543,20 @@ function phraseBoxes(index, end) {
 
 function drawTargets() {
   annotations = annotations.filter(a => simulationTime - a.born < 11);
-  const colored = annotations.filter(a => a.signal !== 'neutral').slice(-4);
+  const labeled = annotations.slice(-5);
   for (const a of annotations) {
     const boxes = phraseBoxes(a.index, a.end);
-    const color = a.signal === 'positive' ? '#f000c8' : a.signal === 'negative' ? '#5b00ff' : '#28232c';
+    const color = a.signal === 'positive' ? '#f000c8' : a.signal === 'negative' ? '#5b00ff' : '#007e9e';
     const alpha = clamp((11 - simulationTime + a.born) / 1.5, 0, 1);
     ctx.save();ctx.globalAlpha = alpha;
     for (const box of boxes) {
       const y = box.y - viewport.scrollTop;
       if (y < -200 || y > height + 200) continue;
       ctx.beginPath();ctx.ellipse((box.x + box.right) / 2, y + box.h / 2 + 1, (box.right - box.x) / 2 + 6, box.h / 2 + 5, -.06, 0, Math.PI * 2);
-      ctx.strokeStyle = a.signal === 'neutral' ? '#302b315c' : color;ctx.lineWidth = .8;ctx.stroke();
+      ctx.strokeStyle = color;ctx.lineWidth = .8;ctx.stroke();
       ctx.beginPath();ctx.moveTo(box.x, y + box.h + 3);ctx.lineTo(box.right, y + box.h + 3);ctx.strokeStyle = `${color}88`;ctx.lineWidth = .45;ctx.stroke();
     }
-    if (colored.includes(a) && boxes.length) {
+    if (labeled.includes(a) && boxes.length) {
       const b = boxes[0], x = (b.x + b.right) / 2, y = b.y - viewport.scrollTop;
       const text = words.slice(a.index, a.end + 1).map(w => w.text.replace(/[^\p{L}\p{N}'’-]/gu, '')).join(' ').toLocaleUpperCase().slice(0, 23);
       const font = width < 420 ? 13 : 16;
@@ -538,7 +596,7 @@ function draw(now, dt) {
   translateBodyForScroll(rig, viewport.scrollTop - rigLastScroll);
   rigLastScroll = viewport.scrollTop;
   rig.goal = goal;
-  updateRig(rig, dt, simulationTime, findContact, { running: phase === 'running', reduced: reducedMotion.matches, pace: clamp(speed() / 190, .5, 1.8) });
+  updateRig(rig, dt, simulationTime, findContact, { running: phase === 'running', reduced: reducedMotion.matches, pace: clamp(pace(), .35, 5) });
   drawTargets();
   const s = rig.scale, poses = rig.legs.map(leg => legPose(rig, leg));
   // Sparse, fine triangulation stays behind the eight heavier articulated legs.
@@ -576,12 +634,12 @@ function frame(now) {
     if (hunting()) {
       if (pendingHunt) {
         const atGoal = rig && Math.hypot(rig.body.x - rig.goal.x, rig.body.y - rig.goal.y) < 9 && (scrollTarget === null || Math.abs(viewport.scrollTop - scrollTarget) < 9);
-        if (atGoal || simulationTime - pendingHunt.begun > 1.7 / Math.max(.6, speed() / 190)) {
+        if (atGoal || simulationTime - pendingHunt.begun > 1.7 / pace()) {
           const target = pendingHunt.target;
           visit(target.index, target.end);
           pendingHunt = null;
           const letters = words.slice(target.index, target.end + 1).map(w => w.text).join(' ').length;
-          huntHoldUntil = simulationTime + clamp(.3 + letters * .019, .4, .85) / (speed() / 190);
+          huntHoldUntil = simulationTime + clamp(.3 + letters * .019, .4, .85) / pace();
           if ($('voice').checked) speakTarget(target);
         }
       } else if (simulationTime >= huntHoldUntil && !voiceRun) nextHunt();
@@ -594,7 +652,7 @@ function frame(now) {
   }
   if (scrollTarget !== null && phase === 'running') {
     const diff = scrollTarget - viewport.scrollTop;
-    viewport.scrollTop = reducedMotion.matches ? scrollTarget : viewport.scrollTop + diff * (1 - Math.exp(-dt * 8));
+    viewport.scrollTop = reducedMotion.matches ? scrollTarget : viewport.scrollTop + diff * (1 - Math.exp(-dt * 8 * pace()));
     if (Math.abs(diff) < 2) { viewport.scrollTop = scrollTarget; scrollTarget = null; }
   }
   draw(now, dt);

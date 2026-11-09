@@ -7,8 +7,8 @@
   <meta name="description" content="Feed a little digital crawler your words. An interactive text reader inspired by everything.bends, with animated legs, word tracking, and optional speech.">
   <title>Web Crawler — Bobs Bath</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23eeeae3'/%3E%3Cg stroke='%231d1d1b' stroke-width='3' fill='none'%3E%3Cpath d='m28 27-15-15-6 20m22-1L10 41l-3 13m29-27 15-15 6 20M35 31l19 10 3 13M28 36l-9 13M36 36l9 13'/%3E%3C/g%3E%3Cpath d='M26 20h12v24H26z' fill='%231d1d1b'/%3E%3Ccircle cx='32' cy='25' r='3' fill='%23ef12b7'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./style.css?v=2">
-  <script type="module" src="./app.js?v=2"></script>
+  <link rel="stylesheet" href="./style.css?v=3">
+  <script type="module" src="./app.js?v=3"></script>
 </head>
 <body>
 <div class="page-shell">
@@ -33,9 +33,16 @@
         </div><canvas id="creature" aria-hidden="true"></canvas>
           <div class="reader-empty" id="reader-empty" hidden>Give it a few words.<br><span>It is waiting.</span></div>
         </div>
+        <div class="topic-strip"><span>KEY IDEA</span><strong id="topic-word">WAITING FOR IDEAS</strong><span id="topic-count">0 / 0</span></div>
         <div class="scan-strip"><div class="signal love"><span>LOVE</span><strong id="love-count">000</strong><span id="love-word">—</span></div><div class="signal hate"><span>HATE</span><strong id="hate-count">000</strong><span id="hate-word">—</span></div></div>
         <div class="reader-bottom"><span id="read-count">000 / 000 WORDS</span><span class="current-word" id="current-word">AWAITING INPUT</span><button class="text-button" id="pause" disabled>Pause <span aria-hidden="true">Ⅱ</span></button></div>
         <div class="progress-track" role="progressbar" aria-label="Reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progress"></div></div>
+        <section class="summary-panel" id="read-summary" hidden aria-labelledby="summary-title">
+          <div class="summary-heading"><div><span class="eyebrow">AFTER THE CRAWL</span><h2 id="summary-title">What it was saying.</h2></div><button id="summary-copy" class="text-button">Copy summary</button></div>
+          <p class="summary-copy" id="summary-text"></p>
+          <span class="summary-topic-label" id="summary-topics-label">KEY IDEAS</span><div class="summary-topics" id="summary-topics"></div>
+          <div class="summary-foot"><span id="summary-meta"></span><span>Condensed from your full text.</span></div>
+        </section>
       </section>
 
       <aside class="controls" aria-label="Text and reading controls">
@@ -48,14 +55,15 @@
 
         <div class="settings">
           <div class="mode-field"><label for="reading-mode">CRAWLING STYLE</label><select id="reading-mode"><option value="hunt" selected>Hunt words &amp; phrases</option><option value="all">Read every word</option></select><p>Follows standout words and phrases.</p></div>
-          <div class="setting-top"><label for="speed">CRAWLING SPEED</label><output id="speed-label" for="speed">190 WPM</output></div>
-          <input type="range" id="speed" min="70" max="390" step="10" value="190">
+          <div class="setting-top"><label for="speed">CRAWLING SPEED</label><output id="speed-label" for="speed">1.0×</output></div>
+          <input type="range" id="speed" min="70" max="950" step="10" value="190">
+          <div class="speed-presets" role="group" aria-label="Speed presets"><button type="button" data-speed="190" aria-pressed="true">1×</button><button type="button" data-speed="380" aria-pressed="false">2×</button><button type="button" data-speed="570" aria-pressed="false">3×</button><button type="button" data-speed="950" aria-pressed="false">5×</button></div>
           <div class="range-labels"><span>Taking its time</span><span>Hungry</span></div>
           <label class="toggle-row" for="voice"><span><strong>Read aloud</strong><small>Give your words a voice.</small></span><input id="voice" type="checkbox"><span class="toggle" aria-hidden="true"></span></label>
           <div class="voice-field"><label for="voice-select" class="sr-only">Reading voice</label><select id="voice-select"><option value="">Device default voice</option></select></div>
           <p class="voice-note" id="voice-note" role="status">Uses the voices available on your device.</p>
         </div>
-        <div class="field-note"><span class="note-index">FIELD NOTE_</span><p>Pink for love. Purple for hate.<br>Everything else is just a word<br>waiting to be found.</p><span class="note-fine">Simple keyword signals, a curious little creature.</span></div>
+        <div class="field-note"><span class="note-index">FIELD NOTE_</span><p>Names. Actions. Ideas.<br>Follow the thread, then<br>read the takeaway.</p><span class="note-fine">Cyan marks key ideas. Pink and purple mark tone.</span></div>
       </aside>
     </div>
     <div class="workspace-caption"><span><span class="caption-dot"></span> NO ACCOUNT. NO API KEY.</span><span id="motion-note">Eight feet. Words worth chasing.</span></div>
