@@ -1,4 +1,4 @@
-import { clamp, legPose } from './crawler-motion.js?v=4';
+import { clamp, legPose } from './crawler-motion.js?v=5';
 
 const copy = p => ({ x:p.x, y:p.y });
 const mix = (a,b,u) => ({x:a.x+(b.x-a.x)*u,y:a.y+(b.y-a.y)*u});

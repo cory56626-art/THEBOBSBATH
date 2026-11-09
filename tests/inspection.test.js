@@ -76,15 +76,19 @@ test('the six supporting legs keep at least four planted while the hands mark',(
   }
 });
 
-test('the complete reach, circle, underline and hold run five times faster at 5×',()=>{
+test('the complete reach, circle, underline and hold scale through 100×',()=>{
   function duration(pace) {
     const {rig,state}=setup();let elapsed=0;
-    while(!state.frame.complete) {advanceInspection(rig,state,1/1000,{pace});elapsed+=1/1000;}
+    const dt=pace>5?1/100000:1/1000;
+    while(!state.frame.complete) {advanceInspection(rig,state,dt,{pace});elapsed+=dt;}
     return {elapsed,state};
   }
-  const normal=duration(1),fast=duration(5);
-  assert.ok(normal.elapsed/fast.elapsed>4.95 && normal.elapsed/fast.elapsed<5.05);
-  assert.ok(dist(normal.state.frame.tip,fast.state.frame.tip)<1e-7);
+  const normal=duration(1);
+  for(const pace of [5,10,25,50,100]) {
+    const fast=duration(pace);
+    assert.ok(Math.abs(normal.elapsed/fast.elapsed/pace-1)<.01);
+    assert.ok(dist(normal.state.frame.tip,fast.state.frame.tip)<1e-7);
+  }
 });
 
 test('wrapped phrases get separate loops and a lifted pen between rows',()=>{

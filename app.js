@@ -1,7 +1,7 @@
-import { LIMIT, SAMPLES, tokenize, speechChunk, wordAtBoundary, wordDuration } from './reader-core.js?v=4';
-import { clamp, createRig, updateRig, translateBodyForScroll, legPose } from './crawler-motion.js?v=4';
-import { analyzeDocument, summarizeDocument } from './text-analysis.js?v=4';
-import { createInspection, advanceInspection, releaseInspection, retargetInspection } from './crawler-inspection.js?v=4';
+import { LIMIT, SAMPLES, BASE_WPM, MAX_PACE, MAX_WPM, tokenize, speechChunk, wordAtBoundary, wordDuration, advanceWordClock } from './reader-core.js?v=5';
+import { clamp, createRig, updateRig, translateBodyForScroll, legPose } from './crawler-motion.js?v=5';
+import { analyzeDocument, summarizeDocument } from './text-analysis.js?v=5';
+import { createInspection, advanceInspection, releaseInspection, retargetInspection } from './crawler-inspection.js?v=5';
 
 const $ = id => document.getElementById(id);
 const input = $('text-input');
@@ -56,7 +56,7 @@ let voices = [];
 let fieldBounds = { left: 0, right: 500, center: 250 };
 
 input.value = typeof saved.text === 'string' ? saved.text.slice(0, LIMIT) : SAMPLES[0];
-$('speed').value = Number.isFinite(Number(saved.speed)) && Number(saved.speed) >= 70 && Number(saved.speed) <= 950 ? String(saved.speed) : '190';
+$('speed').value = Number.isFinite(Number(saved.speed)) && Number(saved.speed) >= 70 && Number(saved.speed) <= MAX_WPM ? String(saved.speed) : String(BASE_WPM);
 $('voice').checked = canSpeak && saved.voice === true;
 $('reading-mode').value = saved.mode === 'all' ? 'all' : 'hunt';
 const hunting = () => $('reading-mode').value === 'hunt';
@@ -70,11 +70,16 @@ function save() {
 function announce(message) { $('announcement').textContent = message; }
 function status(label) { $('state-label').textContent = label; }
 function speed() { return Number($('speed').value); }
-function pace() { return speed() / 190; }
+function pace() { return speed() / BASE_WPM; }
+function voiceEnabled() { return canSpeak && $('voice').checked && pace()<=10; }
+function updateVoiceNote() {
+  $('voice-note').textContent = !canSpeak ? 'This browser has no read-aloud voice. Visual reading still works.' : $('voice').checked && pace()>10 ? 'Audio pauses above 10×. The crawler keeps moving.' : $('voice').checked ? 'Uses the voices available on your device.' : 'Sound off. The crawler will read visually.';
+}
 function updateSpeedLabel() {
   $('speed-label').value = `${pace().toFixed(1)}×`;
   for (const button of document.querySelectorAll('[data-speed]')) button.setAttribute('aria-pressed', String(Number(button.dataset.speed) === speed()));
   document.querySelector('.mode-field p').textContent = hunting() ? 'Follows standout words and phrases.' : 'Follows every word, in order.';
+  updateVoiceNote();
 }
 function formatCount(n) { return String(n).padStart(3, '0'); }
 
@@ -266,7 +271,7 @@ function recordInspection(state) {
   if(hunting()) visit(target.index,target.end);
   annotations.push({index:target.index,end:target.end,signal:target.signal,born:simulationTime,inspection:state});
   annotations=annotations.slice(-10);
-  if(hunting() && $('voice').checked) speakTarget(target);
+  if(hunting() && voiceEnabled()) speakTarget(target);
 }
 
 function showSummary() {
@@ -298,7 +303,7 @@ function speechFailed(message) {
 }
 
 function speakFrom(index) {
-  if (!canSpeak || !$('voice').checked || phase !== 'running') return;
+  if (!voiceEnabled() || phase !== 'running') return;
   const chunk = speechChunk(words, index);
   if (chunk.text.length > 1000) {
     speechFailed('This word is too long for a voice. Continuing with visual reading.');
@@ -309,7 +314,7 @@ function speakFrom(index) {
   utterance = u;
   const selected = voices.find(v => v.name === $('voice-select').value);
   if (selected) { u.voice = selected; u.lang = selected.lang; }
-  u.rate = speed() / 190;
+  u.rate = clamp(pace(), .35, 10);
   const now = performance.now();
   const run = { ...chunk, kind: 'all', nativeBoundary: false, started: false, begun: now, lastEvent: now, duration: chunk.text.length * 95 / u.rate + 10000 };
   voiceRun = run;
@@ -344,7 +349,7 @@ function speakFrom(index) {
 }
 
 function speakTarget(target) {
-  if (!canSpeak || !$('voice').checked || !target || phase !== 'running') return;
+  if (!voiceEnabled() || !target || phase !== 'running') return;
   const text = words.slice(target.index, target.end + 1).map(w => w.text).join(' ');
   if (text.length > 1000) return;
   const ticket = generation;
@@ -352,7 +357,7 @@ function speakTarget(target) {
   utterance = u;
   const selected = voices.find(v => v.name === $('voice-select').value);
   if (selected) { u.voice = selected; u.lang = selected.lang; }
-  u.rate = clamp(pace(), .35, 5);
+  u.rate = clamp(pace(), .35, 10);
   const run = { kind: 'hunt', begun: performance.now(), started: false, duration: 10000 + text.length * 100 / u.rate };
   voiceRun = run;
   u.onstart = () => { if (ticket === generation) run.started = true; };
@@ -434,6 +439,7 @@ $('sample').addEventListener('click', () => {
 $('speed').addEventListener('input', () => {
   updateSpeedLabel();
   nextAt = performance.now() + wordDuration(words[cursor]?.text || '', speed());
+  if(pace()>10 && voiceRun) stopSpeech();
 });
 $('speed').addEventListener('change', () => {
   save();
@@ -449,7 +455,7 @@ for (const button of document.querySelectorAll('[data-speed]')) button.addEventL
 $('reading-mode').addEventListener('change', () => { renderText(input.value); updateSpeedLabel(); save(); });
 $('voice').addEventListener('change', () => {
   $('voice-select').disabled = !$('voice').checked;
-  $('voice-note').textContent = $('voice').checked ? 'Uses the voices available on your device.' : 'Sound off. The crawler will read visually.';
+  updateVoiceNote();
   stopSpeech();
   if (phase === 'running') {
     nextAt = performance.now() + wordDuration(words[cursor]?.text || '', speed());
@@ -618,8 +624,7 @@ function taperedSegment(a, b, rootWidth, tipWidth) {
   ctx.lineTo(a.x - nx * rootWidth / 2, a.y - viewport.scrollTop - ny * rootWidth / 2);ctx.closePath();ctx.fill();
 }
 
-function draw(now, dt) {
-  ctx.clearRect(0, 0, width, height);
+function updateCreature(dt) {
   if (!words.length || !width || !height) return;
   const goal = goalForTarget();
   if (!goal) return;
@@ -631,13 +636,19 @@ function draw(now, dt) {
   translateBodyForScroll(rig, viewport.scrollTop - rigLastScroll);
   rigLastScroll = viewport.scrollTop;
   rig.goal = goal;
-  updateRig(rig, dt, simulationTime, findContact, { running: phase === 'running', reduced: reducedMotion.matches, pace: clamp(pace(), .35, 5) });
+  updateRig(rig, dt, simulationTime, findContact, { running: phase === 'running', reduced: reducedMotion.matches, pace: clamp(pace(), .35, MAX_PACE) });
   if(activeInspection) {
     advanceInspection(rig,activeInspection,dt,{running:phase==='running',reduced:reducedMotion.matches,pace:pace()});
     recordInspection(activeInspection);
     const target=activeInspection.target;
-    $('topic-word').textContent=words.slice(target.index,target.end+1).map(w=>w.text).join(' ').toLocaleUpperCase();
+    const label=words.slice(target.index,target.end+1).map(w=>w.text).join(' ').toLocaleUpperCase();
+    if($('topic-word').textContent!==label) $('topic-word').textContent=label;
   }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, width, height);
+  if(!rig || !words.length || !width || !height) return;
   const action=activeInspection?.frame.phase||'walking';
   canvas.dataset.action=action;
   canvas.dataset.traceProgress=String(activeInspection?.frame.progress||0);
@@ -688,9 +699,7 @@ function draw(now, dt) {
   ctx.fillText(`${hunting() ? 'SCAN' : 'WORD'} ${formatCount(hunting() ? Math.max(1,Math.min(scanPlan.length,huntIndex+1)) : Math.max(1,cursor+1))}`, lx + 3 * s, ly + 14 * s);
 }
 
-function frame(now) {
-  const dt = Math.min((now - (lastFrame || now)) / 1000, .12);
-  lastFrame = now;
+function tick(now,dt) {
   if (phase === 'running') {
     simulationTime += dt;
     if (voiceRun && (now - voiceRun.begun > voiceRun.duration || (!voiceRun.started && now - voiceRun.begun > 6000))) speechFailed('The voice did not respond. Continuing with visual reading.');
@@ -708,10 +717,16 @@ function frame(now) {
     } else {
       if(!readingDone) {
         if(voiceRun) {
-          if(!voiceRun.nativeBoundary && now>=nextAt && cursor<voiceRun.end) { visit(cursor+1);nextAt=now+wordDuration(words[cursor].text,speed()); }
-        } else if(now>=nextAt) {
-          if(cursor+1>=words.length) requestFinish();
-          else { visit(cursor+1);nextAt=now+wordDuration(words[cursor].text,speed()); }
+          if(!voiceRun.nativeBoundary) {
+            const clock=advanceWordClock(words,cursor,nextAt,now,speed(),voiceRun.end);
+            if(clock.cursor!==cursor) visit(clock.cursor);
+            nextAt=clock.nextAt;
+          }
+        } else {
+          const clock=advanceWordClock(words,cursor,nextAt,now,speed());
+          if(clock.cursor!==cursor) visit(clock.cursor);
+          nextAt=clock.nextAt;
+          if(clock.complete) requestFinish();
         }
       }
       if(!activeInspection && inspectionQueue.length && startInspection(inspectionQueue[0])) inspectionQueue.shift();
@@ -723,7 +738,17 @@ function frame(now) {
     viewport.scrollTop = reducedMotion.matches ? scrollTarget : viewport.scrollTop + diff * (1 - Math.exp(-dt * 8 * pace()));
     if (Math.abs(diff) < 2) { viewport.scrollTop = scrollTarget; scrollTarget = null; }
   }
-  draw(now, dt);
+  updateCreature(dt);
+}
+
+function frame(now) {
+  const dt=Math.min((now-(lastFrame||now))/1000,.12);
+  lastFrame=now;
+  // Walk through the same gait/gesture states at high speed, then paint once.
+  // This avoids imposing one target (or one word) per display-frame limits.
+  const steps=phase==='running'?Math.max(1,Math.ceil(dt*pace()*60)):1;
+  for(let i=0;i<steps;i++) tick(now-dt*1000+(i+1)*dt*1000/steps,dt/steps);
+  draw();
   requestAnimationFrame(frame);
 }
 

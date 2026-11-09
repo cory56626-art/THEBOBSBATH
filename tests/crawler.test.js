@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { LIMIT, tokenize, wordSignal, speechChunk, wordAtBoundary, wordDuration } from '../reader-core.js';
+import { LIMIT, BASE_WPM, MAX_WPM, tokenize, wordSignal, speechChunk, wordAtBoundary, wordDuration, advanceWordClock } from '../reader-core.js';
 
 test('word tokens preserve original offsets across blank lines, Unicode and punctuation', () => {
   const text = '  Love,\n\n世界 🌱  a<b>  café!';
@@ -54,4 +54,34 @@ test('reading speed scales predictably and punctuation gets breathing room', () 
   assert.equal(wordDuration('hello', 240), 250);
   assert.ok(wordDuration('hello.', 120) > wordDuration('hello,', 120));
   assert.ok(wordDuration('hello,', 120) > wordDuration('hello', 120));
+});
+
+test('100× reading keeps every word and its timing at 30, 60 and 120 screen refreshes per second',()=>{
+  const words=tokenize(Array.from({length:1000},(_,i)=>`word${i}${i%13===0?'.':i%7===0?',':''}`).join(' '));
+  const expected=words.reduce((ms,w)=>ms+wordDuration(w.text,MAX_WPM),0);
+  assert.equal(MAX_WPM/BASE_WPM,100);
+  for(const fps of [30,60,120]) {
+    let clock={cursor:0,nextAt:wordDuration(words[0].text,MAX_WPM),complete:false};
+    let now=0,maxBatch=0;
+    const visited=[0];
+    while(!clock.complete) {
+      now+=1000/fps;
+      const previous=clock.cursor;
+      clock=advanceWordClock(words,clock.cursor,clock.nextAt,now,MAX_WPM);
+      for(let i=previous+1;i<=clock.cursor;i++) visited.push(i);
+      maxBatch=Math.max(maxBatch,clock.cursor-previous);
+      assert.ok(now<expected+100);
+    }
+    assert.deepEqual(visited,words.map((_,i)=>i));
+    assert.ok(maxBatch>1);
+    assert.ok(now>=expected-1e-7 && now-expected<1000/fps+1e-7);
+    assert.ok(Math.abs(clock.nextAt-expected)<1e-7);
+  }
+});
+
+test('a delayed screen refresh catches up without reading beyond the active speech chunk',()=>{
+  const words=tokenize('one two three four five six seven eight nine ten');
+  const clock=advanceWordClock(words,0,wordDuration('one',MAX_WPM),1000,MAX_WPM,4);
+  assert.equal(clock.cursor,4);
+  assert.equal(clock.complete,false);
 });

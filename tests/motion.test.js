@@ -109,6 +109,18 @@ test('5× accelerates the body and leg swing instead of hiding a lower speed cap
   assert.ok(fast.rig.legs.filter(l=>l.stepping).length<=3);
 });
 
+test('100× body motion remains finite and settles within a single 30 Hz refresh',()=>{
+  const rig=createRig(100,100,1);rig.goal={x:210,y:125};
+  updateRig(rig,1/30,1/30,p=>p,{pace:100});
+  assert.ok(dist(rig.body,rig.goal)<.01);
+  assert.ok(Number.isFinite(rig.body.vx) && Number.isFinite(rig.body.vy));
+  assert.ok(rig.legs.some(l=>l.duration<.003));
+  for(const leg of rig.legs) {
+    const pose=legPose(rig,leg);
+    assert.ok(Number.isFinite(pose.knee.x) && Number.isFinite(pose.knee.y));
+  }
+});
+
 test('phrase targets respect paragraph breaks and empty/function-word inputs do not stall', () => {
   const words=tokenize('robot\n\nspider');
   assert.ok(huntTargets(words).every(t=>t.index===t.end));

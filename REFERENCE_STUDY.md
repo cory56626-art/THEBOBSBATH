@@ -46,3 +46,9 @@ The user identified an interaction missing from the reconstruction: the creature
 The forelegs reach before ink appears, lift the pen between strokes and wrapped lines, then return to walking. Marks and callouts remain attached to the text. Pause preserves the partial stroke and joints; speed scales the complete gesture through 5×. The summary waits until pending marks finish in every-word mode. Reflow rebuilds paths around their current word boxes while preserving drawing progress. Reduced motion completes the mark without animated tracing.
 
 Ten additional checks cover contact before drawing, matching pen and ink endpoints, underlining, pause, supporting contacts, 5× gesture timing, wrapped phrases, reflow while running or paused, and reduced motion. These gestures are an implementation of the visible behavior described by the user, not a claim about the original creator’s rig.
+
+## Version 5: speed through 100×
+
+The maximum pace is 100× (19,000 words/minute before punctuation pauses), with additional 10×, 25×, 50×, and 100× presets. A deadline-based word clock consumes every due word instead of limiting reading to one word per screen refresh. The gait, reaching, drawing, target transitions, and scroll following advance in smaller simulation steps; the canvas paints once per screen refresh. High speeds can therefore finish several gestures between visible frames while preserving their paths and accounting for every visited word.
+
+Tests verify 1,000-word timing and complete coverage at 30, 60, and 120 Hz, speech chunk limits after a delayed frame, stable body integration at 100×, and reach/circle/underline timing through 100×. Audio pauses above 10× to preserve visual speed. The [Web Speech API specification](https://webaudio.github.io/web-speech-api/#dom-speechsynthesisutterance-rate) disallows rates above 10 and permits speech engines to constrain the rate further.

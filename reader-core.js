@@ -1,6 +1,9 @@
-import { analyzeDocument, normalizeKey } from './text-analysis.js?v=4';
+import { analyzeDocument, normalizeKey } from './text-analysis.js?v=5';
 
 export const LIMIT = 30000;
+export const BASE_WPM = 190;
+export const MAX_PACE = 100;
+export const MAX_WPM = BASE_WPM * MAX_PACE;
 
 export const SAMPLES = [
   'A city is testing solar panels on public buildings.\n\nThe panels turn sunlight into electricity. Battery storage keeps essential lights on after sunset.\n\nDuring power cuts, the stored energy can supply emergency shelters.\n\nThe trial will measure installation costs, electricity output, and battery life before the city expands the system.',
@@ -55,6 +58,16 @@ export function wordAtBoundary(chunk, charIndex) {
 export function wordDuration(word, wpm) {
   const base = 60000 / wpm;
   return base * (/[.!?。！？]$/.test(word) ? 1.7 : /[,;:，、]$/.test(word) ? 1.3 : 1);
+}
+
+// Consume all words whose time has passed, including multiple words between
+// screen refreshes. Keep the original deadlines so frame timing adds no drift.
+export function advanceWordClock(words, cursor, nextAt, now, wpm, end=words.length-1) {
+  while(cursor<end && now>=nextAt) {
+    cursor++;
+    nextAt+=wordDuration(words[cursor].text,wpm);
+  }
+  return {cursor,nextAt,complete:cursor===words.length-1 && now>=nextAt};
 }
 
 export function cleanWord(text) { return normalizeKey(text); }
