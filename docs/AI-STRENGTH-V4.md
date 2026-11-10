@@ -37,7 +37,7 @@ Selection requires all 24 games finished, no time or illegal-move forfeits, a ca
 
 [Complete match](ai-v4-v3-match.json) · [PGN](ai-v4-v3-match.pgn) · [Selection and replay audit](ai-v4-selection.json). The audit replayed 3,539 moves: 19 checkmates, two stalemates, one insufficient-material draw, one repetition draw, and one fifty-move draw.
 
-Mean decision time was 142.21 ms for v3 and 142.76 ms for v4. Mean tactical work was 7,215 versus 7,380 positions; these counts do not by themselves measure strength.
+Mean decision time was 142.21 ms for v3 and 142.76 ms for v4. Mean tactical work was 7,215 versus 7,380 positions. Mean completed depth was 3.80 versus 4.09, and quiescence accounted for 88.0% versus 84.3% of aggregate positions. The engines encountered different game positions, so these are descriptive match statistics, not a controlled same-position efficiency comparison or independent evidence of strength.
 
 Reproduce the frozen comparison with:
 

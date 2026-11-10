@@ -2,7 +2,7 @@ import { Chess } from 'chess.js';
 import { extractFeatures, predictRisk } from './controller.js';
 import { tacticalSearch } from './tactical-search.js';
 
-export const ENGINE_VERSION = 'intuition-hybrid-4';
+export const ENGINE_VERSION = 'intuition-hybrid-3';
 export const uciOf = move => move.from + move.to + (move.promotion || '');
 const clock = () => performance.now();
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));

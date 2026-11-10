@@ -1,6 +1,8 @@
 # INTUITION — Chess research lab
 
-[Open the experiment on GitHub Pages](https://cory56626-art.github.io/THEBOBSBATH/)
+Chess work is on `ai/rating-benchmark`. The current GitHub Pages root hosts the newer Web Crawler app; chess publication awaits the destination decision.
+
+[Latest search selection and rating report](docs/AI-STRENGTH-V4.md) · [Elo methodology](docs/ELO-METHODOLOGY.md)
 
 A chess engine combining neural move ordering with fast tactical search. The experiment retains **direct neural play**, **always searching**, and **selective searching** as separate decision procedures. The previous game remains in Git history.
 
