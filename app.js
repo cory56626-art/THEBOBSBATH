@@ -2,7 +2,7 @@ import { LIMIT, SAMPLES, BASE_WPM, MAX_PACE, MAX_WPM, tokenize, speechChunk, wor
 import { clamp, createRig, updateRig, translateBodyForScroll, legPose } from './crawler-motion.js?v=6';
 import { analyzeDocument, summarizeDocument } from './text-analysis.js?v=6';
 import { createInspection, advanceInspection, releaseInspection, retargetInspection } from './crawler-inspection.js?v=6';
-import { OMEGA_SAMPLES, graphemes, createTyper, advanceTyper, typerFrame, paintTyper } from './omega-typer.js?v=6';
+import { OMEGA_SAMPLES, graphemes, createTyper, advanceTyper, typerFrame, paintTyper } from './omega-typer.js?v=7';
 
 const $ = id => document.getElementById(id);
 const input = $('text-input');

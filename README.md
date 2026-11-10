@@ -10,6 +10,8 @@ Choose **Web Crawler** or **Omega Typer** above the reader. Both modes share you
 
 Choose **Omega Typer**, enter text, and press **Start typing**. Two wireframe hands with pink finger joints press a compact keyboard while your text appears character by character above them. Each character appears when its finger contacts the corresponding key. Uppercase letters and shifted punctuation use the opposite hand's Shift key; emoji and other composed characters use the Ω key.
 
+The hands use curved, three-joint fingers and outlined 3D palms/cuffs. Each finger keeps its own path between keys, preparing upcoming strikes while other fingers finish. The wrists move and turn toward the next keys, and fingers lift along arcs rather than resetting to a flat home pose for every letter. Soft colored key trails remain after a press. The hands release the last key smoothly before the copy finishes.
+
 This mode types an exact copy of your input, retaining capitalization, punctuation, spaces, tabs, newlines, and Unicode. It does not generate a reply. Pause freezes the hands and text; resume, restart, clear, expand, and **Copy text** are available. Input and mode changes reset the copy. High speeds process all intervening keystrokes, including those between visible frames. Reduced motion leaves the hands still while the text is copied. Read-aloud and the crawler's topic/summary controls apply to Web Crawler mode.
 
 The direct mode link is https://cory56626-art.github.io/THEBOBSBATH/?mode=omega. The new mode is inspired by the second reference clip supplied by the user, with visible credit to **@everything.bends** beside the hands and in the footer.
