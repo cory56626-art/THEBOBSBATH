@@ -1,3 +1,15 @@
+# Latest selected-engine verification
+
+The selected chess engine remains v3, byte-identical to `b1d5002` in `src/` and `model/`, after the frozen v4 candidate failed the predeclared paired selection threshold. V4 regressions load its archived `a7bf070` snapshot rather than altering the active engine.
+
+The selected source passes **111 unit tests**, the production build, and **14 browser tests**, including real-model offline tactical search beyond mate-in-one, poisoned capture rejection, legal move export, board restoration and cancellation. [GitHub Actions for selected source](https://github.com/cory56626-art/THEBOBSBATH/actions/runs/42854232715) also passed. CI pins Ubuntu 24.04 for the locked Playwright version and fetches full Git history for snapshot regression tests.
+
+[Search selection and measurement report](AI-STRENGTH-V4.md) retains the latest comparison, ladder, fingerprints and replay audits. The public Pages root was checked and serves Web Crawler, not chess; the chess branch is verified but publication awaits the destination decision.
+
+The sections below preserve earlier verification history and their original, smaller test counts.
+
+---
+
 # First experiment — verification and pilot
 
 Verified on 2026-10-30. This is a compact pretrained-model experiment, not evidence of Stockfish-level strength.

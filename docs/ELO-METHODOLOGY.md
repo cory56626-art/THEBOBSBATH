@@ -105,3 +105,12 @@ Replay the resulting report with `node scripts/validate-games.mjs
 docs/ai-provisional-elo.json`, and publish the per-setting W/D/L and unfinished counts alongside
 the rating. Never hide a withheld estimate by substituting one calculated
 from the completed subset.
+
+## First completed selected-engine measurement
+
+The selected v3 ladder completed all 32 games: 16 wins, 2 draws, 14 losses.
+The provisional nominal-scale estimate is **1650**, with conservative **95%
+sampling interval 1289–2047**. This interval excludes calibration and transfer
+error; it is not an official human or online rating. [Results, per-setting
+scores and limitations](AI-STRENGTH-V4.md) · [raw report](ai-v3-provisional-elo.json)
+· [PGN](ai-v3-provisional-elo.pgn).

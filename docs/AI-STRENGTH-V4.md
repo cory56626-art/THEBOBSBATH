@@ -50,15 +50,33 @@ node scripts/match-ai.mjs --baseline-revision=b1d5002:src/engine.js \
 
 ## Final-engine rating ladder
 
-**Rating run and result: PENDING.** The full 32-game ladder runs only after engine selection and source freezing. The [Elo methodology](ELO-METHODOLOGY.md) specifies Stockfish 19 nominal `UCI_Elo` settings 1320, 1520, 1720 and 1920, four fixed openings with colors reversed at each setting, 150 ms per move, one CPU thread, Skill 20 with the Elo limiter enabled, no Stockfish node cap, 32,768 AI tactical positions and a 400-played-ply maximum.
+**Rating result: 1650 nominal Stockfish-scale, conservative 95% sampling interval 1289–2047.** The full 32-game ladder ran on the selected immutable v3 source after selection and source freezing. The [Elo methodology](ELO-METHODOLOGY.md) specifies Stockfish 19 nominal `UCI_Elo` settings 1320, 1520, 1720 and 1920, four fixed openings with colors reversed at each setting, 150 ms per move, one CPU thread, Skill 20 with the Elo limiter enabled, no Stockfish node cap, 32,768 AI tactical positions and a 400-played-ply maximum.
 
-Any unfinished game or incomplete ladder withholds the main point estimate and interval. Completed games are never selectively substituted for the missing results. The report will publish per-setting wins, draws, losses and unfinished counts, plus the provisional nominal-scale estimate and conservative paired sampling uncertainty when permitted by the full results.
+Any unfinished game or incomplete ladder withholds the main point estimate and interval. Completed games are never selectively substituted for the missing results. All 32 games completed: **16 wins, 2 draws, 14 losses, 17/32 points**, with no forfeits or truncations. Full-history replay validated **3,109 moves**, 30 checkmates, one repetition draw and one fifty-move draw.
+
+| Stockfish nominal setting | Wins | Draws | Losses | Unfinished | Points |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1320 | 6 | 2 | 0 | 0 | 7 |
+| 1520 | 5 | 0 | 3 | 0 | 5 |
+| 1720 | 2 | 0 | 6 | 0 | 2 |
+| 1920 | 3 | 0 | 5 | 0 | 3 |
+
+The numerical fit is 1650.305, with interval [1288.734, 2047.488]. Report whole ratings rather than implying decimal precision. The 16 color-pair Hoeffding interval is deliberately broad and conditional on the independent-pairs and logistic-score assumptions. The 1920 score exceeding the 1720 score illustrates small-sample noise; no favorable setting is selected in isolation.
+
+[Raw ladder, protocol and fingerprints](ai-v3-provisional-elo.json) · [All 32 PGNs](ai-v3-provisional-elo.pgn).
+
+```sh
+node scripts/rate-ai.mjs --stockfish=/path/to/stockfish19 \
+  --engine-revision=b1d5002:src/engine.js \
+  --output=/tmp/v3-elo.json --pgn=/tmp/v3-elo.pgn
+node scripts/validate-games.mjs /tmp/v3-elo.json
+```
 
 Stockfish's limiter is calibrated at 120s+1s against CCRL 40/4. This 150 ms test measures its nominal scale under different conditions; systematic calibration error is unknown and may exceed the sampling interval. It is not a FIDE, Lichess, Chess.com or official human Elo rating. Beating full-strength Stockfish is a much larger goal than improving v3.
 
 ## Verification
 
-**Final selected-engine verification: PENDING.** Required checks are unit tests, production build, browser tests including real-model offline tactical search, and replay validation of all recorded games. Candidate checks alone do not replace verification of the engine ultimately published.
+**Selected-engine checks passed:** 111 unit tests, production build, and all 14 browser tests, including the real-model offline tactical search, poisoned capture, cancellation and mate proof cases. `src/` and `model/` match v3 byte-for-byte. Candidate-only tests load its frozen Git snapshot. [Remote CI for the selected source passed](https://github.com/cory56626-art/THEBOBSBATH/actions/runs/42854232715). Comparison and ladder full-history replay audits also passed.
 
 ## Recovery and publication provenance
 
