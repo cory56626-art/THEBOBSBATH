@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { ENGINE_VERSION } from '../../src/engine.js';
 import { Chess } from 'chess.js';
 
 const POISONED_PAWN = '4r1k1/8/8/4p3/8/8/4Q3/6K1 w - - 0 1';
@@ -25,11 +26,11 @@ test('real hybrid search expands tactical positions offline and rejects a poison
   await expect(page.locator('#comparison-results tbody tr')).toHaveCount(3);
   await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(false);
   const report = await page.evaluate(() => window.__INTUITION__.latestReport);
-  expect(report.engineVersion).toBe('intuition-hybrid-3');
+  expect(report.engineVersion).toBe(ENGINE_VERSION);
 
   for (const mode of ['search', 'selective']) {
     const decision = report.rows.find(row => row.mode === mode);
-    expect(decision.engineVersion).toBe('intuition-hybrid-3');
+    expect(decision.engineVersion).toBe(ENGINE_VERSION);
     expect(decision.searchKind).toBe('neural-ordered-alpha-beta');
     expect(decision.nodeUnit).toBe('tactical-position');
     expect(decision.inferenceCalls).toBe(1);

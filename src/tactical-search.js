@@ -1,6 +1,7 @@
 /** Independent bounded chess search. chess.js is pinned to 1.4.0; tests guard its
  * reversible low-level move contract so search avoids SAN construction per node. */
 import { evaluatePosition } from './position-evaluation.js';
+import { staticExchange } from './static-exchange.js';
 
 const MATE = 30000, INF = 32000, MASK = (1n << 64n) - 1n;
 const STOP = Symbol('search limit');
@@ -23,14 +24,15 @@ export async function tacticalSearch(chess, options = {}) {
   const maxNodes = Math.max(1, Math.floor(Number(options.maxNodes) || 20000));
   const maxDepth = Math.max(1, Math.min(32, Math.floor(Number(options.maxDepth) || 16)));
   const deadline = started + budgetMs;
-  const counts = new Map(chess._positionCount);
+  let counts = new Map(chess._positionCount);
   let context = 0n;
   for (const [hash, count] of counts) context ^= contribution(hash, count);
-  const tt = new Map(), killers = [], history = new Int32Array(128 * 128 * 2), pv = [];
+  const tt = new Map(), qtt = new Map(), contextStack = [], killers = [], history = new Int32Array(128 * 128 * 2), pv = [];
   const priors = new Map((options.priors || []).map(move => [move.uci, Number(move.probability ?? move.prior) || 0]));
   let nodes = 0, qNodes = 0, completedIterations = 0, rootStats = [], partialRootStats = [];
   const initialHistoryLength = chess._history.length, initialHash = chess._hash;
-  let interrupted = false;
+  let interrupted = false, verifyMate = false;
+  const diagnostics = { qTtHits: 0, reductions: 0, researches: 0, aspirationRetries: 0, mateVerifications: 0, seeCalls: 0, seeProbes: 0, qPruned: 0 };
   const aborted = () => { if (options.signal?.aborted) throw new DOMException('Run cancelled', 'AbortError'); };
   const visit = (quiescent = false) => {
     aborted();
@@ -38,16 +40,33 @@ export async function tacticalSearch(chess, options = {}) {
     nodes++;
     if (quiescent) qNodes++;
   };
+  function exchange(move) {
+    diagnostics.seeCalls++;
+    return staticExchange(chess, move, () => {
+      diagnostics.seeProbes++;
+      aborted();
+      if (nodes >= maxNodes || performance.now() >= deadline) throw STOP;
+    });
+  }
   function make(move) {
+    // A pawn move or capture makes every preceding position unreachable.
+    // Reset both the counts and their TT fingerprint, retaining the old map
+    // for undo; reversible branches must keep their complete draw context.
+    contextStack.push({ counts, context, reset: move.piece === 'p' || !!move.captured });
+    if (move.piece === 'p' || move.captured) { counts = new Map(); context = 0n; }
     chess._makeMove(move);
     const hash = chess._hash, count = counts.get(hash) || 0;
     context ^= contribution(hash, count) ^ contribution(hash, count + 1);
     counts.set(hash, count + 1);
   }
   function undo() {
-    const hash = chess._hash, count = counts.get(hash);
-    context ^= contribution(hash, count) ^ contribution(hash, count - 1);
-    if (count === 1) counts.delete(hash); else counts.set(hash, count - 1);
+    const previous = contextStack.pop();
+    if (!previous.reset) {
+      const hash = chess._hash, count = counts.get(hash);
+      if (count === 1) counts.delete(hash); else counts.set(hash, count - 1);
+    }
+    counts = previous.counts;
+    context = previous.context;
     chess._undoMove();
   }
   function hasLegalMove(pseudo = chess._moves({ legal: false })) {
@@ -65,17 +84,22 @@ export async function tacticalSearch(chess, options = {}) {
     // Checkmate ends the game before draw claims, including a 100th half-move.
     return !inCheck || hasLegalMove();
   }
-  function order(moves, ply, preferred, root = false) {
+  function order(moves, ply, preferred, root = false, useExchange = true) {
     const side = chess._turn === 'w' ? 0 : 1;
     const ranked = moves.map(move => {
       const uci = internalMoveUci(move);
       let score = move.captured ? 100000 + 16 * MATERIAL[move.captured] - MATERIAL[move.piece] : 0;
+      // Investigate expensive captures first only when their local exchange is
+      // sound. Cheap/equal attackers cannot have negative material SEE.
+      const see = useExchange && options.exchange !== false && move.captured && !move.promotion && MATERIAL[move.piece] > MATERIAL[move.captured]
+        ? exchange(move) : null;
+      if (see !== null && see < 0) score -= 120000;
       if (move.promotion) score += 80000 + MATERIAL[move.promotion];
       if (uci === preferred) score += 10000000;
       if (!move.captured && !move.promotion) score += killers[ply]?.[0] === uci ? 60000 : killers[ply]?.[1] === uci ? 50000 : history[side * 16384 + move.from * 128 + move.to];
       // A learned root suggestion improves ordering but never replaces minimax.
       if (root) score += (priors.get(uci) || 0) * 40000;
-      return { move, score, uci };
+      return { move, score, uci, see };
     });
     ranked.sort((a, b) => b.score - a.score || a.uci.localeCompare(b.uci));
     return ranked;
@@ -92,28 +116,54 @@ export async function tacticalSearch(chess, options = {}) {
     if (ply >= 96) throw STOP; // Never invent a stand-pat score while in check.
     const inCheck = chess._isKingAttacked(chess._turn);
     if (drawn(inCheck)) return 0;
+    const hash = chess._hash, halfMoves = chess._halfMoves, originalAlpha = alpha, nodeContext = context;
+    const old = options.qCache === false ? null : qtt.get(hash);
+    if (old && old.halfMoves === halfMoves && old.context === context) {
+      const score = mateRead(old.score, ply);
+      if (old.flag === 'exact' || (old.flag === 'lower' && score >= beta) || (old.flag === 'upper' && score <= alpha)) {
+        diagnostics.qTtHits++;
+        pv[ply] = old.move ? [old.move] : [];
+        return score;
+      }
+    }
+    function store(score, move = null) {
+      if (options.qCache !== false && (qtt.size < 25000 || qtt.has(hash))) qtt.set(hash, {
+        score: mateStore(score, ply), flag: score <= originalAlpha ? 'upper' : score >= beta ? 'lower' : 'exact',
+        move, halfMoves, context: nodeContext,
+      });
+      return score;
+    }
     const moves = chess._moves({ legal: false });
-    if (!inCheck && !hasLegalMove(moves)) return 0;
+    if (!inCheck && !hasLegalMove(moves)) return store(0);
     if (!inCheck) {
       const stand = evaluatePosition(chess);
-      if (stand >= beta) return stand;
+      if (stand >= beta) return store(stand);
       if (stand > alpha) alpha = stand;
     }
     const color = chess._turn;
-    let legal = 0;
-    for (const { move, uci } of order(inCheck ? moves : moves.filter(move => move.captured || move.promotion), ply)) {
+    let legal = 0, bestMove = null;
+    // Negative SEE is a selective heuristic: it only removes substantially
+    // losing ordinary captures outside check, checking moves and mate windows.
+    // Fresh mate verification disables it and clears selective TT bounds.
+    for (const { move, uci, see } of order(inCheck ? moves : moves.filter(move => move.captured || move.promotion), ply, old?.move)) {
       make(move);
       let score;
       try {
         if (chess._isKingAttacked(color)) continue;
         legal++;
+        if (!verifyMate && options.capturePruning !== false && !inCheck && !move.promotion && move.piece !== 'k'
+          && see !== null && see <= -100 && Math.abs(alpha) < MATE - 200 && Math.abs(beta) < MATE - 200
+          && !chess._isKingAttacked(chess._turn)) {
+          diagnostics.qPruned++;
+          continue;
+        }
         score = -quiescence(-beta, -alpha, ply + 1);
       } finally { undo(); }
-      if (score >= beta) return score;
-      if (score > alpha) { alpha = score; pv[ply] = [uci, ...(pv[ply + 1] || [])]; }
+      if (score >= beta) return store(score, uci);
+      if (score > alpha) { alpha = score; bestMove = uci; pv[ply] = [uci, ...(pv[ply + 1] || [])]; }
     }
-    if (inCheck && !legal) return -MATE + ply;
-    return alpha;
+    if (inCheck && !legal) return store(-MATE + ply);
+    return store(alpha, bestMove);
   }
   function negamax(depth, alpha, beta, ply) {
     if (depth <= 0) return quiescence(alpha, beta, ply);
@@ -121,6 +171,7 @@ export async function tacticalSearch(chess, options = {}) {
     const inCheck = chess._isKingAttacked(chess._turn);
     if (drawn(inCheck)) return 0;
     const hash = chess._hash, halfMoves = chess._halfMoves, originalAlpha = alpha;
+    const pvNode = beta - alpha > 1;
     const old = tt.get(hash);
     if (ply && old && old.depth >= depth && old.halfMoves === halfMoves && old.context === context) {
       const score = mateRead(old.score, ply);
@@ -139,7 +190,27 @@ export async function tacticalSearch(chess, options = {}) {
       try {
         if (chess._isKingAttacked(color)) continue;
         legal++;
-        score = -negamax(depth - 1, -beta, -alpha, ply + 1);
+        const givesCheck = chess._isKingAttacked(chess._turn);
+        // Reduce only late, quiet non-pawn moves at non-PV nodes, outside
+        // checks and mate windows. An alpha improvement is always searched
+        // again at full depth before it can affect the result.
+        const reduce = !verifyMate && options.reductions !== false && ply > 0 && !pvNode && depth >= 3 && legal >= 4
+          && !inCheck && !givesCheck && !move.captured && !move.promotion && move.piece !== 'p'
+          && uci !== killers[ply]?.[0] && uci !== killers[ply]?.[1] && Math.abs(alpha) < MATE - 200;
+        if (legal === 1 || options.pvs === false) {
+          score = -negamax(depth - 1, -beta, -alpha, ply + 1);
+        } else {
+          if (reduce) diagnostics.reductions++;
+          score = -negamax(depth - 1 - (reduce ? 1 : 0), -alpha - 1, -alpha, ply + 1);
+          if (reduce && score > alpha) {
+            diagnostics.researches++;
+            score = -negamax(depth - 1, -alpha - 1, -alpha, ply + 1);
+          }
+          if (score > alpha && score < beta) {
+            diagnostics.researches++;
+            score = -negamax(depth - 1, -beta, -alpha, ply + 1);
+          }
+        }
       } finally { undo(); }
       if (ply === 0) partialRootStats.push({ uci, valueCp: score, bound: score <= searchAlpha ? 'upper' : score >= beta ? 'lower' : null });
       if (score > best) { best = score; bestMove = uci; pv[ply] = [uci, ...(pv[ply + 1] || [])]; }
@@ -154,12 +225,29 @@ export async function tacticalSearch(chess, options = {}) {
   aborted();
   const legalMoves = chess._moves();
   if (!legalMoves.length || chess._halfMoves >= 100 || (counts.get(chess._hash) || 0) >= 3 || chess.isInsufficientMaterial()) return { move: null, scoreCp: !legalMoves.length && chess.isCheck() ? -MATE : 0, nodes: 0, qNodes: 0, depth: 0, pv: [], completedIterations: 0, elapsedMs: performance.now() - started, stopReason: 'terminal', terminal: true, proven: false, mateInPlies: null, rootStats: [] };
-  const fallback = order(legalMoves, 0, null, true)[0].uci;
+  const fallback = order(legalMoves, 0, null, true, false)[0].uci;
   let best = fallback, scoreCp = evaluatePosition(chess), bestPv = [fallback], depth = 0;
   try {
     for (let target = 1; target <= maxDepth; target++) {
-      partialRootStats = [];
-      const score = negamax(target, -INF, INF, 0);
+      let window = target >= 3 && options.aspiration !== false ? 35 : INF;
+      let score;
+      while (true) {
+        const alpha = window === INF ? -INF : Math.max(-INF, scoreCp - window);
+        const beta = window === INF ? INF : Math.min(INF, scoreCp + window);
+        partialRootStats = [];
+        score = negamax(target, alpha, beta, 0);
+        if (score > alpha && score < beta) break;
+        diagnostics.aspirationRetries++;
+        window = window >= 560 ? INF : window * 2;
+      }
+      if (Math.abs(score) > MATE - 200 && (options.reductions !== false || options.capturePruning !== false)) {
+        // Both LMR and capture pruning are selective. Prove mate afresh
+        // without either or their TT bounds, within the same hard limits.
+        diagnostics.mateVerifications++;
+        verifyMate = true; tt.clear(); qtt.clear(); partialRootStats = [];
+        try { score = negamax(target, -INF, INF, 0); }
+        finally { verifyMate = false; }
+      }
       scoreCp = score; bestPv = pv[0].length ? [...pv[0]] : bestPv; best = bestPv[0]; depth = target;
       completedIterations++;
       rootStats = partialRootStats.map(stat => ({ ...stat, depth: target }));
@@ -177,5 +265,5 @@ export async function tacticalSearch(chess, options = {}) {
     if (chess._history.length !== initialHistoryLength || chess._hash !== initialHash) throw new Error('Tactical search failed to restore its caller board');
   }
   const proven = scoreCp > MATE - 200;
-  return { move: best, scoreCp, nodes, qNodes, depth, pv: bestPv, completedIterations, elapsedMs: performance.now() - started, stopReason: proven ? 'proven-mate' : nodes >= maxNodes ? 'node-limit' : interrupted ? 'time-limit' : 'depth-limit', proven, mateInPlies: proven ? MATE - scoreCp : null, rootStats };
+  return { move: best, scoreCp, nodes, qNodes, depth, pv: bestPv, completedIterations, elapsedMs: performance.now() - started, stopReason: proven ? 'proven-mate' : nodes >= maxNodes ? 'node-limit' : interrupted ? 'time-limit' : 'depth-limit', proven, mateInPlies: proven ? MATE - scoreCp : null, rootStats, diagnostics };
 }

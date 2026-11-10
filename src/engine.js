@@ -2,7 +2,7 @@ import { Chess } from 'chess.js';
 import { extractFeatures, predictRisk } from './controller.js';
 import { tacticalSearch } from './tactical-search.js';
 
-export const ENGINE_VERSION = 'intuition-hybrid-3';
+export const ENGINE_VERSION = 'gato-2-candidate-1';
 export const uciOf = move => move.from + move.to + (move.promotion || '');
 const clock = () => performance.now();
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
@@ -158,7 +158,7 @@ export async function chooseMove(chess, model, options = {}) {
     valueSource: scoreCp === null ? 'neural-policy' : 'tactical-search', policyValue: prediction.value, scoreCp, searched: true, gate: gateInfo,
     nodes: result.nodes, tacticalNodes: result.nodes, qNodes: result.qNodes,
     simulations: result.nodes, elapsedMs: clock() - started, depth: result.depth,
-    completedIterations: result.completedIterations, tacticalProbes,
+    completedIterations: result.completedIterations, tacticalProbes, diagnostics: result.diagnostics,
     proven: !changed && !!result.proven, mateInPlies: !changed ? result.mateInPlies : null,
     stopReason: result.stopReason, pv: changed || !result.pv?.length ? [selected.uci] : result.pv,
     rootStats: prediction.candidates.map(candidate => ({ ...candidate, prior: candidate.probability, visits: 0, value: null })),

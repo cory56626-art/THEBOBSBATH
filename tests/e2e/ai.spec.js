@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { ENGINE_VERSION } from '../../src/engine.js';
 
 const CORNER_MATE = 'k7/8/1QK5/8/8/8/8/8 w - - 0 1';
 
@@ -28,7 +29,7 @@ test('AI v3 proves the corner mate in Search and Selective while Direct retains 
     expect(decision.san).toBe('Qb7#');
     expect(decision.proven).toBe(true);
     expect(decision.mateInPlies).toBe(1);
-    expect(decision.engineVersion).toBe('intuition-hybrid-3');
+    expect(decision.engineVersion).toBe(ENGINE_VERSION);
   }
 
   await page.locator('#mode').selectOption('direct');
@@ -40,17 +41,17 @@ test('AI v3 proves the corner mate in Search and Selective while Direct retains 
   expect(direct.move).toBe('c6c7');
   expect(direct.san).toBe('Kc7');
   expect(direct.nodes).toBe(0);
-  expect(direct.engineVersion).toBe('intuition-hybrid-3');
+  expect(direct.engineVersion).toBe(ENGINE_VERSION);
 
   await loadCorner(page);
   await page.locator('[data-tab="position"]').click();
   await page.locator('#compare-modes').click();
   await expect(page.locator('#comparison-results tbody tr')).toHaveCount(3);
   const report = await page.evaluate(() => window.__INTUITION__.latestReport);
-  expect(report.engineVersion).toBe('intuition-hybrid-3');
+  expect(report.engineVersion).toBe(ENGINE_VERSION);
   expect(report.rows.find((row) => row.mode === 'direct').move).toBe('c6c7');
   expect(report.rows.find((row) => row.mode === 'search').move).toBe('b6b7');
   expect(report.rows.find((row) => row.mode === 'selective').move).toBe('b6b7');
-  expect(report.rows.every((row) => row.engineVersion === 'intuition-hybrid-3')).toBe(true);
+  expect(report.rows.every((row) => row.engineVersion === ENGINE_VERSION)).toBe(true);
   expect(errors).toEqual([]);
 });

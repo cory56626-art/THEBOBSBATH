@@ -25,6 +25,30 @@ test('prospective strength openings are legal, distinct and return independent c
   assert.throws(() => getOpenings('invented'), /Unknown opening set/);
 });
 
+test('Gato 2 prospective lines are legal, unique, independent copies, and disjoint from earlier match lines', () => {
+  const old = getOpenings('strength24');
+  const openings = getOpenings('gato2_48');
+  assert.equal(openings.length, 24);
+  const oldLines = new Set(old.map(opening => opening.moves.join(' ')));
+  const oldPositions = new Set(old.map(opening => { const chess = new Chess(); for (const move of opening.moves) chess.move(move); return chess.fen().split(' ').slice(0, 4).join(' '); }));
+  const positions = openings.map(opening => {
+    assert.equal(opening.moves.length, 6);
+    assert.equal(oldLines.has(opening.moves.join(' ')), false);
+    const chess = new Chess();
+    for (const move of opening.moves) chess.move(move);
+    assert.equal(chess.isGameOver(), false);
+    assert.equal(chess.turn(), 'w');
+    const position = chess.fen().split(' ').slice(0, 4).join(' ');
+    assert.equal(oldPositions.has(position), false);
+    return position;
+  });
+  assert.equal(new Set(positions).size, 24);
+  assert.equal(new Set(openings.map(opening => opening.name)).size, 24);
+  openings[0].moves.pop();
+  assert.equal(getOpenings('gato2_48')[0].moves.length, 6);
+  assert.deepEqual(getOpenings('strength24'), old);
+});
+
 test('source snapshots retain exact fingerprints, package imports and original engine-relative dependencies', async () => {
   const engine = await loadEngine({ sourcePath: 'tests/fixtures/harness-engine.mjs' });
   assert.equal(engine.ENGINE_VERSION, 'test-harness-snapshot');

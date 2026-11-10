@@ -1,0 +1,2208 @@
+{
+  "purpose": "Fixed development-position smoke only, not held-out strength evidence or rating. Timing may overlap UI tests. Declared positions and settings before searches.",
+  "settings": {
+    "budgetMs": 500,
+    "maxNodes": 32768,
+    "maxDepth": 3
+  },
+  "positions": [
+    {
+      "name": "Italian",
+      "fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4"
+    },
+    {
+      "name": "Queen’s Gambit",
+      "fen": "rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4"
+    },
+    {
+      "name": "Sicilian",
+      "fen": "rnbqkbnr/pp2pppp/3p4/8/3pP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 4"
+    },
+    {
+      "name": "English",
+      "fen": "rnbqkb1r/ppp2ppp/5n2/3pp3/2P5/2N3P1/PP1PPP1P/R1BQKBNR w KQkq - 0 4"
+    },
+    {
+      "name": "Poisoned capture regression",
+      "fen": "4r1k1/8/8/4p3/8/8/4Q3/6K1 w - - 0 1"
+    }
+  ],
+  "engines": {
+    "prior": {
+      "ref": "a7bf070",
+      "tree": "a343100f5b622f70b8de7eb2f4e20d8e84af6e6d916154bfd457e811caaa5edd"
+    },
+    "candidate": {
+      "tree": "00894462c9b3d861f7d0712b458efdecdc4c6f4afc0572cdff99a6686648d4ff"
+    }
+  },
+  "results": [
+    {
+      "position": "Italian",
+      "engine": "prior",
+      "move": "e1g1",
+      "scoreCp": 68,
+      "nodes": 2741,
+      "qNodes": 2529,
+      "depth": 3,
+      "pv": [
+        "e1g1",
+        "g8f6",
+        "b1c3"
+      ],
+      "completedIterations": 3,
+      "elapsedMs": 65.61852200000001,
+      "stopReason": "depth-limit",
+      "proven": false,
+      "mateInPlies": null,
+      "rootStats": [
+        {
+          "uci": "e1g1",
+          "valueCp": 68,
+          "bound": null,
+          "depth": 3
+        },
+        {
+          "uci": "f3e5",
+          "valueCp": -200,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4f7",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b1c3",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a3",
+          "valueCp": 57,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a4",
+          "valueCp": 59,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b1a3",
+          "valueCp": 34,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b3",
+          "valueCp": 55,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b4",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c2c3",
+          "valueCp": 59,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4a6",
+          "valueCp": -232,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4b3",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4b5",
+          "valueCp": 56,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4d3",
+          "valueCp": 51,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4d5",
+          "valueCp": 63,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4e2",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4e6",
+          "valueCp": -287,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4f1",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1e2",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d2d3",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d2d4",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e1e2",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e1f1",
+          "valueCp": 42,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3d4",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3g1",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3g5",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3h4",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g2g3",
+          "valueCp": 45,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g2g4",
+          "valueCp": 32,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h1f1",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h1g1",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h3",
+          "valueCp": 49,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h4",
+          "valueCp": 32,
+          "bound": "upper",
+          "depth": 3
+        }
+      ],
+      "diagnostics": {
+        "qTtHits": 152,
+        "reductions": 0,
+        "researches": 9,
+        "aspirationRetries": 1,
+        "mateVerifications": 0
+      }
+    },
+    {
+      "position": "Italian",
+      "engine": "candidate",
+      "move": "e1g1",
+      "scoreCp": 68,
+      "nodes": 2106,
+      "qNodes": 1897,
+      "depth": 3,
+      "pv": [
+        "e1g1",
+        "g8f6",
+        "b1c3"
+      ],
+      "completedIterations": 3,
+      "elapsedMs": 46.13120999999998,
+      "stopReason": "depth-limit",
+      "proven": false,
+      "mateInPlies": null,
+      "rootStats": [
+        {
+          "uci": "e1g1",
+          "valueCp": 68,
+          "bound": null,
+          "depth": 3
+        },
+        {
+          "uci": "b1c3",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a3",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a4",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b1a3",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b3",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b4",
+          "valueCp": 45,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c2c3",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4a6",
+          "valueCp": -232,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4b3",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4b5",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4d3",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4d5",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4e2",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4e6",
+          "valueCp": -287,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4f1",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1e2",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d2d3",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d2d4",
+          "valueCp": 33,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e1e2",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e1f1",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3d4",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3g1",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3g5",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3h4",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g2g3",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g2g4",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h1f1",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h1g1",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h3",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h4",
+          "valueCp": 68,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3e5",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4f7",
+          "valueCp": 26,
+          "bound": "upper",
+          "depth": 3
+        }
+      ],
+      "diagnostics": {
+        "qTtHits": 82,
+        "reductions": 0,
+        "researches": 7,
+        "aspirationRetries": 1,
+        "mateVerifications": 0,
+        "seeCalls": 1546,
+        "seeProbes": 2317,
+        "qPruned": 87
+      }
+    },
+    {
+      "position": "Queen’s Gambit",
+      "engine": "prior",
+      "move": "c4d5",
+      "scoreCp": 29,
+      "nodes": 2231,
+      "qNodes": 2059,
+      "depth": 3,
+      "pv": [
+        "c4d5",
+        "f6d5",
+        "g1f3"
+      ],
+      "completedIterations": 3,
+      "elapsedMs": 50.35218800000001,
+      "stopReason": "depth-limit",
+      "proven": false,
+      "mateInPlies": null,
+      "rootStats": [
+        {
+          "uci": "c4d5",
+          "valueCp": 29,
+          "bound": null,
+          "depth": 3
+        },
+        {
+          "uci": "c3d5",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1f3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a1b1",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a4",
+          "valueCp": -45,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b3",
+          "valueCp": 14,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b4",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1d2",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1e3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1f4",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1g5",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1h6",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3a4",
+          "valueCp": -88,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3b1",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3b5",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3e4",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4c5",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1a4",
+          "valueCp": -3,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1b3",
+          "valueCp": -1,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1c2",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1d2",
+          "valueCp": -70,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1d3",
+          "valueCp": 6,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e1d2",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2e3",
+          "valueCp": 7,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2e4",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f2f3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f2f4",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1h3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g2g3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g2g4",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h4",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        }
+      ],
+      "diagnostics": {
+        "qTtHits": 245,
+        "reductions": 0,
+        "researches": 9,
+        "aspirationRetries": 1,
+        "mateVerifications": 0
+      }
+    },
+    {
+      "position": "Queen’s Gambit",
+      "engine": "candidate",
+      "move": "c4d5",
+      "scoreCp": 29,
+      "nodes": 1936,
+      "qNodes": 1764,
+      "depth": 3,
+      "pv": [
+        "c4d5",
+        "f6d5",
+        "g1f3"
+      ],
+      "completedIterations": 3,
+      "elapsedMs": 37.24782400000001,
+      "stopReason": "depth-limit",
+      "proven": false,
+      "mateInPlies": null,
+      "rootStats": [
+        {
+          "uci": "c4d5",
+          "valueCp": 29,
+          "bound": null,
+          "depth": 3
+        },
+        {
+          "uci": "g1f3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a1b1",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a4",
+          "valueCp": -45,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b4",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1d2",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1e3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1f4",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1g5",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1h6",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3a4",
+          "valueCp": -88,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3b1",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3b5",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3e4",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4c5",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1a4",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1b3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1c2",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1d2",
+          "valueCp": -70,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1d3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e1d2",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2e3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2e4",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f2f3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f2f4",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1h3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g2g3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g2g4",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h3",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h4",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3d5",
+          "valueCp": 29,
+          "bound": "upper",
+          "depth": 3
+        }
+      ],
+      "diagnostics": {
+        "qTtHits": 182,
+        "reductions": 0,
+        "researches": 9,
+        "aspirationRetries": 1,
+        "mateVerifications": 0,
+        "seeCalls": 496,
+        "seeProbes": 963,
+        "qPruned": 167
+      }
+    },
+    {
+      "position": "Sicilian",
+      "engine": "prior",
+      "move": "f3d4",
+      "scoreCp": 30,
+      "nodes": 1735,
+      "qNodes": 1561,
+      "depth": 3,
+      "pv": [
+        "f3d4",
+        "g8f6",
+        "b1c3"
+      ],
+      "completedIterations": 3,
+      "elapsedMs": 27.469658000000038,
+      "stopReason": "depth-limit",
+      "proven": false,
+      "mateInPlies": null,
+      "rootStats": [
+        {
+          "uci": "f1b5",
+          "valueCp": 17,
+          "bound": null,
+          "depth": 3
+        },
+        {
+          "uci": "f3d4",
+          "valueCp": 30,
+          "bound": null,
+          "depth": 3
+        },
+        {
+          "uci": "d1d4",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a3",
+          "valueCp": -53,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a4",
+          "valueCp": -54,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b1a3",
+          "valueCp": -96,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b1c3",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b1d2",
+          "valueCp": -8,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b3",
+          "valueCp": -54,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b4",
+          "valueCp": -8,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1d2",
+          "valueCp": -8,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1e3",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1f4",
+          "valueCp": -38,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1g5",
+          "valueCp": -44,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1h6",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c2c3",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c2c4",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1d2",
+          "valueCp": -9,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1d3",
+          "valueCp": -70,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1e2",
+          "valueCp": -81,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e1d2",
+          "valueCp": -110,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e1e2",
+          "valueCp": -17,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e4e5",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f1a6",
+          "valueCp": -308,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f1c4",
+          "valueCp": -37,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f1d3",
+          "valueCp": -53,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f1e2",
+          "valueCp": -63,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3d2",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3e5",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3g1",
+          "valueCp": -107,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3g5",
+          "valueCp": -82,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3h4",
+          "valueCp": -109,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g2g3",
+          "valueCp": -54,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g2g4",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h1g1",
+          "valueCp": -76,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h3",
+          "valueCp": -54,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h4",
+          "valueCp": -56,
+          "bound": "upper",
+          "depth": 3
+        }
+      ],
+      "diagnostics": {
+        "qTtHits": 211,
+        "reductions": 0,
+        "researches": 6,
+        "aspirationRetries": 0,
+        "mateVerifications": 0
+      }
+    },
+    {
+      "position": "Sicilian",
+      "engine": "candidate",
+      "move": "f3d4",
+      "scoreCp": 30,
+      "nodes": 1630,
+      "qNodes": 1456,
+      "depth": 3,
+      "pv": [
+        "f3d4",
+        "g8f6",
+        "b1c3"
+      ],
+      "completedIterations": 3,
+      "elapsedMs": 27.105380000000025,
+      "stopReason": "depth-limit",
+      "proven": false,
+      "mateInPlies": null,
+      "rootStats": [
+        {
+          "uci": "f1b5",
+          "valueCp": 17,
+          "bound": null,
+          "depth": 3
+        },
+        {
+          "uci": "f3d4",
+          "valueCp": 30,
+          "bound": null,
+          "depth": 3
+        },
+        {
+          "uci": "d1d4",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a3",
+          "valueCp": -53,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a4",
+          "valueCp": -54,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b1a3",
+          "valueCp": -96,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b1c3",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b1d2",
+          "valueCp": 17,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b3",
+          "valueCp": -54,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b4",
+          "valueCp": 12,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1d2",
+          "valueCp": 12,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1e3",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1f4",
+          "valueCp": -38,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1g5",
+          "valueCp": -44,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c1h6",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c2c3",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c2c4",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1d2",
+          "valueCp": -9,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1d3",
+          "valueCp": -70,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1e2",
+          "valueCp": -81,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e1d2",
+          "valueCp": -110,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e1e2",
+          "valueCp": -17,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e4e5",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f1a6",
+          "valueCp": -308,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f1c4",
+          "valueCp": -37,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f1d3",
+          "valueCp": -53,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f1e2",
+          "valueCp": -63,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3d2",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3e5",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3g1",
+          "valueCp": -107,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3g5",
+          "valueCp": -82,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f3h4",
+          "valueCp": -109,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g2g3",
+          "valueCp": -54,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g2g4",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h1g1",
+          "valueCp": -76,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h3",
+          "valueCp": -54,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h4",
+          "valueCp": -56,
+          "bound": "upper",
+          "depth": 3
+        }
+      ],
+      "diagnostics": {
+        "qTtHits": 192,
+        "reductions": 0,
+        "researches": 6,
+        "aspirationRetries": 0,
+        "mateVerifications": 0,
+        "seeCalls": 411,
+        "seeProbes": 613,
+        "qPruned": 52
+      }
+    },
+    {
+      "position": "English",
+      "engine": "prior",
+      "move": "c4d5",
+      "scoreCp": 43,
+      "nodes": 3105,
+      "qNodes": 2867,
+      "depth": 3,
+      "pv": [
+        "c4d5",
+        "f6d5",
+        "g1f3"
+      ],
+      "completedIterations": 3,
+      "elapsedMs": 50.91506900000002,
+      "stopReason": "depth-limit",
+      "proven": false,
+      "mateInPlies": null,
+      "rootStats": [
+        {
+          "uci": "c4d5",
+          "valueCp": 43,
+          "bound": null,
+          "depth": 3
+        },
+        {
+          "uci": "c3d5",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1a4",
+          "valueCp": 15,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a3",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1f3",
+          "valueCp": 25,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a1b1",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a4",
+          "valueCp": -37,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b3",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b4",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3a4",
+          "valueCp": -80,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3b1",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3b5",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3e4",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4c5",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1b3",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1c2",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d2d3",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d2d4",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2e3",
+          "valueCp": 28,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2e4",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f1g2",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f1h3",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f2f3",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f2f4",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1h3",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g3g4",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h3",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h4",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        }
+      ],
+      "diagnostics": {
+        "qTtHits": 382,
+        "reductions": 0,
+        "researches": 11,
+        "aspirationRetries": 1,
+        "mateVerifications": 0
+      }
+    },
+    {
+      "position": "English",
+      "engine": "candidate",
+      "move": "c4d5",
+      "scoreCp": 43,
+      "nodes": 2543,
+      "qNodes": 2305,
+      "depth": 3,
+      "pv": [
+        "c4d5",
+        "f6d5",
+        "g1f3"
+      ],
+      "completedIterations": 3,
+      "elapsedMs": 38.02177599999999,
+      "stopReason": "depth-limit",
+      "proven": false,
+      "mateInPlies": null,
+      "rootStats": [
+        {
+          "uci": "c4d5",
+          "valueCp": 43,
+          "bound": null,
+          "depth": 3
+        },
+        {
+          "uci": "c3d5",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1a4",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a3",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1f3",
+          "valueCp": 25,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a1b1",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "a2a4",
+          "valueCp": -37,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b3",
+          "valueCp": 30,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "b2b4",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3a4",
+          "valueCp": -80,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3b1",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3b5",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c3e4",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "c4c5",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1b3",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d1c2",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d2d3",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "d2d4",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2e3",
+          "valueCp": 28,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2e4",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f1g2",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f1h3",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f2f3",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "f2f4",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1h3",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g3g4",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h3",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "h2h4",
+          "valueCp": 43,
+          "bound": "upper",
+          "depth": 3
+        }
+      ],
+      "diagnostics": {
+        "qTtHits": 311,
+        "reductions": 0,
+        "researches": 11,
+        "aspirationRetries": 1,
+        "mateVerifications": 0,
+        "seeCalls": 1137,
+        "seeProbes": 2171,
+        "qPruned": 248
+      }
+    },
+    {
+      "position": "Poisoned capture regression",
+      "engine": "prior",
+      "move": "e2c4",
+      "scoreCp": 299,
+      "nodes": 1390,
+      "qNodes": 1285,
+      "depth": 3,
+      "pv": [
+        "e2c4",
+        "g8g7",
+        "g1g2"
+      ],
+      "completedIterations": 3,
+      "elapsedMs": 39.275045000000034,
+      "stopReason": "depth-limit",
+      "proven": false,
+      "mateInPlies": null,
+      "rootStats": [
+        {
+          "uci": "e2e4",
+          "valueCp": 297,
+          "bound": null,
+          "depth": 3
+        },
+        {
+          "uci": "e2e5",
+          "valueCp": -552,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2a2",
+          "valueCp": 297,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2a6",
+          "valueCp": 297,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2b2",
+          "valueCp": 297,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2b5",
+          "valueCp": 297,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2c2",
+          "valueCp": 297,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2c4",
+          "valueCp": 299,
+          "bound": null,
+          "depth": 3
+        },
+        {
+          "uci": "e2d1",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2d2",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2d3",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2e1",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2e3",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2f1",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2f2",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2f3",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2g2",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2g4",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2h2",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2h5",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1f1",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1f2",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1g2",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1h1",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1h2",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        }
+      ],
+      "diagnostics": {
+        "qTtHits": 135,
+        "reductions": 0,
+        "researches": 19,
+        "aspirationRetries": 0,
+        "mateVerifications": 0
+      }
+    },
+    {
+      "position": "Poisoned capture regression",
+      "engine": "candidate",
+      "move": "e2c4",
+      "scoreCp": 299,
+      "nodes": 1341,
+      "qNodes": 1236,
+      "depth": 3,
+      "pv": [
+        "e2c4",
+        "g8g7",
+        "g1g2"
+      ],
+      "completedIterations": 3,
+      "elapsedMs": 32.488022,
+      "stopReason": "depth-limit",
+      "proven": false,
+      "mateInPlies": null,
+      "rootStats": [
+        {
+          "uci": "e2e4",
+          "valueCp": 297,
+          "bound": null,
+          "depth": 3
+        },
+        {
+          "uci": "e2a2",
+          "valueCp": 297,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2a6",
+          "valueCp": 297,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2b2",
+          "valueCp": 297,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2b5",
+          "valueCp": 297,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2c2",
+          "valueCp": 297,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2c4",
+          "valueCp": 299,
+          "bound": null,
+          "depth": 3
+        },
+        {
+          "uci": "e2d1",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2d2",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2d3",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2e1",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2e3",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2f1",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2f2",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2f3",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2g2",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2g4",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2h2",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2h5",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1f1",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1f2",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1g2",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1h1",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "g1h2",
+          "valueCp": 299,
+          "bound": "upper",
+          "depth": 3
+        },
+        {
+          "uci": "e2e5",
+          "valueCp": -552,
+          "bound": "upper",
+          "depth": 3
+        }
+      ],
+      "diagnostics": {
+        "qTtHits": 109,
+        "reductions": 0,
+        "researches": 17,
+        "aspirationRetries": 0,
+        "mateVerifications": 0,
+        "seeCalls": 234,
+        "seeProbes": 277,
+        "qPruned": 24
+      }
+    }
+  ]
+}

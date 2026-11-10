@@ -1,5 +1,6 @@
-/** Fixed-opening paired sign test, declared in docs/V4-PREDECLARATION.md. */
-export function selectEngine(report) {
+/** Fixed-opening paired sign test; schedule size must be declared before play. */
+export function selectEngine(report, { expectedGames = 24 } = {}) {
+  if (!Number.isSafeInteger(expectedGames) || expectedGames < 2 || expectedGames % 2) throw new Error('expectedGames must be a positive even integer');
   const games = report.games;
   const planned = report.settings.plannedGames;
   const pairs = new Map();
@@ -9,7 +10,7 @@ export function selectEngine(report) {
     pair.push(game); pairs.set(key, pair);
   }
   let favorable = 0, unfavorable = 0, tied = 0, candidatePoints = 0;
-  const complete = planned === 24 && games.length === planned && [...pairs.values()].every(pair => pair.length === 2 && pair[0].whiteEngine !== pair[1].whiteEngine) && pairs.size === 12;
+  const complete = planned === expectedGames && games.length === planned && [...pairs.values()].every(pair => pair.length === 2 && pair[0].whiteEngine !== pair[1].whiteEngine && pair[0].blackEngine !== pair[1].blackEngine) && pairs.size === expectedGames / 2;
   const unfinished = games.filter(game => game.result === '*').length;
   const forfeits = games.filter(game => /forfeit/.test(game.status)).length;
   for (const pair of pairs.values()) {
@@ -29,6 +30,6 @@ export function selectEngine(report) {
     mass *= (n - k) / (k + 1);
   }
   const oneSidedP = Math.min(1, p);
-  const accepted = complete && !unfinished && !forfeits && candidatePoints > 12 && oneSidedP <= .05;
-  return { selected: accepted ? 'improved' : 'baseline', accepted, complete, planned, games: games.length, unfinished, forfeits, candidatePoints, favorable, unfavorable, tied, oneSidedP, threshold: .05, method: 'Exact one-sided paired sign test; ties removed. All 24 games and zero forfeits required.', caveat: 'Fixed-opening development comparison, not an Elo estimate or proof of broad strength.' };
+  const accepted = complete && !unfinished && !forfeits && candidatePoints > expectedGames / 2 && oneSidedP <= .05;
+  return { selected: accepted ? 'improved' : 'baseline', accepted, complete, planned, expectedGames, games: games.length, unfinished, forfeits, candidatePoints, favorable, unfavorable, tied, oneSidedP, threshold: .05, method: `Exact one-sided paired sign test; ties removed. All ${expectedGames} games and zero forfeits required.`, caveat: 'Fixed-opening development comparison, not an Elo estimate or proof of broad strength.' };
 }
