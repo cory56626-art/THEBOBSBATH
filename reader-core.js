@@ -1,4 +1,4 @@
-import { analyzeDocument, normalizeKey } from './text-analysis.js?v=5';
+import { analyzeDocument, normalizeKey } from './text-analysis.js?v=6';
 
 export const LIMIT = 30000;
 export const BASE_WPM = 190;

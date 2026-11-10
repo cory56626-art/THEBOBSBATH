@@ -7,8 +7,8 @@
   <meta name="description" content="Feed a little digital crawler your words. An interactive text reader inspired by everything.bends, with animated legs, word tracking, and optional speech.">
   <title>Web Crawler — Bobs Bath</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23eeeae3'/%3E%3Cg stroke='%231d1d1b' stroke-width='3' fill='none'%3E%3Cpath d='m28 27-15-15-6 20m22-1L10 41l-3 13m29-27 15-15 6 20M35 31l19 10 3 13M28 36l-9 13M36 36l9 13'/%3E%3C/g%3E%3Cpath d='M26 20h12v24H26z' fill='%231d1d1b'/%3E%3Ccircle cx='32' cy='25' r='3' fill='%23ef12b7'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./style.css?v=5">
-  <script type="module" src="./app.js?v=5"></script>
+  <link rel="stylesheet" href="./style.css?v=6">
+  <script type="module" src="./app.js?v=6"></script>
 </head>
 <body>
 <div class="page-shell">
@@ -20,19 +20,24 @@
 
   <main>
     <section class="intro" aria-labelledby="title">
-      <div><div class="eyebrow"><span class="live-dot"></span> DIGITAL SPECIMEN / 001</div><h1 id="title">Let it read<br><em>between the lines.</em></h1></div>
-      <div class="intro-side"><span class="specimen-label">TEXT → MOTION</span><p>Feed it a thought.<br>Watch a strange little crawler<br>find the words that stand out.</p><span class="mini-rule">ALIVE IN YOUR BROWSER</span></div>
+      <div><div class="eyebrow"><span class="live-dot"></span> <span id="specimen-number">DIGITAL SPECIMEN / 001</span></div><h1 id="title">Let it read<br><em>between the lines.</em></h1></div>
+      <div class="intro-side"><span class="specimen-label" id="intro-code">TEXT → MOTION</span><p id="intro-copy">Feed it a thought.<br>Watch a strange little crawler<br>find the words that stand out.</p><span class="mini-rule">ALIVE IN YOUR BROWSER</span></div>
     </section>
 
+    <div class="experiment-switch" role="group" aria-label="Game mode"><button id="mode-crawler" type="button" data-experiment="crawler" aria-pressed="true"><span>01</span> Web Crawler</button><button id="mode-typer" type="button" data-experiment="typer" aria-pressed="false"><span>02</span> Omega Typer</button></div>
     <div class="workspace">
       <section class="reader-panel" aria-label="Animated text reader">
-        <div class="panel-bar"><span class="panel-label"><span class="live-dot" id="state-dot"></span><span id="state-label">READY TO READ</span></span><div class="panel-actions"><button id="restart" class="icon-button" title="Restart from the beginning" aria-label="Restart from the beginning">↺</button><button id="focus" class="icon-button" title="Expand reader" aria-label="Expand reader" aria-pressed="false"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7 3H3v4m10-4h4v4M3 13v4h4m10-4v4h-4" stroke="currentColor" stroke-width="1.4"/></svg></button></div></div>
-        <div class="reader-stage"><div class="reading-viewport" id="viewport" tabindex="0" aria-label="Text being read. Scroll to explore.">
+        <div class="panel-bar"><span class="panel-label"><span class="live-dot" id="state-dot"></span><span id="state-label">READY TO READ</span></span><div class="panel-actions"><button id="typing-copy" class="text-button" hidden disabled>Copy text</button><button id="restart" class="icon-button" title="Restart from the beginning" aria-label="Restart from the beginning">↺</button><button id="focus" class="icon-button" title="Expand reader" aria-label="Expand reader" aria-pressed="false"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7 3H3v4m10-4h4v4M3 13v4h4m10-4v4h-4" stroke="currentColor" stroke-width="1.4"/></svg></button></div></div>
+        <div class="reader-stage" id="crawler-stage"><div class="reading-viewport" id="viewport" tabindex="0" aria-label="Text being read. Scroll to explore.">
           <div class="document" id="document" aria-label="Your text"></div>
           <div class="field-mark" aria-hidden="true">FIELD_01<br>LIVE OBSERVATION</div>
         </div><canvas id="creature" aria-hidden="true"></canvas>
           <div class="reader-empty" id="reader-empty" hidden>Give it a few words.<br><span>It is waiting.</span></div>
         </div>
+        <section class="omega-stage" id="omega-stage" aria-label="Omega Typer" hidden>
+          <div class="omega-output-wrap" id="typing-scroll" tabindex="0" role="region" aria-label="Text typed by the hands"><div class="omega-output-label"><span>OUTPUT / EXACT COPY</span><span id="typing-key">AWAITING INPUT</span></div><pre class="omega-output"><span id="typing-text"></span><span class="omega-caret" aria-hidden="true">▍</span></pre><p class="omega-placeholder" id="typing-placeholder">Your words.<br>Ten fingers.<br>Watch them take shape.</p></div>
+          <div class="omega-hands-wrap"><canvas id="typing-hands" aria-hidden="true"></canvas><div class="omega-credit">OMEGA TYPER / INSPIRED BY <a href="https://www.tiktok.com/@everything.bends" target="_blank" rel="noopener noreferrer">@everything.bends ↗</a></div></div>
+        </section>
         <div class="topic-strip"><span>KEY IDEA</span><strong id="topic-word">WAITING FOR IDEAS</strong><span id="topic-count">0 / 0</span></div>
         <div class="scan-strip"><div class="signal love"><span>LOVE</span><strong id="love-count">000</strong><span id="love-word">—</span></div><div class="signal hate"><span>HATE</span><strong id="hate-count">000</strong><span id="hate-word">—</span></div></div>
         <div class="reader-bottom"><span id="read-count">000 / 000 WORDS</span><span class="current-word" id="current-word">AWAITING INPUT</span><button class="text-button" id="pause" disabled>Pause <span aria-hidden="true">Ⅱ</span></button></div>
@@ -46,8 +51,8 @@
       </section>
 
       <aside class="controls" aria-label="Text and reading controls">
-        <div class="control-heading"><span class="eyebrow">01 / FEED THE CRAWLER</span><span class="small-cross" aria-hidden="true">+</span></div>
-        <label for="text-input" class="input-label">What is on your mind<span class="label-dot">.</span></label>
+        <div class="control-heading"><span class="eyebrow" id="control-title">01 / FEED THE CRAWLER</span><span class="small-cross" aria-hidden="true">+</span></div>
+        <label for="text-input" class="input-label"><span id="input-prompt">What is on your mind</span><span class="label-dot">.</span></label>
         <div class="input-wrap"><textarea id="text-input" maxlength="30000" spellcheck="false" placeholder="A thought, a story, a beautifully weird comment…" aria-describedby="text-hint"></textarea><div class="input-meta"><span id="input-count">0 WORDS</span><button class="text-button" id="clear">Clear</button></div></div>
         <p class="text-hint" id="text-hint">Paste anything. Then let it loose.</p>
         <button class="start-button" id="start"><span id="start-label">Start crawling</span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.6"/></svg></button>
@@ -55,7 +60,7 @@
 
         <div class="settings">
           <div class="mode-field"><label for="reading-mode">CRAWLING STYLE</label><select id="reading-mode"><option value="hunt" selected>Hunt words &amp; phrases</option><option value="all">Read every word</option></select><p>Follows standout words and phrases.</p></div>
-          <div class="setting-top"><label for="speed">CRAWLING SPEED</label><output id="speed-label" for="speed">1.0×</output></div>
+          <div class="setting-top"><label for="speed" id="speed-caption">CRAWLING SPEED</label><output id="speed-label" for="speed">1.0×</output></div>
           <input type="range" id="speed" min="70" max="19000" step="10" value="190">
           <div class="speed-presets" role="group" aria-label="Speed presets"><button type="button" data-speed="190" aria-pressed="true">1×</button><button type="button" data-speed="380" aria-pressed="false">2×</button><button type="button" data-speed="570" aria-pressed="false">3×</button><button type="button" data-speed="950" aria-pressed="false">5×</button><button type="button" data-speed="1900" aria-pressed="false">10×</button><button type="button" data-speed="4750" aria-pressed="false">25×</button><button type="button" data-speed="9500" aria-pressed="false">50×</button><button type="button" data-speed="19000" aria-pressed="false">100×</button></div>
           <div class="range-labels"><span>Taking its time</span><span>Hungry</span></div>
@@ -63,13 +68,13 @@
           <div class="voice-field"><label for="voice-select" class="sr-only">Reading voice</label><select id="voice-select"><option value="">Device default voice</option></select></div>
           <p class="voice-note" id="voice-note" role="status">Uses the voices available on your device.</p>
         </div>
-        <div class="field-note"><span class="note-index">FIELD NOTE_</span><p>Names. Actions. Ideas.<br>Follow the thread, then<br>read the takeaway.</p><span class="note-fine">Cyan marks key ideas. Pink and purple mark tone.</span></div>
+        <div class="field-note"><span class="note-index">FIELD NOTE_</span><p id="field-copy">Names. Actions. Ideas.<br>Follow the thread, then<br>read the takeaway.</p><span class="note-fine" id="field-fine">Cyan marks key ideas. Pink and purple mark tone.</span></div>
       </aside>
     </div>
     <div class="workspace-caption"><span><span class="caption-dot"></span> NO ACCOUNT. NO API KEY.</span><span id="motion-note">Eight feet. Words worth chasing.</span></div>
   </main>
 
-  <footer><div><span class="footer-index">INSPIRED BY</span><a href="https://www.tiktok.com/@everything.bends" target="_blank" rel="noopener noreferrer">@everything.bends <span aria-hidden="true">↗</span></a><p>Credit for the original web crawler concept and visual inspiration.</p></div><span class="footer-stamp">AN UNOFFICIAL HOMAGE<br>MADE FOR BOBS BATH / 2026</span></footer>
+  <footer><div><span class="footer-index">INSPIRED BY</span><a href="https://www.tiktok.com/@everything.bends" target="_blank" rel="noopener noreferrer">@everything.bends <span aria-hidden="true">↗</span></a><p>Credit for the original Web Crawler and Omega Typer concepts and visual inspiration.</p></div><span class="footer-stamp">AN UNOFFICIAL HOMAGE<br>MADE FOR BOBS BATH / 2026</span></footer>
 </div>
 <div id="announcement" class="sr-only" role="status" aria-live="polite"></div>
 <noscript><p class="noscript">Enable JavaScript to wake the crawler.</p></noscript>

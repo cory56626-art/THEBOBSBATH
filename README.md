@@ -4,6 +4,16 @@
 
 Feed a tiny digital creature your own text and watch it crawl through the words. This is the main Bobs Bath GitHub Pages site. The former chess application has been removed.
 
+Choose **Web Crawler** or **Omega Typer** above the reader. Both modes share your input and the speed presets through **100×**.
+
+## Omega Typer
+
+Choose **Omega Typer**, enter text, and press **Start typing**. Two wireframe hands with pink finger joints press a compact keyboard while your text appears character by character above them. Each character appears when its finger contacts the corresponding key. Uppercase letters and shifted punctuation use the opposite hand's Shift key; emoji and other composed characters use the Ω key.
+
+This mode types an exact copy of your input, retaining capitalization, punctuation, spaces, tabs, newlines, and Unicode. It does not generate a reply. Pause freezes the hands and text; resume, restart, clear, expand, and **Copy text** are available. Input and mode changes reset the copy. High speeds process all intervening keystrokes, including those between visible frames. Reduced motion leaves the hands still while the text is copied. Read-aloud and the crawler's topic/summary controls apply to Web Crawler mode.
+
+The direct mode link is https://cory56626-art.github.io/THEBOBSBATH/?mode=omega. The new mode is inspired by the second reference clip supplied by the user, with visible credit to **@everything.bends** beside the hands and in the footer.
+
 ## Use it
 
 1. Type or paste text into **What is on your mind** (up to 30,000 characters), or choose **Try a sample**.
@@ -25,7 +35,7 @@ Text and preferences are saved in this browser when local storage is available. 
 
 ## Credit
 
-The original web crawler concept and visual inspiration belong to **[@everything.bends](https://www.tiktok.com/@everything.bends)**, as shown in the user's reference clip. This is an unofficial homage with an original browser implementation. No source code, footage, audio, or other assets from the original were copied. Attribution is visible in the page footer.
+The original **Web Crawler** and **Omega Typer** concepts and visual inspiration belong to **[@everything.bends](https://www.tiktok.com/@everything.bends)**, as shown in the user's reference clips. This is an unofficial homage with an original browser implementation. No source code, footage, audio, or other assets from the original were copied. Attribution is visible in the page footer and beside the typing hands.
 
 The frame study and reconstruction limits are recorded in [REFERENCE_STUDY.md](REFERENCE_STUDY.md).
 

@@ -1,7 +1,8 @@
-import { LIMIT, SAMPLES, BASE_WPM, MAX_PACE, MAX_WPM, tokenize, speechChunk, wordAtBoundary, wordDuration, advanceWordClock } from './reader-core.js?v=5';
-import { clamp, createRig, updateRig, translateBodyForScroll, legPose } from './crawler-motion.js?v=5';
-import { analyzeDocument, summarizeDocument } from './text-analysis.js?v=5';
-import { createInspection, advanceInspection, releaseInspection, retargetInspection } from './crawler-inspection.js?v=5';
+import { LIMIT, SAMPLES, BASE_WPM, MAX_PACE, MAX_WPM, tokenize, speechChunk, wordAtBoundary, wordDuration, advanceWordClock } from './reader-core.js?v=6';
+import { clamp, createRig, updateRig, translateBodyForScroll, legPose } from './crawler-motion.js?v=6';
+import { analyzeDocument, summarizeDocument } from './text-analysis.js?v=6';
+import { createInspection, advanceInspection, releaseInspection, retargetInspection } from './crawler-inspection.js?v=6';
+import { OMEGA_SAMPLES, graphemes, createTyper, advanceTyper, typerFrame, paintTyper } from './omega-typer.js?v=6';
 
 const $ = id => document.getElementById(id);
 const input = $('text-input');
@@ -15,6 +16,11 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const preferenceKey = 'bobsbath.crawler.v1';
 let saved = {};
 try { saved = JSON.parse(localStorage.getItem(preferenceKey) || '{}') || {}; } catch { /* Private browsing can disable storage. */ }
+const requestedMode=new URLSearchParams(location.search).get('mode');
+let experiment=requestedMode?requestedMode==='omega'?'typer':'crawler':saved.experiment==='typer'?'typer':'crawler';
+const typing=()=>experiment==='typer';
+let typer=null,typingWidth=0,typingHeight=0,typedOffset=-1;
+const typingCanvas=$('typing-hands'),typingCtx=typingCanvas.getContext('2d');
 let words = [];
 let spans = [];
 let phase = 'ready';
@@ -63,7 +69,7 @@ const hunting = () => $('reading-mode').value === 'hunt';
 
 function save() {
   try {
-    localStorage.setItem(preferenceKey, JSON.stringify({ text: input.value, speed: Number($('speed').value), voice: $('voice').checked, voiceName: $('voice-select').value, mode: $('reading-mode').value }));
+    localStorage.setItem(preferenceKey, JSON.stringify({ text: input.value, speed: Number($('speed').value), voice: $('voice').checked, voiceName: $('voice-select').value, mode: $('reading-mode').value, experiment }));
   } catch { /* The reader still works without storage. */ }
 }
 
@@ -71,7 +77,7 @@ function announce(message) { $('announcement').textContent = message; }
 function status(label) { $('state-label').textContent = label; }
 function speed() { return Number($('speed').value); }
 function pace() { return speed() / BASE_WPM; }
-function voiceEnabled() { return canSpeak && $('voice').checked && pace()<=10; }
+function voiceEnabled() { return !typing() && canSpeak && $('voice').checked && pace()<=10; }
 function updateVoiceNote() {
   $('voice-note').textContent = !canSpeak ? 'This browser has no read-aloud voice. Visual reading still works.' : $('voice').checked && pace()>10 ? 'Audio pauses above 10×. The crawler keeps moving.' : $('voice').checked ? 'Uses the voices available on your device.' : 'Sound off. The crawler will read visually.';
 }
@@ -82,15 +88,86 @@ function updateSpeedLabel() {
   updateVoiceNote();
 }
 function formatCount(n) { return String(n).padStart(3, '0'); }
+function hasContent() { return typing()?!!typer?.units.length:!!words.length; }
+function updateInputCount() { $('input-count').textContent=typing()?`${graphemes(input.value.slice(0,LIMIT)).length} CHARACTERS`:`${tokenize(input.value).length} WORDS`; }
+
+function configureExperiment() {
+  const type=typing();
+  document.body.classList.toggle('typing-mode',type);
+  $('crawler-stage').hidden=type;$('omega-stage').hidden=!type;$('typing-copy').hidden=!type;
+  for(const button of document.querySelectorAll('[data-experiment]')) button.setAttribute('aria-pressed',String(button.dataset.experiment===experiment));
+  $('title').innerHTML=type?'Let it type.<br><em>Every last character.</em>':'Let it read<br><em>between the lines.</em>';
+  $('intro-copy').innerHTML=type?'Write something.<br>Watch ten fingers<br>type it back.':'Feed it a thought.<br>Watch a strange little crawler<br>find the words that stand out.';
+  $('intro-code').textContent=type?'TEXT → TOUCH':'TEXT → MOTION';
+  $('specimen-number').textContent=type?'DIGITAL SPECIMEN / 002':'DIGITAL SPECIMEN / 001';
+  $('control-title').textContent=type?'02 / FEED THE HANDS':'01 / FEED THE CRAWLER';
+  $('input-prompt').textContent=type?'What should it type':'What is on your mind';
+  $('text-hint').textContent=type?'Every letter. Every space. Exactly as you wrote it.':'Paste anything. Then let it loose.';
+  $('speed-caption').textContent=type?'TYPING SPEED':'CRAWLING SPEED';
+  $('field-copy').innerHTML=type?'Ten fingers. One thought.<br>Your words, brought<br>back to life.':'Names. Actions. Ideas.<br>Follow the thread, then<br>read the takeaway.';
+  $('field-fine').textContent=type?'Pink joints. Mint keystrokes. An exact copy of your text.':'Cyan marks key ideas. Pink and purple mark tone.';
+  $('motion-note').textContent=type?'Ten fingers. Every character.':'Eight feet. Words worth chasing.';
+  document.title=type?'Omega Typer — Bobs Bath':'Web Crawler — Bobs Bath';
+}
 
 function setPhase(value) {
   phase = value;
   document.body.classList.toggle('is-running', value === 'running');
-  $('pause').disabled = value === 'ready' || value === 'finished' || !words.length;
+  $('pause').disabled = value === 'ready' || value === 'finished' || !hasContent();
   $('pause').innerHTML = value === 'paused' ? 'Resume <span aria-hidden="true">▶</span>' : 'Pause <span aria-hidden="true">Ⅱ</span>';
-  $('start-label').textContent = value === 'finished' ? 'Crawl again' : value === 'paused' && !dirty ? 'Keep crawling' : value === 'running' && !dirty ? 'Restart crawling' : 'Start crawling';
-  status(value === 'running' ? hunting() ? 'HUNTING WORDS & PHRASES' : 'SCANNING YOUR WORDS' : value === 'paused' ? 'TAKING A BREATHER' : value === 'finished' ? hunting() ? 'HUNT COMPLETE' : 'EVERY WORD FOUND' : 'READY TO READ');
+  $('start-label').textContent = typing()?(value==='finished'?'Type again':value==='paused'&&!dirty?'Keep typing':value==='running'&&!dirty?'Restart typing':'Start typing'):value === 'finished' ? 'Crawl again' : value === 'paused' && !dirty ? 'Keep crawling' : value === 'running' && !dirty ? 'Restart crawling' : 'Start crawling';
+  status(typing()?value==='running'?'TYPING YOUR WORDS':value==='paused'?'HANDS ON HOLD':value==='finished'?'EXACT COPY COMPLETE':'READY TO TYPE':value === 'running' ? hunting() ? 'HUNTING WORDS & PHRASES' : 'SCANNING YOUR WORDS' : value === 'paused' ? 'TAKING A BREATHER' : value === 'finished' ? hunting() ? 'HUNT COMPLETE' : 'EVERY WORD FOUND' : 'READY TO READ');
 }
+
+function resetTyper(text) {
+  typer=createTyper(text);typedOffset=-1;
+  words=[];spans=[];annotations=[];rig=null;wordRects=[];
+  $('read-summary').hidden=true;$('typing-copy').textContent='Copy text';
+  $('typing-scroll').scrollTop=0;
+  dirty=false;syncTyper();
+  $('start').disabled=$('restart').disabled=!hasContent();
+  setPhase('ready');requestAnimationFrame(measureTyper);
+}
+
+function measureTyper() {
+  if(!typing()) return;
+  const rect=typingCanvas.getBoundingClientRect(),scale=Math.min(window.devicePixelRatio||1,2);
+  typingWidth=rect.width;typingHeight=rect.height;
+  if(typingCanvas.width!==Math.round(rect.width*scale)||typingCanvas.height!==Math.round(rect.height*scale)) {
+    typingCanvas.width=Math.round(rect.width*scale);typingCanvas.height=Math.round(rect.height*scale);typingCtx.setTransform(scale,0,0,scale,0,0);
+  }
+}
+
+function syncTyper() {
+  if(!typer) return;
+  const frame=typerFrame(typer);
+  if(typedOffset!==typer.offset) {
+    typedOffset=typer.offset;$('typing-text').textContent=typer.text.slice(0,typer.offset);
+    if($('typing-copy').textContent==='Copied') $('typing-copy').textContent='Copy text';
+    $('typing-placeholder').hidden=typer.offset>0;
+    $('typing-copy').disabled=typer.offset===0;
+    $('read-count').textContent=`${formatCount(typer.emitted)} / ${formatCount(typer.units.length)} CHARACTERS`;
+    const pct=Math.round(frame.progress*100);$('progress').style.width=`${pct}%`;
+    document.querySelector('[role=progressbar]').setAttribute('aria-valuenow',String(pct));
+    $('typing-scroll').scrollTop=$('typing-scroll').scrollHeight;
+  }
+  const key=typer.complete&&typer.units.length?'EVERY CHARACTER COPIED':frame.unit?`KEY / ${frame.unit.key.label}`:'AWAITING INPUT';
+  if($('typing-key').textContent!==key) {$('typing-key').textContent=key;$('current-word').textContent=key;}
+  typingCanvas.dataset.key=frame.unit?.key.id||'';
+  typingCanvas.dataset.action=frame.keyDown?'pressing':typer.complete?'resting':'reaching';
+}
+
+$('typing-copy').addEventListener('click',async()=>{
+  if(!typer?.offset) return;
+  try {await navigator.clipboard.writeText(typer.text.slice(0,typer.offset));$('typing-copy').textContent='Copied';}
+  catch {$('typing-copy').textContent='Select text to copy';}
+});
+for(const button of document.querySelectorAll('[data-experiment]')) button.addEventListener('click',()=>{
+  if(experiment===button.dataset.experiment) return;
+  experiment=button.dataset.experiment;
+  const url=new URL(location.href);if(typing())url.searchParams.set('mode','omega');else url.searchParams.delete('mode');history.replaceState(null,'',url);
+  configureExperiment();updateSpeedLabel();updateInputCount();renderText(input.value);save();
+});
 
 function stopSpeech() {
   generation++;
@@ -107,6 +184,7 @@ function renderText(text) {
   if(activeInspection) releaseInspection(rig,activeInspection);
   activeInspection=null;inspectionQueue=[];readingDone=false;
   const bounded = text.slice(0, LIMIT);
+  if(typing()) {resetTyper(bounded);return;}
   words = tokenize(bounded);
   textModel = analyzeDocument(words, bounded);
   scanPlan = textModel.targets;
@@ -167,6 +245,7 @@ function renderText(text) {
 }
 
 function measure() {
+  if(typing()) return;
   const rect = viewport.getBoundingClientRect();
   width = rect.width;
   height = rect.height;
@@ -383,11 +462,13 @@ function nextHunt() {
 function begin(resume = false) {
   clearTimeout(inputTimer);
   if (dirty || !resume || phase === 'finished') renderText(input.value);
-  if (!words.length) { announce('Add some text first.'); input.focus(); return; }
+  if (!hasContent()) { announce('Add some text first.'); input.focus(); return; }
   stopSpeech();
   scrollUntil = 0;
   setPhase('running');
-  if (hunting()) {
+  if(typing()) {
+    $('typing-placeholder').hidden=true;
+  } else if (hunting()) {
     if (huntIndex < 0) nextHunt();
     else if ((!pendingHunt || activeInspection?.recorded) && $('voice').checked) speakCurrent();
     trackWord();
@@ -400,7 +481,7 @@ function begin(resume = false) {
   if (window.matchMedia('(max-width: 600px)').matches) {
     document.querySelector('.reader-panel').scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start' });
   }
-  announce(resume ? 'Reading resumed.' : 'The crawler is reading your text.');
+  announce(typing()?resume?'Typing resumed.':'The hands are typing your text.':resume ? 'Reading resumed.' : 'The crawler is reading your text.');
 }
 
 function pause() {
@@ -408,7 +489,7 @@ function pause() {
     stopSpeech();
     setPhase('paused');
     scrollTarget = null;
-    announce('Reading paused.');
+    announce(typing()?'Typing paused.':'Reading paused.');
   } else if (phase === 'paused') begin(true);
 }
 
@@ -419,22 +500,23 @@ input.addEventListener('input', () => {
   $('read-summary').hidden = true;
   if (phase === 'running') { stopSpeech(); setPhase('paused'); }
   dirty = true;
-  $('input-count').textContent = `${tokenize(input.value).length} WORDS`;
-  $('start-label').textContent = 'Start crawling';
-  $('start').disabled = !input.value.trim();
+  updateInputCount();
+  $('start-label').textContent = typing()?'Start typing':'Start crawling';
+  $('start').disabled = typing()?!input.value.length:!input.value.trim();
   status('NEW WORDS WAITING');
   clearTimeout(inputTimer);
   inputTimer = setTimeout(() => { renderText(input.value); save(); }, 300);
 });
-$('clear').addEventListener('click', () => { clearTimeout(inputTimer); input.value = ''; $('input-count').textContent = '0 WORDS'; renderText(''); save(); input.focus(); });
+$('clear').addEventListener('click', () => { clearTimeout(inputTimer); input.value = ''; updateInputCount(); renderText(''); save(); input.focus(); });
 $('sample').addEventListener('click', () => {
   clearTimeout(inputTimer);
-  sampleIndex = (sampleIndex + 1) % SAMPLES.length;
-  input.value = SAMPLES[sampleIndex];
-  $('input-count').textContent = `${tokenize(input.value).length} WORDS`;
+  const samples=typing()?OMEGA_SAMPLES:SAMPLES;
+  sampleIndex = (sampleIndex + 1) % samples.length;
+  input.value = samples[sampleIndex];
+  updateInputCount();
   renderText(input.value);
   save();
-  announce('Sample loaded. Press Start crawling.');
+  announce(typing()?'Sample loaded. Press Start typing.':'Sample loaded. Press Start crawling.');
 });
 $('speed').addEventListener('input', () => {
   updateSpeedLabel();
@@ -496,7 +578,7 @@ function focusView(force) {
   $('focus').setAttribute('aria-pressed', String(value));
   $('focus').setAttribute('aria-label', value ? 'Exit expanded reader' : 'Expand reader');
   $('focus').title = value ? 'Exit expanded reader' : 'Expand reader';
-  requestAnimationFrame(() => { measure(); trackWord(); });
+  requestAnimationFrame(() => { if(typing())measureTyper();else {measure();trackWord();} });
 }
 $('focus').addEventListener('click', () => focusView());
 document.addEventListener('keydown', e => {
@@ -507,7 +589,7 @@ document.addEventListener('keydown', e => {
 for (const name of ['wheel', 'touchstart', 'pointerdown']) viewport.addEventListener(name, () => { scrollUntil = performance.now() + 3500; scrollTarget = null; }, { passive: true });
 doc.addEventListener('click', e => {
   const el = e.target.closest('[data-word]');
-  if (!el || dirty) return;
+  if (!el || dirty || typing()) return;
   const index = Number(el.dataset.word);
   const wasRunning = phase === 'running';
   stopSpeech();
@@ -537,6 +619,7 @@ doc.addEventListener('click', e => {
 document.addEventListener('visibilitychange', () => { if (document.hidden && phase === 'running') pause(); });
 window.addEventListener('pagehide', stopSpeech);
 new ResizeObserver(measure).observe(viewport);
+new ResizeObserver(measureTyper).observe(typingCanvas);
 if (document.fonts?.ready) document.fonts.ready.then(measure);
 
 function goalForTarget() {
@@ -744,6 +827,14 @@ function tick(now,dt) {
 function frame(now) {
   const dt=Math.min((now-(lastFrame||now))/1000,.12);
   lastFrame=now;
+  if(typing()) {
+    if(typer && phase==='running') {
+      advanceTyper(typer,dt,{pace:pace()});syncTyper();
+      if(typer.complete) {setPhase('finished');announce(`Typed all ${typer.units.length} characters. Your exact copy is ready.`);}
+    }
+    if(typer && typingWidth && typingHeight) paintTyper(typingCtx,typer,typingWidth,typingHeight,{reduced:reducedMotion.matches});
+    requestAnimationFrame(frame);return;
+  }
   // Walk through the same gait/gesture states at high speed, then paint once.
   // This avoids imposing one target (or one word) per display-frame limits.
   const steps=phase==='running'?Math.max(1,Math.ceil(dt*pace()*60)):1;
@@ -752,8 +843,7 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
-updateSpeedLabel();
-$('input-count').textContent = `${tokenize(input.value).length} WORDS`;
+configureExperiment();updateSpeedLabel();updateInputCount();
 if (reducedMotion.matches) $('motion-note').textContent = 'Reduced motion. Same curious creature.';
 renderText(input.value);
 requestAnimationFrame(frame);

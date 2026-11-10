@@ -28,11 +28,12 @@ jobs:
           node --check crawler-motion.js
           node --check crawler-inspection.js
           node --check text-analysis.js
+          node --check omega-typer.js
       - run: npm test
       - name: Stage the static page
         run: |
           mkdir -p dist
-          cp index.html style.css app.js reader-core.js crawler-motion.js crawler-inspection.js text-analysis.js LICENSE THIRD_PARTY.txt .nojekyll dist/
+          cp index.html style.css app.js reader-core.js crawler-motion.js crawler-inspection.js text-analysis.js omega-typer.js LICENSE THIRD_PARTY.txt .nojekyll dist/
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         with:
