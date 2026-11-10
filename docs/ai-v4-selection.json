@@ -1,0 +1,81 @@
+{
+  "input": "docs/ai-v4-v3-match.json",
+  "engines": {
+    "baseline": {
+      "version": "intuition-hybrid-3",
+      "sourceSHA256": "e4aeae6ae9b5d891a7eb738b237a9c3ee528962e46e12c52f93a1d0a8d45719b",
+      "sourceRef": "b1d5002:src/engine.js",
+      "sourceDependencies": {
+        "src/controller.js": "77d6ff8b271939fff79cc65c21c68137b6b8258964b6db577c0aa7f2121c4dbd",
+        "src/position-evaluation.js": "a3310ef74b652e37837ae9a0ccdd0ad06ae2854e18f1d3de66307e817ecfe2b3",
+        "src/tactical-search.js": "6ca31695f09ab0ee061209157f6d885fbf393b8e1e781dc3e8b98d9b73451b37"
+      },
+      "sourceTreeSHA256": "d35d77b7d89ae7ea43b379dc0fb41227df965835de68985242cbeee7f8a25f73",
+      "packageLockSHA256": "a16e88747194cd5a3cfd3bf7bf9c441d457b0c4ae0a46c8020d8bb01ed5bc94c",
+      "runtimePackageLockSHA256": "a16e88747194cd5a3cfd3bf7bf9c441d457b0c4ae0a46c8020d8bb01ed5bc94c",
+      "packageDependencies": {
+        "chess.js": {
+          "package": "chess.js",
+          "version": "1.4.0",
+          "lockedVersion": "1.4.0",
+          "lockIntegrity": "sha512-BBJgrrtKQOzFLonR0l+k64A98NLemPwNsCskwb+29bRwobUa4iTm51E1kwGPbWXAcfdDa18nad6vpPPKPWarqw==",
+          "packageJSONSHA256": "36a258fdfb5e76d0816bf2b63dab3c917a0a8652f943da0e6be7e9b543765dfd",
+          "entry": "dist/cjs/chess.js",
+          "entrySHA256": "ccf63ba6a6023ccebc8c110361361b8e14f85d40b556eff387baa8ede4fdd21f"
+        }
+      }
+    },
+    "improved": {
+      "version": "intuition-hybrid-4",
+      "sourceSHA256": "77302a2f1df8e56a61937de82e6c884fb16a2bd4ab8a11bf299292c80584ed9b",
+      "sourceRef": "src/engine.js",
+      "sourceDependencies": {
+        "src/controller.js": "77d6ff8b271939fff79cc65c21c68137b6b8258964b6db577c0aa7f2121c4dbd",
+        "src/position-evaluation.js": "a3310ef74b652e37837ae9a0ccdd0ad06ae2854e18f1d3de66307e817ecfe2b3",
+        "src/tactical-search.js": "e4868ab19c679415fb602cf81fded31194689ebc2b333722fe308fbf0a53954d"
+      },
+      "sourceTreeSHA256": "90cd58e74ef0b6ce49f06becfcdb0b87f844ce79d8cc9a769fafffebbeaf6386",
+      "packageLockSHA256": "a16e88747194cd5a3cfd3bf7bf9c441d457b0c4ae0a46c8020d8bb01ed5bc94c",
+      "runtimePackageLockSHA256": "a16e88747194cd5a3cfd3bf7bf9c441d457b0c4ae0a46c8020d8bb01ed5bc94c",
+      "packageDependencies": {
+        "chess.js": {
+          "package": "chess.js",
+          "version": "1.4.0",
+          "lockedVersion": "1.4.0",
+          "lockIntegrity": "sha512-BBJgrrtKQOzFLonR0l+k64A98NLemPwNsCskwb+29bRwobUa4iTm51E1kwGPbWXAcfdDa18nad6vpPPKPWarqw==",
+          "packageJSONSHA256": "36a258fdfb5e76d0816bf2b63dab3c917a0a8652f943da0e6be7e9b543765dfd",
+          "entry": "dist/cjs/chess.js",
+          "entrySHA256": "ccf63ba6a6023ccebc8c110361361b8e14f85d40b556eff387baa8ede4fdd21f"
+        }
+      }
+    }
+  },
+  "validation": {
+    "games": 24,
+    "scored": 24,
+    "unfinished": 0,
+    "moves": 3539,
+    "terminations": {
+      "threefold-repetition": 1,
+      "checkmate": 19,
+      "insufficient-material": 1,
+      "stalemate": 2,
+      "fifty-move-draw": 1
+    }
+  },
+  "selected": "baseline",
+  "accepted": false,
+  "complete": true,
+  "planned": 24,
+  "games": 24,
+  "unfinished": 0,
+  "forfeits": 0,
+  "candidatePoints": 15.5,
+  "favorable": 5,
+  "unfavorable": 1,
+  "tied": 6,
+  "oneSidedP": 0.109375,
+  "threshold": 0.05,
+  "method": "Exact one-sided paired sign test; ties removed. All 24 games and zero forfeits required.",
+  "caveat": "Fixed-opening development comparison, not an Elo estimate or proof of broad strength."
+}
