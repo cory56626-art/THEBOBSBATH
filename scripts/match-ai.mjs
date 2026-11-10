@@ -25,7 +25,7 @@ const reserveMs = integer('reserve', 1000, 0);
 const rounds = integer('rounds', 1, 1);
 const output = new URL(args.output || 'docs/ai-v3-match.json', root);
 const pgnOutput = new URL(args.pgn || 'docs/ai-v3-match.pgn', root);
-const baseline = await loadEngine(args.baseline ? { sourcePath: args.baseline } : { sourceRevision: 'cd89e02:src/engine.js' });
+const baseline = await loadEngine(args.baseline ? { sourcePath: args.baseline } : { sourceRevision: args['baseline-revision'] || 'b1d5002:src/engine.js' });
 const improved = await loadEngine({ sourcePath: args.candidate || 'src/engine.js' });
 const model = createModelFromBytes(JSON.parse(await readFile(new URL('model/capsule.json', root), 'utf8')), await readFile(new URL('model/weights.bin', root)));
 const engines = { baseline, improved };
@@ -43,10 +43,10 @@ let gitCommit = null;
 try { gitCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(); } catch {}
 const report = {
   startedAt: new Date().toISOString(), gitCommit,
-  engines: Object.fromEntries(Object.entries(engines).map(([key, engine]) => [key, { version: engine.ENGINE_VERSION, sourceSHA256: engine.sourceSHA256, sourceRef: engine.sourceRef, sourceDependencies: engine.sourceDependencies }])),
+  engines: Object.fromEntries(Object.entries(engines).map(([key, engine]) => [key, { version: engine.ENGINE_VERSION, sourceSHA256: engine.sourceSHA256, sourceRef: engine.sourceRef, sourceDependencies: engine.sourceDependencies, sourceTreeSHA256: engine.sourceTreeSHA256, packageLockSHA256: engine.packageLockSHA256, runtimePackageLockSHA256: engine.runtimePackageLockSHA256, packageDependencies: engine.packageDependencies }])),
   scriptSHA256: hash(await readFile(new URL('scripts/match-ai.mjs', root))),
   harnessDependencies: { loaderSHA256: hash(await readFile(new URL('scripts/lib/load-engine.mjs', root))), openingsSHA256: hash(await readFile(new URL('scripts/lib/chess-openings.mjs', root))) },
-  model: MODEL_METADATA,
+  model: { ...MODEL_METADATA, actualWeightsSHA256: hash(await readFile(new URL('model/weights.bin', root))) },
   environment: { node: process.version, platform: os.platform(), architecture: os.arch(), cpu: os.cpus()[0]?.model },
   settings: { mode: 'search', budgetMs, baselineMaxNodes: maxNodes, candidateMaxNodes, maxPlies, clockPerSideMs: Math.ceil(maxPlies / 2) * budgetMs + reserveMs, reserveMs, openingSet, rounds, plannedGames, openings, colorReversed: true, adjudication: 'Only rules-terminal games and explicit time/illegal-move forfeits are scored. Move-cap truncations remain unfinished and unscored.', clockPolicy: 'Competition clock exhaustion is a forfeit regardless of remaining mating material; such wins are reported separately from checkmate.' },
   caveats: ['This small pilot cannot establish a reliable Elo change.', 'Identical model weights are shared; this tests decision-engine changes, not a new trained network.', 'The configured node limits can count different work units across engine versions. They are recorded separately; total move budgets and game clocks are equal.', 'Wall-time limits are soft because individual synchronous operations cannot be interrupted. Actual elapsed time around the entire decision call is deducted from equal game clocks.', 'Opening order is fixed; colors reverse within each pair. No evaluation-based win/draw adjudication is used.'],

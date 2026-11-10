@@ -5,7 +5,7 @@ const input = createInterface({ input: process.stdin });
 for await (const command of input) {
   if (mode === 'exit') process.exit(7);
   if (mode === 'hang') continue;
-  if (command === 'uci') process.stdout.write('id name Fake protocol fixture\noption name Skill Level type spin default 20 min 0 max 20\noption name Clear Hash type button\nuciok\n');
+  if (command === 'uci') process.stdout.write('id name Fake protocol fixture\noption name Skill Level type spin default 20 min 0 max 20\noption name Clear Hash type button\noption name Threads type spin default 1 min 1 max 1024\noption name Hash type spin default 16 min 1 max 33554432\noption name MultiPV type spin default 1 min 1 max 256\noption name Ponder type check default false\noption name UCI_LimitStrength type check default false\noption name UCI_Elo type spin default 1320 min 1320 max 3190\nuciok\n');
   if (command === 'isready') process.stdout.write('readyok\n');
   if (command.startsWith('position ')) position = command;
   if (command.startsWith('go ')) process.stdout.write(`info depth 3 nodes 99 time 1 score cp 12 pv e7e5\nbestmove ${position.includes('moves e2e4') ? 'e7e5' : 'e2e4'}\n`);

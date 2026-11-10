@@ -80,7 +80,14 @@ export class UciEngine {
     await this.ready();
   }
 
-  async chooseMove(history, nodes) {
+  async chooseMove(history, limits) {
+    // A movetime request deliberately has no hidden node cap. Keep numeric node
+    // requests compatible with the earlier development arenas.
+    const limit = typeof limits === 'number' ? { nodes: limits } : limits;
+    if (!limit || typeof limit !== 'object' || Array.isArray(limit)) throw new Error('Pass exactly one positive integer UCI limit: nodes or movetime');
+    const keys = Object.keys(limit);
+    if (keys.length !== 1 || !['nodes', 'movetime'].includes(keys[0]) || !Number.isSafeInteger(limit[keys[0]]) || limit[keys[0]] < 1) throw new Error('Pass exactly one positive integer UCI limit: nodes or movetime');
+    const goCommand = `go ${keys[0]} ${limit[keys[0]]}`;
     this.send(`position startpos${history.length ? ` moves ${history.join(' ')}` : ''}`);
     let info = null;
     this.collect = line => {
@@ -95,7 +102,7 @@ export class UciEngine {
       };
     };
     try {
-      const line = await this.request(`go nodes ${nodes}`, value => value.startsWith('bestmove '));
+      const line = await this.request(goCommand, value => value.startsWith('bestmove '));
       return { move: line.split(/\s+/)[1], info };
     } finally { this.collect = null; }
   }

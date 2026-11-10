@@ -1,4 +1,4 @@
-/** Actual chess games against explicitly limited native Stockfish opponents. */
+/** Actual chess games against explicitly configured native Stockfish opponents. */
 import { readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -24,7 +24,9 @@ const hash = value => createHash('sha256').update(value).digest('hex');
 const budgetMs = integer('budget', 150, 1);
 const maxNodes = integer('max-nodes', 64, 1);
 const maxPlies = integer('max-plies', 160, 2);
-const stockfishNodes = integer('stockfish-nodes', 1000, 1);
+const stockfishNodes = integer('stockfish-nodes', 1000, 0);
+const stockfishMovetime = integer('stockfish-movetime', budgetMs, 1);
+const stockfishLimit = stockfishNodes ? { nodes: stockfishNodes } : { movetime: stockfishMovetime };
 const reserveMs = integer('reserve', 1000, 0);
 const skills = String(args.skills ?? '0,5').split(',').map(Number);
 if (skills.some(value => !Number.isInteger(value) || value < 0 || value > 20)) throw new Error('--skills must contain integers from 0 to 20');
@@ -32,7 +34,7 @@ const binary = args.stockfish || process.env.STOCKFISH_BINARY;
 if (typeof binary !== 'string' || !binary.trim()) throw new Error('Pass --stockfish=/absolute/path/to/stockfish or set STOCKFISH_BINARY to the executable path');
 const output = new URL(args.output || 'docs/ai-v3-arena.json', root);
 const pgnOutput = new URL(args.pgn || 'docs/ai-v3-arena.pgn', root);
-const engineModule = await loadEngine({ sourcePath: args['engine-source'] || 'src/engine.js' });
+const engineModule = await loadEngine(args['engine-revision'] ? { sourceRevision: args['engine-revision'] } : { sourcePath: args['engine-source'] || 'src/engine.js' });
 const weights = await readFile(new URL('model/weights.bin', root));
 const model = createModelFromBytes(JSON.parse(await readFile(new URL('model/capsule.json', root), 'utf8')), weights);
 const stockfish = new UciEngine(binary);
@@ -51,15 +53,15 @@ let gitCommit = null;
 try { gitCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(); } catch {}
 const report = {
   startedAt: new Date().toISOString(), gitCommit,
-  engine: { version: engineModule.ENGINE_VERSION, sourceSHA256: engineModule.sourceSHA256, sourceRef: engineModule.sourceRef, sourceDependencies: engineModule.sourceDependencies, mode: 'search' },
+  engine: { version: engineModule.ENGINE_VERSION, sourceSHA256: engineModule.sourceSHA256, sourceRef: engineModule.sourceRef, sourceDependencies: engineModule.sourceDependencies, sourceTreeSHA256: engineModule.sourceTreeSHA256, packageLockSHA256: engineModule.packageLockSHA256, runtimePackageLockSHA256: engineModule.runtimePackageLockSHA256, packageDependencies: engineModule.packageDependencies, mode: 'search' },
   model: { ...MODEL_METADATA, actualWeightsSHA256: hash(weights) },
   scripts: { arenaSHA256: hash(await readFile(new URL('scripts/arena-ai.mjs', root))), uciClientSHA256: hash(await readFile(new URL('scripts/lib/uci-engine.mjs', root))), loaderSHA256: hash(await readFile(new URL('scripts/lib/load-engine.mjs', root))), openingsSHA256: hash(await readFile(new URL('scripts/lib/chess-openings.mjs', root))) },
   opponent: { source: 'https://github.com/official-stockfish/Stockfish/releases/tag/sf_19', executableSHA256: hash(await readFile(binary)), name: null, advertisedOptions: [], configuredOptions: [] },
-  settings: { budgetMs, maxNodes, maxPlies, stockfishNodes, skills, clockPerSideMs: Math.ceil(maxPlies / 2) * budgetMs + reserveMs, reserveMs, openingSet, rounds, plannedGames, openings, colorReversed: true, hashClearedPerGame: true, adjudication: 'Only rules-terminal games and explicit time/illegal-move forfeits are scored. Move-cap truncations remain unfinished and unscored.', clockPolicy: 'Competition clock exhaustion is a forfeit regardless of remaining mating material; such wins are reported separately from checkmate.' },
+  settings: { budgetMs, maxNodes, maxPlies, stockfishNodes, stockfishMovetime: stockfishNodes ? null : stockfishMovetime, stockfishLimit, skills, clockPerSideMs: Math.ceil(maxPlies / 2) * budgetMs + reserveMs, reserveMs, openingSet, rounds, plannedGames, openings, colorReversed: true, hashClearedPerGame: true, adjudication: 'Only rules-terminal games and explicit time/illegal-move forfeits are scored. Move-cap truncations remain unfinished and unscored.', clockPolicy: 'Competition clock exhaustion is a forfeit regardless of remaining mating material; such wins are reported separately from checkmate.' },
   environment: { node: process.version, platform: os.platform(), architecture: os.arch(), cpu: os.cpus()[0]?.model },
   caveats: [
-    'These are deliberately limited Stockfish opponents, not full-strength Stockfish and not independently rated chess bots.',
-    'Skill Level settings and a fixed Stockfish node cap do not establish a human Elo rating. No rating is inferred from this small pilot.',
+    skills.every(skill => skill === 20) && !stockfishNodes ? 'Stockfish runs with its strength limiter disabled, Skill 20 and no node cap. It is full strength at the stated single-thread movetime limit, not unlimited analysis.' : 'These Stockfish opponents have skill or node limits and are not independently rated chess bots.',
+    'Skill Level settings, node limits and short movetime tests do not establish a human Elo rating. No rating is inferred from this small pilot.',
     'The engines use different algorithms and limits. INTUITION work units can be neural-tree visits or tactical positions depending on engine version; per-move units and configured limits are retained. This is a development ladder, not equal-compute testing.',
     'Stockfish low-skill play can be randomized internally; the binary, settings, openings and moves are recorded but reruns need not be identical.',
     'Both sides have equal game clocks. Actual wall time, including UCI communication, is deducted. Individual neural inferences cannot be interrupted, so per-move time limits are soft.',
@@ -106,7 +108,7 @@ try {
           const beforeFen = chess.fen(), started = performance.now();
           const result = engine === 'intuition'
             ? await engineModule.chooseMove(chess, model, { mode: 'search', budgetMs: Math.min(budgetMs, Math.max(1, clocks[color])), maxNodes })
-            : await stockfish.chooseMove(history, stockfishNodes);
+            : await stockfish.chooseMove(history, stockfishLimit);
           const elapsedMs = performance.now() - started;
           clocks[color] -= elapsedMs;
           if (clocks[color] <= 0) { outcome = { status: 'time-forfeit', result: color === 'w' ? '0-1' : '1-0', winner: color === 'w' ? 'b' : 'w' }; break; }
@@ -119,7 +121,7 @@ try {
           if ((ply + 1) % 40 === 0) console.log(`Game ${report.games.length + 1}/${plannedGames}, skill ${skill}, ${opening.name}: ${ply + 1}/${maxPlies} plies`);
         }
         outcome ||= { status: 'truncated', result: '*', winner: null };
-        chess.header('Event', 'INTUITION versus limited Stockfish pilot', 'White', whiteEngine, 'Black', blackEngine, 'Opening', opening.name, 'Result', outcome.result, 'Termination', outcome.status, 'StockfishSkill', String(skill), 'StockfishNodes', String(stockfishNodes));
+        chess.header('Event', 'INTUITION versus configured Stockfish pilot', 'White', whiteEngine, 'Black', blackEngine, 'Opening', opening.name, 'Result', outcome.result, 'Termination', outcome.status, 'StockfishSkill', String(skill), 'StockfishNodes', stockfishNodes ? String(stockfishNodes) : 'none', 'StockfishMovetimeMs', stockfishNodes ? 'none' : String(stockfishMovetime));
         report.games.push({ id: report.games.length + 1, round: round + 1, skill, pair: openingIndex + 1, opening: opening.name, openingMoves: opening.moves, openingFen, whiteEngine, blackEngine, ...outcome, plies: moves.length, finalFen: chess.fen(), clocks, moves, pgn: chess.pgn() });
         await save();
         console.log(`FINISHED ${report.games.length}/${plannedGames}: Skill ${skill}, ${whiteEngine} vs ${blackEngine}, ${outcome.result} (${outcome.status}), ${moves.length} plies`);
