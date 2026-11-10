@@ -3,6 +3,7 @@ import { renderBoard } from './board.js';
 import { serializePosition, playUci, ENGINE_VERSION } from './engine.js';
 import { BENCHMARK_SUITES, rowsToCSV } from './benchmark.js';
 import defaultGate from './default-controller.json';
+import { BOT_PROFILE } from './bot-profile.js';
 
 const $ = id => document.getElementById(id);
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -29,7 +30,7 @@ function toast(message, error = false) {
   log(error ? 'error' : 'notice', message);
 }
 function settings() {
-  return { budgetMs: Number($('budget')?.value || 500), maxNodes: Number($('node-limit')?.value || 32768), gate, threshold: Number($('controller-threshold')?.value || 0.5) };
+  return { budgetMs: Number($('budget')?.value || BOT_PROFILE.rating.budgetMs), maxNodes: Number($('node-limit')?.value || 32768), gate, threshold: Number($('controller-threshold')?.value || 0.5) };
 }
 function request(type, options = {}, position = serializePosition(game), onProgress) {
   if (!ready) return Promise.reject(new Error('The neural model is still loading.'));
@@ -127,14 +128,30 @@ function render() {
   const topColor = orientation === 'w' ? 'b' : 'w';
   for (const [id, color] of [['top-player', topColor], ['bottom-player', topColor === 'w' ? 'b' : 'w']]) {
     if ($(id)?.firstChild?.nodeType === Node.TEXT_NODE) $(id).firstChild.nodeValue = color === 'w' ? 'WHITE' : 'BLACK';
-    if ($(`${id}-detail`)) $(`${id}-detail`).textContent = $('side').value === color ? 'YOUR SIDE' : modeNames[$('mode').value].toUpperCase();
+    if ($(`${id}-detail`)) $(`${id}-detail`).textContent = $('side').value === color ? 'YOUR SIDE' : `${BOT_PROFILE.name.toUpperCase()} · ${modeNames[$('mode').value].toUpperCase()}`;
   }
   const history = game.history();
   $('move-list').innerHTML = history.length ? Array.from({ length: Math.ceil(history.length / 2) }, (_, i) => `<div class="move-row"><span>${i + 1}.</span><span>${escape(history[i * 2])}</span><span>${escape(history[i * 2 + 1] || '')}</span></div>`).join('') : '<p class="empty-state">Your first move starts the experiment.</p>';
   $('move-list').scrollTop = $('move-list').scrollHeight;
   updateControls(false);
 }
+function renderBotProfile() {
+  const rating = BOT_PROFILE.rating;
+  $('bot-name').textContent = BOT_PROFILE.name;
+  $('bot-rating').textContent = `≈${rating.estimate}`;
+  $('bot-rating-interval').textContent = `${rating.lower}–${rating.upper}`;
+  const mode = $('mode').value;
+  const matches = mode === rating.mode && Number($('budget').value) === rating.budgetMs && Number($('node-limit').value) === rating.maxNodes;
+  $('bot-rating-context').textContent = matches
+    ? 'Current settings match the measured test: Search · 150 ms · 32,768 positions.'
+    : mode === 'direct'
+      ? 'Direct mode is unrated. The estimate above belongs to the measured Search test.'
+      : mode === 'selective'
+        ? 'Selective mode is unrated. The estimate above belongs to the measured Search test.'
+        : 'These search limits are unmeasured. The estimate above is for 150 ms and 32,768 positions.';
+}
 function updateControls(redraw = true) {
+  renderBotProfile();
   for (const id of ['play-engine', 'compare-modes', 'run-suite', 'run-matches', 'train-controller', 'load-fen', 'load-pgn', 'reset-controller']) if ($(id)) $(id).disabled = !ready || busy || startingGame;
   if (ready && watchRunning && !startingGame && $('side')?.value === 'watch') $('play-engine').disabled = false;
   $('new-game').disabled = startingGame;
@@ -251,7 +268,7 @@ function renderGate() {
   if (gate.trained && metrics.brier > metrics.baselineBrier) $('controller-results').insertAdjacentHTML('beforeend', '<p class="warning">On this small holdout, the constant predictor scored better. Treat this controller as an experimental baseline.</p>');
 }
 function reportEnvelope(data) {
-  return { experimentVersion: '0.1.0', engineVersion: ENGINE_VERSION, createdAt: new Date().toISOString(), model: modelMetadata, environment: { userAgent: navigator.userAgent, hardwareConcurrency: navigator.hardwareConcurrency, deviceMemory: navigator.deviceMemory || null }, controller: gate, ...data };
+  return { experimentVersion: '0.1.0', engineVersion: ENGINE_VERSION, bot: BOT_PROFILE, createdAt: new Date().toISOString(), model: modelMetadata, environment: { userAgent: navigator.userAgent, hardwareConcurrency: navigator.hardwareConcurrency, deviceMemory: navigator.deviceMemory || null }, controller: gate, ...data };
 }
 function keepReport(result) {
   latestReport = reportEnvelope(result); reports.push(latestReport);
@@ -291,6 +308,7 @@ bind('undo', async () => { await cancelActive(); game.undo(); if ($('side').valu
 bind('flip', () => { orientation = orientation === 'w' ? 'b' : 'w'; render(); });
 bind('side', async () => { await cancelActive(); gameNotice = null; orientation = $('side').value === 'b' ? 'b' : 'w'; selected = null; render(); await maybeAutoMove(); }, 'change');
 bind('mode', () => render(), 'change');
+for (const id of ['budget', 'node-limit']) bind(id, () => renderBotProfile(), 'change');
 bind('play-engine', async () => { if ($('side').value === 'watch') { if (watchRunning) { await cancelActive(); updateControls(); } else { watchRunning = true; await maybeAutoMove(); } } else { await engineMove(); await maybeAutoMove(); } });
 bind('cancel-run', async () => { await cancelActive(); toast('Run cancelled.'); });
 bind('stop-active', async () => { await cancelActive(); toast('Run cancelled.'); });
@@ -309,7 +327,7 @@ bind('export-csv', () => { if (!latestReport) throw new Error('Run a comparison 
 bind('download-logs', () => download('intuition-session.json', JSON.stringify(reportEnvelope({ logs, reports, currentPosition: serializePosition(game), latestDecision }),null,2)));
 
 // Keep a compact read-only diagnostic hook for reproducible browser checks.
-window.__INTUITION__ = { get ready() { return ready; }, get busy() { return busy; }, get fen() { return game.fen(); }, get latestDecision() { return latestDecision; }, get latestReport() { return latestReport; }, get model() { return modelMetadata; }, get gameId() { return gameEpoch; }, get watchRunning() { return watchRunning; } };
+window.__INTUITION__ = { get ready() { return ready; }, get busy() { return busy; }, get fen() { return game.fen(); }, get latestDecision() { return latestDecision; }, get latestReport() { return latestReport; }, get model() { return modelMetadata; }, get bot() { return BOT_PROFILE; }, get gameId() { return gameEpoch; }, get watchRunning() { return watchRunning; } };
 const suiteLabels = { smoke: 'Quick check · 3 positions', mixed: 'Mixed suite · 10 positions', tactics: 'Tactics · 6 positions', endgames: 'Endgames · 4 positions', openings: 'Openings · 4 positions' };
 $('suite-select').innerHTML = Object.entries(suiteLabels).map(([value,label]) => `<option value="${value}">${label}</option>`).join('');
 $('metric-confidence').title = 'Raw policy preference, not a calibrated probability that this move is correct.';

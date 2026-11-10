@@ -1,6 +1,6 @@
-# INTUITION — Chess research lab
+# Gato 1 — Bobs Bath Chess
 
-Chess work is on `ai/rating-benchmark`. The current GitHub Pages root hosts the newer Web Crawler app; chess publication awaits the destination decision.
+[Play Gato 1](https://cory56626-art.github.io/THEBOBSBATH/) — our first bot. Its provisional Stockfish-scale estimate is **≈1650**, with a conservative 95% sampling interval of **1289–2047**, measured over 32 games at Search / 150 ms / 32,768 positions. This is not a FIDE, Chess.com or Lichess rating; calibration error is outside that interval.
 
 [Latest search selection and rating report](docs/AI-STRENGTH-V4.md) · [Elo methodology](docs/ELO-METHODOLOGY.md)
 
@@ -31,7 +31,7 @@ Every mode uses the same neural weights, legal-move rules, and initial position.
 
 The included model is Peter Baer's **v3.1-clean-distilled** transformer: 116,266 parameters and 464,936 weight bytes. It was distilled from a larger model trained on human Lichess games. It is not a Stockfish-trained model. Exact source revision, fingerprint, and license information are in [model/provenance.json](model/provenance.json).
 
-## AI version 3
+## Gato 1 engine (internal version 3)
 
 The previous engine examined only about five or six neural tree positions in its 150 ms test games. Independent analysis found missed central breaks and short kingside tactics. Version 3 calls the same neural model once to order root moves, then spends the remaining budget on much faster tactical evaluation.
 
