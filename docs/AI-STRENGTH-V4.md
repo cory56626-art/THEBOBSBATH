@@ -1,6 +1,6 @@
 # V4 search experiment and provisional rating
 
-**Selection: keep v3.** V4 scored 15.5–8.5 points, but failed the predeclared paired significance threshold. Its source and results remain available as a promising experiment. The rating ladder will measure v3.
+**Selection: keep v3.** V4 scored 15.5–8.5 points, but failed the predeclared paired significance threshold. Its source and results remain available as a promising experiment. The completed rating ladder measures v3.
 
 ## Candidate and baseline
 
@@ -74,9 +74,23 @@ node scripts/validate-games.mjs /tmp/v3-elo.json
 
 Stockfish's limiter is calibrated at 120s+1s against CCRL 40/4. This 150 ms test measures its nominal scale under different conditions; systematic calibration error is unknown and may exceed the sampling interval. It is not a FIDE, Lichess, Chess.com or official human Elo rating. Beating full-strength Stockfish is a much larger goal than improving v3.
 
+## Full-strength reference rerun
+
+A separate fresh run against Stockfish 19 with Skill 20, limiter disabled, one thread, 16 MB hash cleared per game, pure `go movetime 150` and no node cap ended **0 wins, 0 draws, 8 losses** for v3. All games ended in checkmate; replay validated 542 moves with no forfeits or truncations. The same four fixed openings were color-reversed, AI limits were 150 ms / 32,768 tactical positions, and the cap was 400 played plies.
+
+[Fresh full-Stockfish report](ai-v3-full-stockfish-rerun.json) · [PGN](ai-v3-full-stockfish-rerun.pgn). This is a new run, not a reconstruction of the missing original. It confirms the large gap to full-strength Stockfish at these limits and does not alter the nominal-scale ladder estimate.
+
+```sh
+node scripts/arena-ai.mjs --stockfish=/path/to/stockfish19 \
+  --engine-revision=b1d5002:src/engine.js --opening-set=pilot8 --skills=20 \
+  --stockfish-nodes=0 --stockfish-movetime=150 --budget=150 \
+  --max-nodes=32768 --max-plies=400 \
+  --output=/tmp/v3-full.json --pgn=/tmp/v3-full.pgn
+```
+
 ## Verification
 
-**Selected-engine checks passed:** 111 unit tests, production build, and all 14 browser tests, including the real-model offline tactical search, poisoned capture, cancellation and mate proof cases. `src/` and `model/` match v3 byte-for-byte. Candidate-only tests load its frozen Git snapshot. [Remote CI for the selected source passed](https://github.com/cory56626-art/THEBOBSBATH/actions/runs/42854232715). Comparison and ladder full-history replay audits also passed.
+**Selected-engine checks passed:** 111 unit tests, production build, and all 14 browser tests, including the real-model offline tactical search, poisoned capture, cancellation and mate proof cases. `src/` and `model/` match v3 byte-for-byte. Candidate-only tests load its frozen Git snapshot. [Remote CI for the selected source passed](https://github.com/cory56626-art/THEBOBSBATH/actions/runs/42854232715). All three full-history replay audits passed: **64 games and 7,190 moves** total. The [machine-readable audit](ai-benchmark-audit.json) fingerprints each input report, confirms the active source graph matches immutable v3, and recomputes the rating exactly.
 
 ## Recovery and publication provenance
 

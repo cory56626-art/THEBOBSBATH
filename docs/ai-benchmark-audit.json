@@ -1,0 +1,74 @@
+{
+  "auditedAt": "2026-11-10T16:34:15.821Z",
+  "inputs": {
+    "docs/ai-v4-v3-match.json": {
+      "sha256": "a84507503d37930a81ad43edcb3005efa54acc228001c753237feda2dfc3ae23",
+      "games": 24,
+      "scored": 24,
+      "unfinished": 0,
+      "moves": 3539,
+      "terminations": {
+        "threefold-repetition": 1,
+        "checkmate": 19,
+        "insufficient-material": 1,
+        "stalemate": 2,
+        "fifty-move-draw": 1
+      }
+    },
+    "docs/ai-v3-provisional-elo.json": {
+      "sha256": "22e37795e31fdfbf06ad4cadfbc2d1aebc844eba63bfaaf39b1a03136e5848e4",
+      "games": 32,
+      "scored": 32,
+      "unfinished": 0,
+      "moves": 3109,
+      "terminations": {
+        "checkmate": 30,
+        "fifty-move-draw": 1,
+        "threefold-repetition": 1
+      }
+    },
+    "docs/ai-v3-full-stockfish-rerun.json": {
+      "sha256": "6253e2c7c4f11607a3dd7e408ce560b31287d9cf443ae0c46248ee00fd0cbab5",
+      "games": 8,
+      "scored": 8,
+      "unfinished": 0,
+      "moves": 542,
+      "terminations": {
+        "checkmate": 8
+      }
+    }
+  },
+  "selectedEngine": "intuition-hybrid-3",
+  "selectedSourceTreeSHA256": "d35d77b7d89ae7ea43b379dc0fb41227df965835de68985242cbeee7f8a25f73",
+  "activeMatchesImmutableV3": true,
+  "ratingRecomputedExactly": true,
+  "rating": {
+    "scale": "Stockfish 19 UCI_Elo nominal setting at 150 ms per move",
+    "plannedGames": 32,
+    "games": 32,
+    "scored": 32,
+    "unfinished": 0,
+    "points": 17,
+    "scoreFraction": 0.53125,
+    "pointEstimate": 1650.3049814254823,
+    "interval": {
+      "confidence": 0.95,
+      "lower": 1288.734141921309,
+      "upper": 2047.4880006592125,
+      "lowerUnbounded": false,
+      "upperUnbounded": false,
+      "scoreRadius": 0.33952537893515483,
+      "scoreLower": 0.19172462106484517,
+      "scoreUpper": 0.8707753789351549
+    },
+    "method": "Logistic expected-score fit; conservative Hoeffding interval over independent color-reversed pair means",
+    "assumptions": [
+      "Each color-reversed opening pair is an independent sampling unit; dependence within a pair is unrestricted.",
+      "Mean expected score follows the Elo logistic curve against the nominal UCI_Elo settings, averaged across the fixed opening design.",
+      "The interval covers sampling uncertainty under those assumptions, not Stockfish calibration error, opening selection bias, or hardware/time-control transfer."
+    ],
+    "status": "provisional",
+    "reason": null,
+    "pairCount": 16
+  }
+}
