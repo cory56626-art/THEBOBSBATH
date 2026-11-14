@@ -4,11 +4,12 @@ The shell imports `src/app.js` and styles `src/style.css`. `src/board.js` export
 
 ## Tabs
 
-Buttons `[data-tab]` values `play`, `position`, `benchmark`, `controller`; matching `#panel-play`, `#panel-position`, `#panel-benchmark`, `#panel-controller`. Set `hidden` on inactive panels, `.active` and `aria-selected` on tabs. Default Play is active.
+Buttons `[data-tab]` values `play`, `battle`, `position`, `benchmark`, `controller`; matching `#panel-play`, `#panel-battle`, `#panel-position`, `#panel-benchmark`, `#panel-controller`. Set `hidden` on inactive panels, `.active` and `aria-selected` on tabs. Default Play is active.
 
 ## Play controls
 
 - `#board`: renderer container.
+- `#opponent`: released bot ids, newest first (rendered from `BOTS` in `src/bot-profile.js`). Changing it switches the profile card (`#bot-name`, `#bot-generation`, `#bot-rating`, `#bot-rating-interval`, `#bot-rating-note`, `#bot-report-link`, `#play-heading`) and resets `#budget`/`#node-limit` to that bot's rated limits.
 - `#mode`: `direct`, `search`, `selective`; default direct.
 - `#side`: `w`, `b`, `watch`; default w.
 - `#budget`: milliseconds 100, 250, 500 (default), 1000, 2000.
@@ -18,6 +19,15 @@ Buttons `[data-tab]` values `play`, `position`, `benchmark`, `controller`; match
 - Player labels `#top-player`, `#bottom-player` contain `#top-player-detail`, `#bottom-player-detail`; preserve/rebuild nested labels if updating parent text.
 - `#model-status`, `#model-detail` for loading, ready, errors.
 - Metrics `#metric-time`, `#metric-nodes`, `#metric-confidence`, `#metric-gate`, `#decision-label`.
+
+## Battle
+
+- `#battle-white`, `#battle-black`: released bot ids; the same bot may play itself.
+- `#battle-games`: 1 / 2 / 4 / 10; games after the first alternate colors.
+- `#battle-budget`: milliseconds per move; each bot keeps its own rated position cap.
+- `#start-battle`, `#stop-battle`, `#export-battle` (PGN of completed games).
+- Live `#battle-status`, scoreboard `#battle-score` (hidden until a battle starts), results `#battle-results`.
+- A battle drives the shared board; human moves and Play controls are disabled until it ends or is stopped. New game stops it.
 
 ## Position lab
 

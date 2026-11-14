@@ -11,6 +11,8 @@ This is an experiment, **not a claim to have surpassed Stockfish**. The small pr
 ## Try it
 
 - **Play:** choose a decision mode, your side, and a search budget. Click a piece and a destination to make a legal move. Start a new game, undo, flip the board, or export the game as PGN.
+- **Pick your Gato:** every released bot stays playable. Choose Gato 2 or Gato 1 as your opponent; each plays the exact engine that earned its rating, and the profile card shows that bot's own measured strength.
+- **Battle:** pick any two Gatos (or one against itself) and watch a 1–10 game series on the board, with colors swapping after each game, a live score and PGN export. Battles are for exploration; official comparisons are the predeclared matches in `docs/`.
 - **Position lab:** load a FEN position and compare all three modes. Inspect each move, its inference/search time, and its search work. Direct scores come from the neural model; hybrid search uses its own positional evaluation. Neither is an independent assessment of correctness.
 - **Benchmark:** run the supplied position suite or paired games. A game pair uses the same opening with colors reversed. Export raw results instead of relying only on the summary.
 - **Controller:** inspect or calibrate the selective-search controller. Training examples and held-out evaluation have different roles; controller labels come from additional model-guided search, which is a reference procedure rather than a perfect chess oracle.
