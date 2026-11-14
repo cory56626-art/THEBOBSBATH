@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Chess } from 'chess.js';
-import { gatoSearch, gatoPerft, gatoEvaluate, gatoSee, gatoVerifyIncremental } from '../src/gato-search.js';
+import { gatoSearch, gatoPerft, gatoEvaluate, gatoSee, gatoVerifyIncremental, gatoTrace } from '../src/gato-search.js';
+import { gatoEvaluate as gato2Evaluate } from '../src/bots/gato2/gato-search.js';
+import { gato2Weights, PARAM_COUNT, PARAMS } from '../src/gato-eval-params.js';
+import { GATO3_WEIGHTS } from '../src/gato3-weights.js';
 import { evaluatePosition } from '../src/position-evaluation.js';
 
 const moved = (board, move) => board.move({ from: move.slice(0, 2), to: move.slice(2, 4), ...(move[4] ? { promotion: move[4] } : {}) });
@@ -26,21 +29,57 @@ test('incremental hash, piece-square, phase, material and counts never drift thr
   ]) assert.ok(gatoVerifyIncremental(fen, 3) > 0);
 });
 
-test('the ported evaluation equals Gato 1 evaluation on positions from random games', () => {
-  let seed = 7;
+function randomGamePositions(games, seed) {
   const random = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
-  let compared = 0;
-  for (let game = 0; game < 40; game++) {
+  const positions = [];
+  for (let game = 0; game < games; game++) {
     const board = new Chess();
     for (let ply = 0; ply < 140 && !board.isGameOver(); ply++) {
       const moves = board.moves({ verbose: true });
       const captures = moves.filter(move => move.captured);
       board.move(captures.length && random() < .5 ? captures[Math.floor(random() * captures.length)] : moves[Math.floor(random() * moves.length)]);
-      assert.equal(gatoEvaluate(board.fen()), evaluatePosition(board), board.fen());
-      compared++;
+      positions.push(board.fen());
     }
   }
-  assert.ok(compared > 2000);
+  return positions;
+}
+
+test('with Gato 2 starting weights, the weighted evaluation equals Gato 1 and the Gato 2 snapshot exactly', () => {
+  const initial = gato2Weights();
+  const positions = randomGamePositions(30, 7);
+  assert.ok(positions.length > 2000);
+  for (const fen of positions) {
+    const expected = evaluatePosition(new Chess(fen));
+    assert.equal(gato2Evaluate(fen), expected, fen);
+    assert.equal(gatoEvaluate(fen, { weights: initial }), expected, fen);
+  }
+});
+
+test('traced feature counts times the shipped weights reproduce every evaluation', () => {
+  assert.equal(GATO3_WEIGHTS.mg.length, PARAM_COUNT);
+  assert.equal(GATO3_WEIGHTS.eg.length, PARAM_COUNT);
+  for (const fen of randomGamePositions(12, 11)) {
+    const t = gatoTrace(fen);
+    let mg = 0, eg = t.mopUp;
+    for (let i = 0; i < PARAM_COUNT; i++) if (t.features[i]) { mg += GATO3_WEIGHTS.mg[i] * t.features[i]; eg += GATO3_WEIGHTS.eg[i] * t.features[i]; }
+    const tapered = (mg * t.phase + eg * (24 - t.phase)) / 24;
+    const white = Math.sign(tapered) * Math.floor(Math.abs(tapered) + .5);
+    assert.equal(white === 0 ? 0 : t.side === 0 ? white : -white, gatoEvaluate(fen), fen);
+    // Every feature is color-symmetric: the tempo term is the only side-to-move term.
+    assert.equal(Math.abs(t.features[PARAMS.tempo]), 1);
+  }
+});
+
+test('the evaluation is color-symmetric under a vertical flip with colors swapped', () => {
+  const flip = fen => {
+    const [placement, turn, castling, ep, half, full] = fen.split(' ');
+    const swap = c => c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase();
+    const rows = placement.split('/').reverse().map(row => [...row].map(c => /[a-z]/i.test(c) ? swap(c) : c).join(''));
+    const rights = castling === '-' ? '-' : [...castling].map(swap).sort((a, b) => 'KQkq'.indexOf(a) - 'KQkq'.indexOf(b)).join('');
+    const passant = ep === '-' ? '-' : ep[0] + (9 - Number(ep[1]));
+    return [rows.join('/'), turn === 'w' ? 'b' : 'w', rights, passant, half, full].join(' ');
+  };
+  for (const fen of randomGamePositions(10, 23)) assert.equal(gatoEvaluate(flip(fen)), gatoEvaluate(fen), fen);
 });
 
 test('static exchange evaluation distinguishes safe and defended captures', () => {

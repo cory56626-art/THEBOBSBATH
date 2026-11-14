@@ -9,6 +9,9 @@
  * searches privately and never mutates the caller's board.
  */
 
+import { PARAMS, PARAM_COUNT, pstIndex } from './gato-eval-params.js';
+import { GATO3_WEIGHTS } from './gato3-weights.js';
+
 // Piece codes: type | color << 3. White 1..6, black 9..14.
 const PAWN = 1, KNIGHT = 2, BISHOP = 3, ROOK = 4, QUEEN = 5, KING = 6;
 const MATE = 30000, INF = 32000, MATE_BOUND = MATE - 512;
@@ -49,50 +52,44 @@ CASTLE_MASK[116] = 12; CASTLE_MASK[119] = 14; CASTLE_MASK[112] = 13;
 CASTLE_MASK[4] = 3; CASTLE_MASK[7] = 11; CASTLE_MASK[0] = 7;
 
 // ---------------------------------------------------------------------------
-// Evaluation tables: identical construction to src/position-evaluation.js.
+// Evaluation: a weight vector over integer features (see gato-eval-params.js).
+// MG_VALUE gates the endgame mop-up term only; it is not a tuned weight.
 const MG_VALUE = [0, 100, 320, 335, 500, 950, 0];
-const EG_VALUE = [0, 120, 300, 325, 520, 930, 0];
 const PHASE = [0, 0, 1, 1, 2, 4, 0];
-const PASSED_MG = [0, 0, 8, 15, 28, 48, 85, 0];
-const PASSED_EG = [0, 0, 15, 30, 55, 95, 150, 0];
-const MOBILITY_WEIGHT = [0, 0, 4, 3, 2, 1, 0];
-const PST_MG = [], PST_EG = [];
-for (let type = 0; type <= KING; type++) {
-  PST_MG[type] = new Int16Array(128); PST_EG[type] = new Int16Array(128);
-  if (!type) continue;
-  for (let rank = 0; rank < 8; rank++) for (let file = 0; file < 8; file++) {
-    const fc = 3.5 - Math.abs(file - 3.5), rc = 3.5 - Math.abs(rank - 3.5);
-    let mg = MG_VALUE[type], eg = EG_VALUE[type];
-    if (type === PAWN) { mg += 6 * (rank - 1) + 4 * fc; eg += 4 * rank + 2 * fc; }
-    if (type === KNIGHT) { mg += 12 * fc + 8 * rc - (file === 0 || file === 7 ? 12 : 0); eg += 8 * fc + 8 * rc; }
-    if (type === BISHOP) { mg += 5 * fc + 5 * rc + 2 * rank; eg += 5 * fc + 5 * rc; }
-    if (type === ROOK) { mg += 2 * rank + (rank === 6 ? 20 : 0); eg += 2 * fc + (rank === 6 ? 30 : 0); }
-    if (type === QUEEN) { mg += 3 * fc + 3 * rc; eg += 5 * fc + 5 * rc; }
-    if (type === KING) { mg += (rank <= 1 && (file <= 2 || file >= 6) ? 28 : 0) - 12 * fc - 14 * rank; eg += 12 * fc + 12 * rc; }
-    PST_MG[type][rank * 16 + file] = Math.round(mg);
-    PST_EG[type][rank * 16 + file] = Math.round(eg);
-  }
-}
-// Signed (white-positive) piece-square values per piece code and square.
-const PSQ_MG = new Int16Array(16 * 128), PSQ_EG = new Int16Array(16 * 128);
-for (let color = 0; color < 2; color++) for (let type = PAWN; type <= KING; type++) for (let sq = 0; sq < 128; sq++) {
-  if (sq & 0x88) continue;
-  const rank = color ? sq >> 4 : 7 - (sq >> 4), relative = rank * 16 + (sq & 7), sign = color ? -1 : 1, code = type | (color << 3);
-  PSQ_MG[code * 128 + sq] = sign * PST_MG[type][relative];
-  PSQ_EG[code * 128 + sq] = sign * PST_EG[type][relative];
-}
 const PIECE_PHASE = new Int8Array(16), PIECE_MATERIAL = new Int16Array(16);
 for (let type = PAWN; type <= KING; type++) { PIECE_PHASE[type] = PIECE_PHASE[type | 8] = PHASE[type]; PIECE_MATERIAL[type] = MG_VALUE[type]; PIECE_MATERIAL[type | 8] = -MG_VALUE[type]; }
+const ATTACK_WEIGHT = [0, 0, 2, 2, 3, 5, 0];
+const MOBILITY_PARAM = [0, 0, PARAMS.mobilityKnight, PARAMS.mobilityBishop, PARAMS.mobilityRook, PARAMS.mobilityQueen, 0];
+const P_DOUBLED = PARAMS.doubled, P_ISOLATED = PARAMS.isolated, P_SUPPORTED = PARAMS.supported, P_PHALANX = PARAMS.phalanx;
+const P_PASSED = PARAMS.passed, P_PASSED_ENEMY_KING = PARAMS.passedEnemyKing, P_PASSED_OWN_KING = PARAMS.passedOwnKing, P_PASSED_BLOCKED = PARAMS.passedBlocked;
+const P_ROOK_OPEN = PARAMS.rookOpen, P_ROOK_SEMI = PARAMS.rookSemiOpen;
+const P_SHIELD_ONE = PARAMS.shieldOne, P_SHIELD_TWO = PARAMS.shieldTwo, P_SHIELD_MISSING = PARAMS.shieldMissing, P_SHIELD_FILE = PARAMS.shieldFile;
+const P_BISHOP_PAIR = PARAMS.bishopPair, P_KING_DANGER = PARAMS.kingDanger, P_TEMPO = PARAMS.tempo;
+const P_THREAT_PAWN = PARAMS.threatByPawn, P_THREAT_MINOR = PARAMS.threatByMinor, P_THREAT_ROOK = PARAMS.threatByRook;
 const kingDistance = (a, b) => Math.max(Math.abs((a & 7) - (b & 7)), Math.abs((a >> 4) - (b >> 4)));
 
 // Late-move reduction table.
 const LMR = [];
 for (let d = 0; d < 64; d++) { LMR[d] = new Int8Array(64); for (let m = 0; m < 64; m++) LMR[d][m] = d && m ? Math.floor(0.75 + Math.log(d) * Math.log(m) / 2.25) : 0; }
 
+export { PARAM_COUNT };
+// ALIGNED[from - king + 119] is 1 when a square shares a rank, file or
+// diagonal with the king; only such a piece can be pinned.
+const ALIGNED = new Uint8Array(239);
+for (const d of QUEEN_OFFSETS) for (let k = 1; k < 8; k++) ALIGNED[d * k + 119] = 1;
 const TT_BITS = 19, TT_SIZE = 1 << TT_BITS, TT_MASK = TT_SIZE - 1;
 const TT_EXACT = 1, TT_LOWER = 2, TT_UPPER = 3;
 
-function createSearcher() {
+function createSearcher(weights = GATO3_WEIGHTS) {
+  if (weights.mg.length !== PARAM_COUNT || weights.eg.length !== PARAM_COUNT) throw new Error('Evaluation weights do not match the parameter layout');
+  const WM = Int32Array.from(weights.mg), WE = Int32Array.from(weights.eg);
+  // Signed (white-positive) piece-square values per piece code and square.
+  const PSQ_MG = new Int32Array(16 * 128), PSQ_EG = new Int32Array(16 * 128);
+  for (let color = 0; color < 2; color++) for (let type = PAWN; type <= KING; type++) for (let sq = 0; sq < 128; sq++) {
+    if (sq & 0x88) continue;
+    const index = pstIndex(type, color ? sq >> 4 : 7 - (sq >> 4), sq & 7), sign = color ? -1 : 1, code = type | (color << 3);
+    PSQ_MG[code * 128 + sq] = sign * WM[index]; PSQ_EG[code * 128 + sq] = sign * WE[index];
+  }
   const board = new Int8Array(128);
   const kings = new Int16Array(2);
   const counts = new Int8Array(16); // pieces by code
@@ -216,7 +213,8 @@ function createSearcher() {
 
   // Applies a pseudo-legal move. Returns false (already undone) if it leaves
   // the mover's king in check.
-  function make(move) {
+  // `notInCheck` (optional) lets non-king moves off the king's lines skip the legality probe.
+  function make(move, notInCheck = false) {
     const from = mFrom(move), to = mTo(move), flag = mFlag(move), promo = mPromo(move);
     const piece = board[from], us = side, them = us ^ 1;
     uMove[sp] = move; uCastle[sp] = castle; uEp[sp] = ep; uHalf[sp] = halfMoves; uLo[sp] = hashLo; uHi[sp] = hashHi;
@@ -263,7 +261,7 @@ function createSearcher() {
     if (ep >= 0 && epKeyActive()) { lo ^= Z_EP_LO[ep & 7]; hi ^= Z_EP_HI[ep & 7]; }
     hashLo = lo; hashHi = hi;
     sp++;
-    if (isAttacked(kings[us], them)) { unmake(); return false; }
+    if ((!notInCheck || (piece & 7) === KING || flag === F_EP || ALIGNED[from - kings[us] + 119]) && isAttacked(kings[us], them)) { unmake(); return false; }
     keyLo[keyCount] = hashLo; keyHi[keyCount] = hashHi; keyCount++;
     return true;
   }
@@ -380,8 +378,17 @@ function createSearcher() {
     return false;
   }
 
-  // ---- evaluation (port of src/position-evaluation.js) --------------------
+  // ---- evaluation ------------------------------------------------------------
+  // Each term adds weight * count. With `trace` set, counts are recorded per
+  // parameter instead (white-positive), which is what the offline tuner fits.
   const pawnFiles = [new Int8Array(8), new Int8Array(8)], pawnRows = [new Uint8Array(8), new Uint8Array(8)];
+  const zone = [new Int32Array(128), new Int32Array(128)];
+  let zoneStamp = 0, accMg = 0, accEg = 0, trace = null;
+  const attackUnits = new Int32Array(2), attackerCount = new Int32Array(2);
+  function add(index, count) {
+    if (trace) trace[index] += count;
+    else { accMg += WM[index] * count; accEg += WE[index] * count; }
+  }
   function pawnDefends(sq, color) {
     // Same as pawnAttacks(board, square, color) in Gato 1's evaluation.
     const a = sq + (color === 0 ? 15 : -17), b = sq + (color === 0 ? 17 : -15), pawn = PAWN | (color << 3);
@@ -394,33 +401,57 @@ function createSearcher() {
     evGen[slot] = generation; evLo[slot] = hashLo; evHi[slot] = hashHi; evScore[slot] = score;
     return score;
   }
-  function evaluateFull() {
+  /** White-positive [mg, eg] before tapering; mop-up is returned separately (untuned). */
+  let mopUp = 0;
+  function evaluateTerms() {
     pawnFiles[0].fill(0); pawnFiles[1].fill(0); pawnRows[0].fill(0); pawnRows[1].fill(0);
-    let mg = psqMg, eg = psqEg, bishopsW = 0, bishopsB = 0;
-    const phase = phaseSum, material = materialSum;
+    accMg = 0; accEg = 0;
+    let bishopsW = 0, bishopsB = 0;
+    const stamp = ++zoneStamp;
+    attackUnits[0] = attackUnits[1] = attackerCount[0] = attackerCount[1] = 0;
+    for (let color = 0; color < 2; color++) {
+      const k = kings[color];
+      if (k < 0) continue;
+      zone[color][k] = stamp;
+      for (let i = 0; i < 8; i++) { const t = k + KING_OFFSETS[i]; if (!(t & 0x88)) zone[color][t] = stamp; }
+    }
     for (let sq = 0; sq < 128; sq++) {
       if (sq & 0x88) { sq += 7; continue; }
       const p = board[sq];
       if (!p) continue;
-      const color = p >> 3, type = p & 7, sign = color ? -1 : 1;
-      if (type === PAWN) { pawnFiles[color][sq & 7]++; pawnRows[color][sq & 7] |= 1 << (sq >> 4); }
-      else if (type === BISHOP) { if (color) bishopsB++; else bishopsW++; }
-      if (type !== PAWN && type !== KING) {
-        const offsets = type === KNIGHT ? KNIGHT_OFFSETS : type === BISHOP ? BISHOP_OFFSETS : type === ROOK ? ROOK_OFFSETS : QUEEN_OFFSETS;
-        const enemy = color ^ 1;
-        let count = 0;
-        for (let i = 0; i < offsets.length; i++) {
-          let to = sq + offsets[i];
-          while (!(to & 0x88)) {
-            const target = board[to];
-            if (target && (target >> 3) === color) break;
-            if (type !== KNIGHT || !pawnDefends(to, enemy)) count++;
-            if (target || type === KNIGHT) break;
-            to += offsets[i];
-          }
-        }
-        mg += sign * MOBILITY_WEIGHT[type] * count; eg += sign * MOBILITY_WEIGHT[type] * count;
+      const color = p >> 3, type = p & 7, sign = color ? -1 : 1, enemy = color ^ 1;
+      if (trace) trace[pstIndex(type, color ? sq >> 4 : 7 - (sq >> 4), sq & 7)] += sign;
+      if (type === PAWN) {
+        pawnFiles[color][sq & 7]++; pawnRows[color][sq & 7] |= 1 << (sq >> 4);
+        // A pawn attacking any enemy piece other than a pawn.
+        const a = sq + (color === 0 ? -17 : 15), b = sq + (color === 0 ? -15 : 17);
+        if (!(a & 0x88) && board[a] && (board[a] >> 3) === enemy && (board[a] & 7) > PAWN && (board[a] & 7) < KING) add(P_THREAT_PAWN, sign);
+        if (!(b & 0x88) && board[b] && (board[b] >> 3) === enemy && (board[b] & 7) > PAWN && (board[b] & 7) < KING) add(P_THREAT_PAWN, sign);
+        continue;
       }
+      if (type === BISHOP) { if (color) bishopsB++; else bishopsW++; }
+      if (type === KING) continue;
+      const offsets = type === KNIGHT ? KNIGHT_OFFSETS : type === BISHOP ? BISHOP_OFFSETS : type === ROOK ? ROOK_OFFSETS : QUEEN_OFFSETS;
+      const enemyZone = zone[enemy];
+      let count = 0, hits = 0;
+      for (let i = 0; i < offsets.length; i++) {
+        let to = sq + offsets[i];
+        while (!(to & 0x88)) {
+          if (enemyZone[to] === stamp) hits++;
+          const target = board[to];
+          if (target && (target >> 3) === color) break;
+          if (type !== KNIGHT || !pawnDefends(to, enemy)) count++;
+          if (target) {
+            const victim = target & 7;
+            if ((type === KNIGHT || type === BISHOP) && (victim === ROOK || victim === QUEEN)) add(P_THREAT_MINOR, sign);
+            else if (type === ROOK && victim === QUEEN) add(P_THREAT_ROOK, sign);
+          }
+          if (target || type === KNIGHT) break;
+          to += offsets[i];
+        }
+      }
+      add(MOBILITY_PARAM[type] + count, sign);
+      if (hits) { attackerCount[color]++; attackUnits[color] += hits * ATTACK_WEIGHT[type]; }
     }
     for (let sq = 0; sq < 128; sq++) {
       if (sq & 0x88) { sq += 7; continue; }
@@ -431,44 +462,65 @@ function createSearcher() {
       const other = color ^ 1, sign = color ? -1 : 1, file = sq & 7, row = sq >> 4;
       const own = pawnFiles[color], enemy = pawnFiles[other];
       if (type === PAWN) {
-        if (own[file] > 1) { mg -= sign * 10; eg -= sign * 15; }
-        if (!((file > 0 && own[file - 1]) || (file < 7 && own[file + 1]))) { mg -= sign * 13; eg -= sign * 11; }
+        if (own[file] > 1) add(P_DOUBLED, sign);
+        if (!((file > 0 && own[file - 1]) || (file < 7 && own[file + 1]))) add(P_ISOLATED, sign);
+        if ((file > 0 && board[sq - 1] === p) || (file < 7 && board[sq + 1] === p)) add(P_PHALANX, sign);
         const enemyRows = pawnRows[other][file] | (file > 0 ? pawnRows[other][file - 1] : 0) | (file < 7 ? pawnRows[other][file + 1] : 0);
         const ahead = color === 0 ? (1 << row) - 1 : 255 ^ ((1 << (row + 1)) - 1);
         const rank = color === 0 ? 7 - row : row;
         if (!(enemyRows & ahead) && !(pawnRows[color][file] & ahead)) {
-          mg += sign * PASSED_MG[rank]; eg += sign * PASSED_EG[rank];
+          add(P_PASSED + rank, sign);
+          const next = sq + (color === 0 ? -16 : 16);
+          if (!(next & 0x88) && board[next]) add(P_PASSED_BLOCKED, sign);
           if (rank >= 3 && kings[color] >= 0 && kings[other] >= 0) {
-            const next = sq + (color === 0 ? -16 : 16);
-            eg += sign * 4 * (kingDistance(next, kings[other]) - kingDistance(next, kings[color]));
+            add(P_PASSED_ENEMY_KING, sign * kingDistance(next, kings[other]));
+            add(P_PASSED_OWN_KING, sign * kingDistance(next, kings[color]));
           }
         }
-        if (pawnDefends(sq, color)) { mg += sign * 6; eg += sign * 9; }
+        if (pawnDefends(sq, color)) add(P_SUPPORTED, sign);
       } else if (type === ROOK) {
-        if (!own[file]) { mg += sign * (enemy[file] ? 12 : 23); eg += sign * (enemy[file] ? 8 : 15); }
+        if (!own[file]) add(enemy[file] ? P_ROOK_SEMI : P_ROOK_OPEN, sign);
       } else {
         const forward = color === 0 ? -16 : 16, pawn = PAWN | (color << 3);
         for (let delta = -1; delta <= 1; delta++) {
           const one = sq + forward + delta, two = sq + 2 * forward + delta;
           if (one & 0x88) continue;
-          if (board[one] === pawn) mg += sign * 12;
-          else if (!(two & 0x88) && board[two] === pawn) mg += sign * 5;
-          else mg -= sign * 8;
-          if (!own[file + delta]) mg -= sign * 8;
+          if (board[one] === pawn) add(P_SHIELD_ONE, sign);
+          else if (!(two & 0x88) && board[two] === pawn) add(P_SHIELD_TWO, sign);
+          else add(P_SHIELD_MISSING, sign);
+          if (!own[file + delta]) add(P_SHIELD_FILE, sign);
         }
       }
     }
-    if (bishopsW >= 2) { mg += 30; eg += 45; }
-    if (bishopsB >= 2) { mg -= 30; eg -= 45; }
-    if (Math.abs(material) >= 450 && phase <= 8 && kings[0] >= 0 && kings[1] >= 0) {
+    if (bishopsW >= 2) add(P_BISHOP_PAIR, 1);
+    if (bishopsB >= 2) add(P_BISHOP_PAIR, -1);
+    for (let color = 0; color < 2; color++) {
+      if (attackerCount[color] < 2 || !counts[QUEEN | (color << 3)]) continue;
+      add(P_KING_DANGER + Math.min(11, Math.floor(attackUnits[color] / 3)), color ? -1 : 1);
+    }
+    add(P_TEMPO, side === 0 ? 1 : -1);
+    mopUp = 0;
+    const material = materialSum;
+    if (Math.abs(material) >= 450 && phaseSum <= 8 && kings[0] >= 0 && kings[1] >= 0) {
       const sign = material > 0 ? 1 : -1, weak = kings[sign === 1 ? 1 : 0];
       const edgeDistance = Math.min(weak & 7, 7 - (weak & 7), weak >> 4, 7 - (weak >> 4));
-      eg += sign * (14 * (7 - kingDistance(kings[0], kings[1])) - 12 * edgeDistance);
+      mopUp = sign * (14 * (7 - kingDistance(kings[0], kings[1])) - 12 * edgeDistance);
     }
-    const ph = Math.min(24, phase);
+  }
+  function evaluateFull() {
+    evaluateTerms();
+    const mg = psqMg + accMg, eg = psqEg + accEg + mopUp;
+    const ph = Math.min(24, phaseSum);
     const tapered = (mg * ph + eg * (24 - ph)) / 24;
     const white = Math.sign(tapered) * Math.floor(Math.abs(tapered) + 0.5);
     return white === 0 ? 0 : side === 0 ? white : -white;
+  }
+  /** Feature counts for the tuner: { features, phase, mopUp, side }. */
+  function traceFeatures() {
+    const features = new Int32Array(PARAM_COUNT);
+    trace = features;
+    try { evaluateTerms(); } finally { trace = null; }
+    return { features, phase: Math.min(24, phaseSum), mopUp, side };
   }
 
   // ---- draws ---------------------------------------------------------------
@@ -643,7 +695,7 @@ function createSearcher() {
         if (!promo && stand + SEE_VALUE[victim] + 200 <= alpha) continue;
         if (scoreBuf[i] < 1e8 && !promo) continue; // SEE-losing capture
       }
-      if (!make(move)) continue;
+      if (!make(move, !inCheck)) continue;
       legal++;
       lastMove[ply] = move;
       let score;
@@ -732,7 +784,7 @@ function createSearcher() {
         if (isQuiet && !pvNode && depth <= 3 && quietsTried >= quietLimit) continue;
         if (!isQuiet && !pvNode && depth <= 3 && moveScore < 1e6 && see(move) < -90 * depth) continue;
       }
-      if (!make(move)) continue;
+      if (!make(move, !inCheck)) continue;
       const givesCheck = inCheckNow();
       if (futile && isQuiet && legal > 0 && !givesCheck && best > -MATE_BOUND) { undo(); continue; }
       legal++;
@@ -930,9 +982,24 @@ function createSearcher() {
     for (let i = start; i < end; i++) if (make(moveBuf[i])) { total += verifyIncremental(depth - 1, end); undo(); }
     return total;
   }
+  /** Tuner hook: follow quiescence's principal variation to a quiet leaf and trace it. */
+  function traceQuietLeaf(fen) {
+    loadFen(fen);
+    keyCount = 0; keyLo[keyCount] = hashLo; keyHi[keyCount] = hashHi; keyCount++;
+    nodes = 0; qNodes = 0; maxNodes = 2_000_000; deadline = Infinity; signal = null; generation++;
+    killers.fill(0); history.fill(0); counter.fill(0);
+    const q = quiescence(-INF, INF, 0, 0);
+    const line = Array.from(pvTable.subarray(0, pvLength[0]));
+    let applied = 0;
+    for (const move of line) { if (!make(move)) break; applied++; }
+    const traced = traceFeatures();
+    const leafEval = evaluateFull();
+    while (applied--) undo();
+    return { ...traced, q, leafEval, pvLength: line.length, rootSide: side };
+  }
   function historyKeyFor(fen) { loadFen(fen); return [hashLo, hashHi]; }
 
-  return { verify: (fen, depth) => { loadFen(fen); keyCount = 0; return verifyIncremental(depth); }, run, perft: (fen, depth) => { loadFen(fen); keyCount = 0; return perft(depth); }, evaluateFen: fen => { loadFen(fen); return evaluateFull(); }, historyKeyFor, seeFor: (fen, uci) => { loadFen(fen); const end = generate(0, false); for (let i = 0; i < end; i++) if (moveToUci(moveBuf[i]) === uci) return see(moveBuf[i]); return null; } };
+  return { verify: (fen, depth) => { loadFen(fen); keyCount = 0; return verifyIncremental(depth); }, run, perft: (fen, depth) => { loadFen(fen); keyCount = 0; return perft(depth); }, evaluateFen: fen => { loadFen(fen); return evaluateFull(); }, traceFen: fen => { loadFen(fen); return traceFeatures(); }, traceQuietLeaf, historyKeyFor, seeFor: (fen, uci) => { loadFen(fen); const end = generate(0, false); for (let i = 0; i < end; i++) if (moveToUci(moveBuf[i]) === uci) return see(moveBuf[i]); return null; } };
 }
 
 // Idle searchers are reused; a concurrent search gets its own instance.
@@ -976,6 +1043,14 @@ export async function gatoSearch(chess, options = {}) {
 
 /** Test hooks: move-generation perft, evaluation parity and SEE. */
 export function gatoPerft(fen, depth) { const s = acquire(); try { return s.perft(fen, depth); } finally { release(s); } }
-export function gatoEvaluate(fen) { const s = acquire(); try { return s.evaluateFen(fen); } finally { release(s); } }
+/** Evaluate a FEN, optionally with alternative weights (tests and tuning only). */
+export function gatoEvaluate(fen, { weights } = {}) {
+  if (weights) return createSearcher(weights).evaluateFen(fen);
+  const s = acquire(); try { return s.evaluateFen(fen); } finally { release(s); }
+}
+/** Integer feature counts behind the evaluation of a FEN (tuning only). */
+export function gatoTrace(fen) { const s = acquire(); try { return s.traceFen(fen); } finally { release(s); } }
+/** Exported for the tuner: a searcher with explicit weights. */
+export const createGatoSearcher = createSearcher;
 export function gatoSee(fen, uci) { const s = acquire(); try { return s.seeFor(fen, uci); } finally { release(s); } }
 export function gatoVerifyIncremental(fen, depth) { const s = acquire(); try { return s.verify(fen, depth); } finally { release(s); } }
