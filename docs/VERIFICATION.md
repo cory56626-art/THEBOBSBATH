@@ -1,5 +1,15 @@
 # Latest selected-engine verification
 
+The selected chess engine is **Gato 2** (`intuition-hybrid-5`). Its engine entry and search/controller dependencies are byte-identical to the frozen candidate `c50e6ed` that played both official runs (source tree `98ca1cb8…`, confirmed in [ai-gato2-audit.json](ai-gato2-audit.json)). The neural weights are unchanged from Gato 1.
+
+The selected source passes **127 unit tests**, the production build, and all **15 browser tests**. The unit tests include perft against six reference positions, incremental-state verification at every perft node, evaluation parity with Gato 1 on random-game positions, SEE, forced-mate re-proof, repetition from game history, fifty-move/stalemate boundaries, exact node caps, determinism, cancellation and caller-history restoration. The browser tests include real-model offline search and the Gato 2 profile with its unbounded interval. Locally, Playwright ran against the preinstalled Chromium build.
+
+[Gato 2 selection and rating report](AI-STRENGTH-GATO2.md): 24–0 against immutable Gato 1, then 24/32 on the Stockfish 19 nominal ladder 1720–2320, published as ≈2278 with a 95% interval of 1933 – unbounded. Both reports replay-validated: **56 games, 4,948 moves**.
+
+---
+
+# Gato 1 verification (previous)
+
 The selected chess engine remains v3, with its engine entry and search/evaluation/controller dependencies and model byte-identical to `b1d5002`, after the frozen v4 candidate failed the predeclared paired selection threshold. V4 regressions load its archived `a7bf070` snapshot rather than altering the active engine.
 
 The selected source passes **111 unit tests**, the production build, and **14 browser tests**, including real-model offline tactical search beyond mate-in-one, poisoned capture rejection, legal move export, board restoration and cancellation. [GitHub Actions for selected source](https://github.com/cory56626-art/THEBOBSBATH/actions/runs/42854232715) also passed. CI pins Ubuntu 24.04 for the locked Playwright version and fetches full Git history for snapshot regression tests.

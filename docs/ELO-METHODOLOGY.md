@@ -114,3 +114,25 @@ sampling interval 1289–2047**. This interval excludes calibration and transfer
 error; it is not an official human or online rating. [Results, per-setting
 scores and limitations](AI-STRENGTH-V4.md) · [raw report](ai-v3-provisional-elo.json)
 · [PGN](ai-v3-provisional-elo.pgn).
+
+## Gato 2 measurement
+
+Gato 2 (frozen at `c50e6ed`) was first selected by the unchanged 24-game
+paired rule: 24–0 against immutable Gato 1, 12 of 12 favorable pairs,
+p = 0.000244. The ladder then ran with a schedule declared in
+[GATO2-PREDECLARATION.md](GATO2-PREDECLARATION.md) before any official game.
+The settings were 1720, 1920, 2120 and 2320, centered on development probes
+so the ladder would not saturate. The AI cap was 1,000,000 positions, so the
+150 ms limit binds. Everything else (openings, clocks, Stockfish options,
+scoring and statistics) is unchanged.
+
+All 32 games completed: **24 wins, 0 draws, 8 losses**, all by checkmate.
+The provisional nominal-scale estimate is **2278**. The conservative 95%
+sampling interval is **1933 – unbounded**: score 0.75 plus the Hoeffding
+radius 0.3395 exceeds 1, so the upper endpoint is reported as unbounded,
+not invented. The Stockfish 19 executable was built from the `sf_19` tag, so
+its hash differs from Gato 1's release binary. Both bots' ratings carry the
+caveats above, and they were measured on different machines; the direct
+comparison is their head-to-head match. [Report](AI-STRENGTH-GATO2.md) ·
+[raw ladder](ai-gato2-provisional-elo.json) ·
+[PGN](ai-gato2-provisional-elo.pgn) · [audit](ai-gato2-audit.json).

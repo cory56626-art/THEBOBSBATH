@@ -1,8 +1,8 @@
-# Gato 1 — Bobs Bath Chess
+# Gato 2 — Bobs Bath Chess
 
-[Play Gato 1](https://cory56626-art.github.io/THEBOBSBATH/) — our first bot. Its provisional Stockfish-scale estimate is **≈1650**, with a conservative 95% sampling interval of **1289–2047**, measured over 32 games at Search / 150 ms / 32,768 positions. This is not a FIDE, Chess.com or Lichess rating; calibration error is outside that interval.
+[Play Gato 2](https://cory56626-art.github.io/THEBOBSBATH/), our second bot. Its provisional Stockfish-scale estimate is **≈2278**, with a conservative 95% sampling interval of **1933 – unbounded**. It was measured over 32 games (24 points) at Search / 150 ms / 1,000,000 positions. Before rating, Gato 2 beat Gato 1 **24–0** in a predeclared color-reversed match. This is not a FIDE, Chess.com or Lichess rating; calibration error is outside the interval.
 
-[Latest search selection and rating report](docs/AI-STRENGTH-V4.md) · [Elo methodology](docs/ELO-METHODOLOGY.md)
+[Gato 2 selection and rating report](docs/AI-STRENGTH-GATO2.md) · [Predeclared protocol](docs/GATO2-PREDECLARATION.md) · [Elo methodology](docs/ELO-METHODOLOGY.md) · [Gato 1 report](docs/AI-STRENGTH-V4.md)
 
 A chess engine combining neural move ordering with fast tactical search. The experiment retains **direct neural play**, **always searching**, and **selective searching** as separate decision procedures. The previous game remains in Git history.
 
@@ -30,6 +30,17 @@ The model and engine run locally in your browser. No API key, account, paid infe
 Every mode uses the same neural weights, legal-move rules, and initial position. Search also has a handcrafted evaluation function, so this compares complete decision procedures rather than isolating computation alone. Direct still performs neural inference and legal move generation; “no search” does not mean zero computation. A high policy probability is not a calibrated guarantee that a move is correct. Two methods can also agree on a mistake.
 
 The included model is Peter Baer's **v3.1-clean-distilled** transformer: 116,266 parameters and 464,936 weight bytes. It was distilled from a larger model trained on human Lichess games. It is not a Stockfish-trained model. Exact source revision, fingerprint, and license information are in [model/provenance.json](model/provenance.json).
+
+## Gato 2 engine (internal version 5)
+
+Gato 1 spent each 150 ms move driving chess.js through private hooks and reached only about depth 3. Gato 2 keeps the same neural model and the same evaluation, but moves the search onto its own fast core in [`src/gato-search.js`](src/gato-search.js).
+
+- **Own board.** A 0x88 board with typed arrays, incremental Zobrist keys, incremental piece-square/phase/material terms, and allocation-free make/unmake. Perft matches standard reference counts, and a verifier recomputes every incremental field at every node.
+- **Same evaluation, proven equal.** Gato 1's tapered evaluation is ported term for term and tested equal on thousands of random-game positions, so the strength gain comes from search alone.
+- **Modern search.** PVS with aspiration windows, a transposition table, null-move, reverse-futility, razoring, futility and late-move pruning, late-move reductions, check extensions, SEE-ordered captures, killers, counter-moves and history.
+- **Same safety rules.** Exact repetition (game history plus search path), fifty-move and insufficient-material handling, mate re-proof before a mate is called `proven`, the final immediate-mate screen, cancellation, and exact node caps.
+
+In the 24-game selection match, Gato 2 averaged depth 8.7 and about 30,000 positions per move, against Gato 1's depth 3.0 and about 3,900, in the same time. Two king-safety evaluation experiments were tried during development and rejected by A/B games; both are disclosed in the protocol.
 
 ## Gato 1 engine (internal version 3)
 
