@@ -3,7 +3,7 @@ import { renderBoard } from './board.js';
 import { serializePosition, playUci, ENGINE_VERSION } from './engine.js';
 import { BENCHMARK_SUITES, rowsToCSV } from './benchmark.js';
 import defaultGate from './default-controller.json';
-import { BOT_PROFILE, formatInterval } from './bot-profile.js';
+import { BOT_PROFILE, BOTS, botById, formatInterval, generationLabel } from './bot-profile.js';
 
 const $ = id => document.getElementById(id);
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -12,6 +12,7 @@ let game = new Chess(), orientation = 'w', selected = null, lastMove = null, mod
 let ready = false, busy = false, activeId = null, watchRunning = false, latestDecision = null;
 let startingGame = false, gameEpoch = 0, gameNotice = null, autoMoveTimer = null;
 let latestReport = null, lastComparison = [], gate = defaultGate;
+let battle = null; // { running, seats, total, budgetMs, games, current }
 const pending = new Map(), logs = [], reports = [];
 let sequence = 0;
 try {
@@ -29,9 +30,12 @@ function toast(message, error = false) {
   if (el) { el.textContent = message; el.hidden = false; el.dataset.error = String(error); }
   log(error ? 'error' : 'notice', message);
 }
+const opponent = () => botById($('opponent')?.value || BOT_PROFILE.id);
 function settings() {
-  return { budgetMs: Number($('budget')?.value || BOT_PROFILE.rating.budgetMs), maxNodes: Number($('node-limit')?.value || BOT_PROFILE.rating.maxNodes), gate, threshold: Number($('controller-threshold')?.value || 0.5) };
+  const bot = opponent();
+  return { botId: bot.id, budgetMs: Number($('budget')?.value || bot.rating.budgetMs), maxNodes: Number($('node-limit')?.value || bot.rating.maxNodes), gate, threshold: Number($('controller-threshold')?.value || 0.5) };
 }
+const battleRunning = () => !!battle?.running;
 function request(type, options = {}, position = serializePosition(game), onProgress) {
   if (!ready) return Promise.reject(new Error('The neural model is still loading.'));
   if (busy) return Promise.reject(new Error('An experiment is already running. Cancel it before starting another.'));
@@ -107,6 +111,7 @@ function gameStatus() {
   if (game.isThreefoldRepetition()) return 'Draw by threefold repetition.';
   if (game.isInsufficientMaterial()) return 'Draw by insufficient material.';
   if (game.isDraw()) return 'Draw by the fifty-move rule.';
+  if (battle?.current) return battleStatusLine();
   if (!ready) return $('side').value === game.turn()
     ? 'The engine is loading. You can select a piece and make your first move.'
     : 'The engine is loading. It will move automatically when ready.';
@@ -117,7 +122,7 @@ function gameStatus() {
   return `${game.turn() === 'w' ? 'White' : 'Black'} to move${game.isCheck() ? ' · check' : ''}`;
 }
 function humanCanMove() {
-  return !startingGame && !busy && !game.isGameOver() && $('side')?.value !== 'watch' && $('side')?.value === game.turn();
+  return !startingGame && !busy && !battleRunning() && !game.isGameOver() && $('side')?.value !== 'watch' && $('side')?.value === game.turn();
 }
 function render() {
   const targets = selected ? game.moves({ square: selected, verbose: true }).map(move => move.to) : [];
@@ -128,7 +133,7 @@ function render() {
   const topColor = orientation === 'w' ? 'b' : 'w';
   for (const [id, color] of [['top-player', topColor], ['bottom-player', topColor === 'w' ? 'b' : 'w']]) {
     if ($(id)?.firstChild?.nodeType === Node.TEXT_NODE) $(id).firstChild.nodeValue = color === 'w' ? 'WHITE' : 'BLACK';
-    if ($(`${id}-detail`)) $(`${id}-detail`).textContent = $('side').value === color ? 'YOUR SIDE' : `${BOT_PROFILE.name.toUpperCase()} · ${modeNames[$('mode').value].toUpperCase()}`;
+    if ($(`${id}-detail`)) $(`${id}-detail`).textContent = battle?.current ? `${botById(battle.current[color]).name.toUpperCase()} · BATTLE` : $('side').value === color ? 'YOUR SIDE' : `${opponent().name.toUpperCase()} · ${modeNames[$('mode').value].toUpperCase()}`;
   }
   const history = game.history();
   $('move-list').innerHTML = history.length ? Array.from({ length: Math.ceil(history.length / 2) }, (_, i) => `<div class="move-row"><span>${i + 1}.</span><span>${escape(history[i * 2])}</span><span>${escape(history[i * 2 + 1] || '')}</span></div>`).join('') : '<p class="empty-state">Your first move starts the experiment.</p>';
@@ -136,8 +141,13 @@ function render() {
   updateControls(false);
 }
 function renderBotProfile() {
-  const rating = BOT_PROFILE.rating;
-  $('bot-name').textContent = BOT_PROFILE.name;
+  const bot = opponent(), rating = bot.rating;
+  $('bot-name').textContent = bot.name;
+  if ($('play-heading')) $('play-heading').textContent = `Play ${bot.name}.`;
+  if ($('bot-generation')) $('bot-generation').textContent = generationLabel(bot);
+  if ($('bot-rating-note')) $('bot-rating-note').textContent = bot.ratingNote;
+  if ($('bot-report-link')) $('bot-report-link').href = `https://github.com/cory56626-art/THEBOBSBATH/blob/main/${bot.report}`;
+  document.querySelector('.bot-profile')?.setAttribute('aria-label', `${bot.name} strength estimate`);
   $('bot-rating').textContent = `≈${rating.estimate}`;
   $('bot-rating-interval').textContent = formatInterval(rating);
   const mode = $('mode').value;
@@ -159,7 +169,12 @@ function updateControls(redraw = true) {
   if ($('undo')) $('undo').disabled = !game.history().length;
   if ($('cancel-run')) $('cancel-run').disabled = !busy;
   if ($('stop-active')) { $('stop-active').hidden = !busy; $('stop-active').disabled = !busy; }
-  for (const id of ['mode', 'budget', 'node-limit', 'side', 'controller-threshold']) if ($(id)) $(id).disabled = busy || startingGame;
+  for (const id of ['mode', 'budget', 'node-limit', 'side', 'controller-threshold', 'opponent']) if ($(id)) $(id).disabled = busy || startingGame || battleRunning();
+  for (const id of ['battle-white', 'battle-black', 'battle-games', 'battle-budget']) if ($(id)) $(id).disabled = battleRunning() || startingGame;
+  if ($('start-battle')) $('start-battle').disabled = !ready || busy || startingGame || battleRunning();
+  if ($('stop-battle')) $('stop-battle').disabled = !battleRunning();
+  if ($('export-battle')) $('export-battle').disabled = !battle?.games?.length;
+  if ($('play-engine') && battleRunning()) $('play-engine').disabled = true;
   $('play-engine').textContent = $('side')?.value === 'watch' ? watchRunning ? 'Pause watching' : 'Watch engines play' : 'Let engine move';
   if ($('mode-description')) $('mode-description').textContent = {
     direct: 'One neural prediction. No tree search.', search: 'Neural move ordering with tactical search and capture analysis.', selective: 'A learned controller decides when to search. Untrained controllers always search.',
@@ -172,7 +187,7 @@ function renderDecision(result) {
   $('metric-nodes').textContent = String(result.nodes);
   $('metric-confidence').textContent = `${Math.round(result.confidence * 100)}%`;
   $('metric-gate').textContent = result.mode === 'selective' ? result.searched ? 'Search' : 'Direct' : result.searched ? 'Always' : 'Off';
-  if ($('decision-label')) $('decision-label').textContent = `${modeNames[result.mode]} chose ${result.san || '—'} · ${result.gate?.reason || ''}`;
+  if ($('decision-label')) $('decision-label').textContent = `${result.botId ? `${botById(result.botId).name} · ` : ''}${modeNames[result.mode]} chose ${result.san || '—'} · ${result.gate?.reason || ''}`;
 }
 function clearDecision() {
   latestDecision = null;
@@ -220,6 +235,7 @@ async function engineMove() {
   log('move', { ...result, fenBefore: expectedFen, fenAfter: game.fen() });
 }
 async function maybeAutoMove() {
+  if (battleRunning()) return;
   if (!ready || busy || startingGame || game.isGameOver()) { if (game.isGameOver()) watchRunning = false; return; }
   const expectedEpoch = gameEpoch;
   const side = $('side')?.value || 'w';
@@ -238,6 +254,7 @@ async function startNewGame() {
   if (startingGame) return;
   startingGame = true;
   gameEpoch++;
+  if (battle) { battle.running = false; battle.current = null; }
   const side = $('side').value;
   game = new Chess(); selected = null; lastMove = null;
   clearDecision(); activateTab('play');
@@ -254,6 +271,101 @@ async function startNewGame() {
   if (side === 'w') $('board').querySelector('[data-square="e2"]')?.focus({ preventScroll: true });
   log('new-game', { gameId: gameEpoch, side, mode: $('mode').value });
   await maybeAutoMove();
+}
+
+// ---- Bot battle: any two released Gatos, each at its own rated position cap.
+const BATTLE_MAX_PLIES = 400;
+const seatName = (battleState, seat) => {
+  const [a, b] = battleState.seats;
+  const name = botById(battleState.seats[seat]).name;
+  return a === b ? `${name} ${seat ? 'B' : 'A'}` : name;
+};
+function battleOutcome(board, plies) {
+  if (board.isCheckmate()) return { result: board.turn() === 'w' ? '0-1' : '1-0', termination: 'checkmate' };
+  if (board.isStalemate()) return { result: '1/2-1/2', termination: 'stalemate' };
+  if (board.isThreefoldRepetition()) return { result: '1/2-1/2', termination: 'threefold repetition' };
+  if (board.isInsufficientMaterial()) return { result: '1/2-1/2', termination: 'insufficient material' };
+  if (board.isDraw()) return { result: '1/2-1/2', termination: 'fifty-move rule' };
+  if (plies >= BATTLE_MAX_PLIES) return { result: '*', termination: `unfinished at ${BATTLE_MAX_PLIES} plies` };
+  return null;
+}
+function battlePoints(battleState) {
+  const points = [0, 0];
+  for (const row of battleState.games) {
+    if (row.result === '1/2-1/2') { points[0] += .5; points[1] += .5; }
+    else if (row.result === '1-0') points[row.whiteSeat]++;
+    else if (row.result === '0-1') points[1 - row.whiteSeat]++;
+  }
+  return points;
+}
+const half = value => `${Math.floor(value)}${value % 1 ? '½' : ''}`.replace(/^0½$/, '½');
+function battleStatusLine() {
+  const current = battle.current;
+  return `Battle game ${current.number} of ${battle.total} · ${botById(current.w).name} (White) vs ${botById(current.b).name} (Black) · ${game.turn() === 'w' ? 'White' : 'Black'} to move${game.isCheck() ? ' · check' : ''}`;
+}
+function renderBattle() {
+  if (!battle) return;
+  const points = battlePoints(battle);
+  $('battle-score').hidden = false;
+  $('battle-score').innerHTML = `<div class="battle-side"><span>${escape(battle.seats[0] === battle.seats[1] ? 'FIRST PICK' : 'PLAYER')}</span><strong>${escape(seatName(battle, 0))}</strong></div><div class="battle-points" aria-label="Score ${points[0]} to ${points[1]}">${half(points[0])} – ${half(points[1])}</div><div class="battle-side"><span>${escape(battle.seats[0] === battle.seats[1] ? 'SECOND PICK' : 'PLAYER')}</span><strong>${escape(seatName(battle, 1))}</strong></div>`;
+  $('battle-results').innerHTML = battle.games.length ? table(['Game', 'White', 'Black', 'Result', 'How it ended', 'Moves'], battle.games.map(row => [row.number, seatName(battle, row.whiteSeat), seatName(battle, 1 - row.whiteSeat), row.result, row.termination, Math.ceil(row.plies / 2)])) : '';
+  $('battle-status').textContent = battle.running && battle.current
+    ? `Game ${battle.current.number} of ${battle.total} · move ${Math.floor(game.history().length / 2) + 1}`
+    : battle.stopped ? `Stopped after ${battle.games.length} complete game${battle.games.length === 1 ? '' : 's'}.` : `Battle complete · ${battle.games.length} game${battle.games.length === 1 ? '' : 's'}.`;
+}
+async function runBattle() {
+  if (battleRunning() || startingGame) return;
+  await cancelActive();
+  const seats = [$('battle-white').value, $('battle-black').value];
+  const total = Number($('battle-games').value) || 1, budgetMs = Number($('battle-budget').value) || 150;
+  battle = { running: true, stopped: false, seats, total, budgetMs, games: [], current: null };
+  watchRunning = false; activateTab('battle');
+  log('battle-start', { seats, total, budgetMs });
+  const mine = battle;
+  try {
+  for (let index = 0; index < total && mine.running; index++) {
+    const whiteSeat = index % 2;
+    const current = { number: index + 1, whiteSeat, w: seats[whiteSeat], b: seats[1 - whiteSeat] };
+    gameEpoch++;
+    const epoch = gameEpoch;
+    game = new Chess(); selected = null; lastMove = null; gameNotice = null; orientation = 'w';
+    battle.current = current; clearDecision(); render(); renderBattle();
+    let outcome = battleOutcome(game, 0);
+    while (!outcome && mine.running && epoch === gameEpoch) {
+      const botId = game.turn() === 'w' ? current.w : current.b, bot = botById(botId), fen = game.fen();
+      const result = await request('choose', { mode: 'search', botId, budgetMs, maxNodes: bot.rating.maxNodes, gate });
+      if (!mine.running || epoch !== gameEpoch || game.fen() !== fen || !result.move) break;
+      const move = playUci(game, result.move);
+      lastMove = [move.from, move.to];
+      renderDecision(result); render(); renderBattle();
+      log('battle-move', { game: current.number, botId, move: result.move, san: result.san, elapsedMs: result.elapsedMs, nodes: result.nodes, depth: result.depth ?? null });
+      outcome = battleOutcome(game, game.history().length);
+      if (!outcome) await new Promise(resolve => setTimeout(resolve, 120));
+    }
+    if (!outcome || epoch !== gameEpoch) break;
+    game.header('Event', 'Gato bot battle', 'White', botById(current.w).name, 'Black', botById(current.b).name, 'Result', outcome.result, 'Termination', outcome.termination, 'TimeControl', `${budgetMs} ms per move`);
+    battle.games.push({ number: current.number, whiteSeat, white: current.w, black: current.b, ...outcome, plies: game.history().length, pgn: game.pgn() });
+    log('battle-game', battle.games.at(-1));
+    renderBattle();
+  }
+  } catch (error) {
+    // Stopping a battle cancels the in-flight move; that is not an error.
+    if (error.name !== 'AbortError') throw error;
+  } finally {
+    if (!mine.running) mine.stopped = true;
+    mine.running = false; mine.current = null;
+    if (battle === mine) {
+      renderBattle(); render();
+      const points = battlePoints(mine);
+      toast(`Battle ${mine.stopped ? 'stopped' : 'finished'}: ${seatName(mine, 0)} ${half(points[0])} – ${half(points[1])} ${seatName(mine, 1)}.`);
+    }
+  }
+}
+async function stopBattle() {
+  if (!battleRunning()) return;
+  battle.running = false;
+  await cancelActive();
+  renderBattle(); render();
 }
 
 function table(headers, rows) {
@@ -308,8 +420,12 @@ bind('undo', async () => { await cancelActive(); game.undo(); if ($('side').valu
 bind('flip', () => { orientation = orientation === 'w' ? 'b' : 'w'; render(); });
 bind('side', async () => { await cancelActive(); gameNotice = null; orientation = $('side').value === 'b' ? 'b' : 'w'; selected = null; render(); await maybeAutoMove(); }, 'change');
 bind('mode', () => render(), 'change');
+bind('opponent', async () => { await cancelActive(); const bot = opponent(); $('node-limit').value = String(bot.rating.maxNodes); $('budget').value = String(bot.rating.budgetMs); gameNotice = null; render(); await maybeAutoMove(); }, 'change');
+bind('start-battle', runBattle);
+bind('stop-battle', stopBattle);
+bind('export-battle', () => { if (!battle?.games?.length) throw new Error('Finish at least one battle game first.'); download('gato-battle.pgn', battle.games.map(row => row.pgn).join('\n\n') + '\n', 'application/x-chess-pgn'); });
 for (const id of ['budget', 'node-limit']) bind(id, () => renderBotProfile(), 'change');
-bind('play-engine', async () => { if ($('side').value === 'watch') { if (watchRunning) { await cancelActive(); updateControls(); } else { watchRunning = true; await maybeAutoMove(); } } else { await engineMove(); await maybeAutoMove(); } });
+bind('play-engine', async () => { if (battleRunning()) return; if ($('side').value === 'watch') { if (watchRunning) { await cancelActive(); updateControls(); } else { watchRunning = true; await maybeAutoMove(); } } else { await engineMove(); await maybeAutoMove(); } });
 bind('cancel-run', async () => { await cancelActive(); toast('Run cancelled.'); });
 bind('stop-active', async () => { await cancelActive(); toast('Run cancelled.'); });
 bind('load-fen', async () => { const next = new Chess($('fen-input').value.trim()); await cancelActive(); gameNotice = null; game = next; selected = null; lastMove = null; render(); toast('Position loaded.'); });
@@ -327,7 +443,11 @@ bind('export-csv', () => { if (!latestReport) throw new Error('Run a comparison 
 bind('download-logs', () => download('intuition-session.json', JSON.stringify(reportEnvelope({ logs, reports, currentPosition: serializePosition(game), latestDecision }),null,2)));
 
 // Keep a compact read-only diagnostic hook for reproducible browser checks.
-window.__INTUITION__ = { get ready() { return ready; }, get busy() { return busy; }, get fen() { return game.fen(); }, get latestDecision() { return latestDecision; }, get latestReport() { return latestReport; }, get model() { return modelMetadata; }, get bot() { return BOT_PROFILE; }, get gameId() { return gameEpoch; }, get watchRunning() { return watchRunning; } };
+window.__INTUITION__ = { get ready() { return ready; }, get busy() { return busy; }, get fen() { return game.fen(); }, get latestDecision() { return latestDecision; }, get latestReport() { return latestReport; }, get model() { return modelMetadata; }, get bot() { return BOT_PROFILE; }, get gameId() { return gameEpoch; }, get watchRunning() { return watchRunning; }, get battle() { return battle && { running: battle.running, seats: [...battle.seats], total: battle.total, games: battle.games.map(({ pgn, ...row }) => row), current: battle.current && { ...battle.current } }; }, get opponent() { return opponent().id; } };
+const botOptions = selectedId => BOTS.map((bot, index) => `<option value="${bot.id}"${bot.id === selectedId ? ' selected' : ''}>${escape(bot.name)}${index === 0 ? ' · newest' : ''} · ≈${bot.rating.estimate}</option>`).join('');
+$('opponent').innerHTML = botOptions(BOT_PROFILE.id);
+$('battle-white').innerHTML = botOptions(BOTS[0].id);
+$('battle-black').innerHTML = botOptions(BOTS[1]?.id || BOTS[0].id);
 const suiteLabels = { smoke: 'Quick check · 3 positions', mixed: 'Mixed suite · 10 positions', tactics: 'Tactics · 6 positions', endgames: 'Endgames · 4 positions', openings: 'Openings · 4 positions' };
 $('suite-select').innerHTML = Object.entries(suiteLabels).map(([value,label]) => `<option value="${value}">${label}</option>`).join('');
 $('metric-confidence').title = 'Raw policy preference, not a calibrated probability that this move is correct.';

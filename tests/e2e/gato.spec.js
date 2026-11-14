@@ -14,7 +14,7 @@ test('Gato 2 shows its measured provisional rating and distinguishes unmeasured 
   await expect(page.locator('#top-player-detail')).toContainText('GATO 2');
   await page.locator('.bot-rating-details summary').click();
   await expect(page.locator('.bot-rating-details')).toContainText('not a FIDE, Chess.com or Lichess rating');
-  await expect(page.locator('.bot-rating-details')).toContainText('Gato 1, our first bot, measured ≈1650');
+  await expect(page.locator('.bot-rating-details')).toContainText('Gato 2 won all 24 games of its color-reversed match against Gato 1');
   await page.locator('#budget').selectOption('500');
   await expect(page.locator('#bot-rating-context')).toContainText('These search limits are unmeasured');
   await page.locator('#budget').selectOption('150');

@@ -1,5 +1,6 @@
 import { loadNeuralModel } from '../model/index.js';
-import { chooseMove, restorePosition } from './engine.js';
+import { restorePosition } from './engine.js';
+import { engineFor } from './bots/engines.js';
 import { runSuite, runPairedMatches, calibrateController } from './benchmark.js';
 
 let active = null;
@@ -18,11 +19,11 @@ self.onmessage = async event => {
     const model = await modelPromise;
     const settings = { ...options, signal: controller.signal, onProgress: progress };
     let result;
-    if (type === 'choose') result = await chooseMove(restorePosition(position), model, settings);
+    if (type === 'choose') result = { ...(await engineFor(options.botId).chooseMove(restorePosition(position), model, settings)), botId: options.botId || null };
     else if (type === 'compare') {
       result = [];
       for (const mode of ['direct', 'search', 'selective']) {
-        result.push(await chooseMove(restorePosition(position), model, { ...settings, mode }));
+        result.push(await engineFor(options.botId).chooseMove(restorePosition(position), model, { ...settings, mode }));
         progress({ completed: result.length, total: 3, phase: 'Comparing modes', row: result.at(-1) });
       }
     } else if (type === 'suite') result = await runSuite(model, settings);
