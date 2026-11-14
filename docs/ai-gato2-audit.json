@@ -1,0 +1,66 @@
+{
+  "auditedAt": "2026-11-14T22:24:41.308Z",
+  "inputs": {
+    "docs/ai-gato2-vs-gato1.json": {
+      "sha256": "57c311bb8d36e98f5ef85664e65ef6c163f571b3dfeebfa690b37e1d2ec409a5",
+      "games": 24,
+      "scored": 24,
+      "unfinished": 0,
+      "moves": 2006,
+      "terminations": {
+        "checkmate": 24
+      }
+    },
+    "docs/ai-gato2-provisional-elo.json": {
+      "sha256": "dd877076fc03e7354989467d4d4303c1c47a961a61fcd043f5fe365517cf89ad",
+      "games": 32,
+      "scored": 32,
+      "unfinished": 0,
+      "moves": 2942,
+      "terminations": {
+        "checkmate": 32
+      }
+    }
+  },
+  "selection": {
+    "selected": "improved",
+    "accepted": true,
+    "candidatePoints": 24,
+    "favorable": 12,
+    "unfavorable": 0,
+    "tied": 0,
+    "oneSidedP": 0.000244140625
+  },
+  "selectedEngine": "intuition-hybrid-5",
+  "frozenCandidate": {
+    "revision": "c50e6edaca935bd896ac1c7114f2ffb2fd7ea4d8",
+    "sourceTreeSHA256": "98ca1cb8386b329f8cd74e906be1d3de3826d827c91026276094528738dbfdbb",
+    "sourceFiles": {
+      "src/controller.js": "77d6ff8b271939fff79cc65c21c68137b6b8258964b6db577c0aa7f2121c4dbd",
+      "src/engine.js": "4e02d1d9ef6431375ab406e3603d4d2ccc3166c0b2d13f7bb06f6dfe7d8253c6",
+      "src/gato-search.js": "7567a231a32719fcaa71d0a6e7f08cd8d27f35976c268d19e8185442525af3fc"
+    }
+  },
+  "activeSourceTreeSHA256": "98ca1cb8386b329f8cd74e906be1d3de3826d827c91026276094528738dbfdbb",
+  "activeMatchesFrozenCandidate": true,
+  "matchCandidateTreeMatches": true,
+  "ladderEngineTreeMatches": true,
+  "matchBaselineIsImmutableGato1": true,
+  "ratingRecomputed": {
+    "pointEstimate": 2277.682723762975,
+    "lower": 1932.6527604808612,
+    "upper": null,
+    "upperUnbounded": true,
+    "matchesReport": true
+  },
+  "published": {
+    "estimate": 2278,
+    "lower": 1933,
+    "upper": null
+  },
+  "opponent": {
+    "name": "Stockfish 19",
+    "executableSHA256": "6e46ebada59b2beaaf73913d910ac70f10617a64003d97ac77cf2f94a251938a",
+    "build": "sf_19 tag edb0d9db6731067ec50ce619ff372b463bc4dd5d, make profile-build ARCH=x86-64-avx2, nn-1a298aa575a0.nnue"
+  }
+}
