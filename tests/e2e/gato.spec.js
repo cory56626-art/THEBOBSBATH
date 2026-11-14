@@ -1,24 +1,26 @@
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
-test('Gato 1 shows its measured provisional rating and distinguishes unmeasured settings', async ({ page }) => {
+test('Gato 2 shows its measured provisional rating and distinguishes unmeasured settings', async ({ page }) => {
   await page.goto('./');
   await page.waitForFunction(() => window.__INTUITION__?.ready);
-  await expect(page).toHaveTitle('Gato 1 — Bobs Bath Chess');
-  await expect(page.locator('#bot-name')).toHaveText('Gato 1');
-  await expect(page.locator('#bot-rating')).toHaveText('≈1650');
-  await expect(page.locator('#bot-rating-interval')).toHaveText('1289–2047');
+  await expect(page).toHaveTitle('Gato 2 — Bobs Bath Chess');
+  await expect(page.locator('#bot-name')).toHaveText('Gato 2');
+  await expect(page.locator('#bot-rating')).toHaveText('≈2278');
+  await expect(page.locator('#bot-rating-interval')).toHaveText('1933 – unbounded');
+  await expect(page.locator('#node-limit')).toHaveValue('1000000');
   await expect(page.locator('#budget')).toHaveValue('150');
   await expect(page.locator('#bot-rating-context')).toContainText('Current settings match');
-  await expect(page.locator('#top-player-detail')).toContainText('GATO 1');
+  await expect(page.locator('#top-player-detail')).toContainText('GATO 2');
   await page.locator('.bot-rating-details summary').click();
   await expect(page.locator('.bot-rating-details')).toContainText('not a FIDE, Chess.com or Lichess rating');
+  await expect(page.locator('.bot-rating-details')).toContainText('Gato 1, our first bot, measured ≈1650');
   await page.locator('#budget').selectOption('500');
   await expect(page.locator('#bot-rating-context')).toContainText('These search limits are unmeasured');
   await page.locator('#budget').selectOption('150');
-  await page.locator('#node-limit').selectOption('8192');
-  await expect(page.locator('#bot-rating-context')).toContainText('These search limits are unmeasured');
   await page.locator('#node-limit').selectOption('32768');
+  await expect(page.locator('#bot-rating-context')).toContainText('These search limits are unmeasured');
+  await page.locator('#node-limit').selectOption('1000000');
   await page.locator('#mode').selectOption('direct');
   await expect(page.locator('#bot-rating-context')).toContainText('Direct mode is unrated');
   await page.locator('#mode').selectOption('selective');
@@ -26,13 +28,16 @@ test('Gato 1 shows its measured provisional rating and distinguishes unmeasured 
   await page.locator('#mode').selectOption('search');
   await expect(page.locator('#bot-rating-context')).toContainText('Current settings match');
   await page.locator('#new-game').click();
-  await expect(page.locator('#bot-rating')).toHaveText('≈1650');
-  expect((await page.evaluate(() => window.__INTUITION__.bot)).name).toBe('Gato 1');
+  await expect(page.locator('#bot-rating')).toHaveText('≈2278');
+  expect((await page.evaluate(() => window.__INTUITION__.bot)).name).toBe('Gato 2');
   const downloaded = page.waitForEvent('download');
   await page.locator('#download-logs').click();
   const session = JSON.parse(await readFile(await (await downloaded).path(), 'utf8'));
-  expect(session.bot.name).toBe('Gato 1');
-  expect(session.bot.rating.estimate).toBe(1650);
+  expect(session.bot.name).toBe('Gato 2');
+  expect(session.bot.rating.estimate).toBe(2278);
+  expect(session.bot.rating.upper).toBe(null);
+  expect(session.bot.rating.maxNodes).toBe(1000000);
+  expect(session.bot.previous.estimate).toBe(1650);
   expect(session.bot.rating.mode).toBe('search');
   expect(session.bot.rating.budgetMs).toBe(150);
   expect(session.engineVersion).toBe(session.bot.engineVersion);

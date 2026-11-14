@@ -3,7 +3,7 @@ import { renderBoard } from './board.js';
 import { serializePosition, playUci, ENGINE_VERSION } from './engine.js';
 import { BENCHMARK_SUITES, rowsToCSV } from './benchmark.js';
 import defaultGate from './default-controller.json';
-import { BOT_PROFILE } from './bot-profile.js';
+import { BOT_PROFILE, formatInterval } from './bot-profile.js';
 
 const $ = id => document.getElementById(id);
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -30,7 +30,7 @@ function toast(message, error = false) {
   log(error ? 'error' : 'notice', message);
 }
 function settings() {
-  return { budgetMs: Number($('budget')?.value || BOT_PROFILE.rating.budgetMs), maxNodes: Number($('node-limit')?.value || 32768), gate, threshold: Number($('controller-threshold')?.value || 0.5) };
+  return { budgetMs: Number($('budget')?.value || BOT_PROFILE.rating.budgetMs), maxNodes: Number($('node-limit')?.value || BOT_PROFILE.rating.maxNodes), gate, threshold: Number($('controller-threshold')?.value || 0.5) };
 }
 function request(type, options = {}, position = serializePosition(game), onProgress) {
   if (!ready) return Promise.reject(new Error('The neural model is still loading.'));
@@ -139,16 +139,16 @@ function renderBotProfile() {
   const rating = BOT_PROFILE.rating;
   $('bot-name').textContent = BOT_PROFILE.name;
   $('bot-rating').textContent = `≈${rating.estimate}`;
-  $('bot-rating-interval').textContent = `${rating.lower}–${rating.upper}`;
+  $('bot-rating-interval').textContent = formatInterval(rating);
   const mode = $('mode').value;
   const matches = mode === rating.mode && Number($('budget').value) === rating.budgetMs && Number($('node-limit').value) === rating.maxNodes;
   $('bot-rating-context').textContent = matches
-    ? 'Current settings match the measured test: Search · 150 ms · 32,768 positions.'
+    ? `Current settings match the measured test: Search · ${rating.budgetMs} ms · ${rating.maxNodes.toLocaleString('en-US')} positions.`
     : mode === 'direct'
       ? 'Direct mode is unrated. The estimate above belongs to the measured Search test.'
       : mode === 'selective'
         ? 'Selective mode is unrated. The estimate above belongs to the measured Search test.'
-        : 'These search limits are unmeasured. The estimate above is for 150 ms and 32,768 positions.';
+        : `These search limits are unmeasured. The estimate above is for ${rating.budgetMs} ms and ${rating.maxNodes.toLocaleString('en-US')} positions.`;
 }
 function updateControls(redraw = true) {
   renderBotProfile();
