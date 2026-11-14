@@ -1,8 +1,8 @@
 import { Chess } from 'chess.js';
 import { extractFeatures, predictRisk } from './controller.js';
-import { tacticalSearch } from './tactical-search.js';
+import { gatoSearch } from './gato-search.js';
 
-export const ENGINE_VERSION = 'intuition-hybrid-3';
+export const ENGINE_VERSION = 'intuition-hybrid-5';
 export const uciOf = move => move.from + move.to + (move.promotion || '');
 const clock = () => performance.now();
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
@@ -99,7 +99,7 @@ export async function chooseMove(chess, model, options = {}) {
   if (mode === 'direct') return direct;
   const budgetMs = clamp(Number(options.budgetMs) || 500, 1, 30000);
   const maxNodes = Math.floor(clamp(Number(options.maxNodes) || 32768, 1, 1000000));
-  const common = { searchKind: 'neural-ordered-alpha-beta', nodeUnit: 'tactical-position', budgetMs, maxNodes, inferenceCalls: 1 };
+  const common = { searchKind: 'neural-ordered-pvs', nodeUnit: 'tactical-position', budgetMs, maxNodes, inferenceCalls: 1 };
   const mate = prediction.candidates.find(candidate => candidate.san.endsWith('#'));
   if (mate) return {
     ...direct, ...common, move: mate.uci, san: mate.san, value: 1, scoreCp: 30000 - 1,
@@ -129,7 +129,7 @@ export async function chooseMove(chess, model, options = {}) {
   // neural call, fast search, and safety check share one total decision budget.
   const finalCheckReserveMs = Math.min(8, budgetMs * .05);
   const remainingMs = Math.max(0, budgetMs - (clock() - started) - finalCheckReserveMs);
-  const result = remainingMs > 0 ? await tacticalSearch(chess, {
+  const result = remainingMs > 0 ? await gatoSearch(chess, {
     budgetMs: remainingMs, maxNodes, signal, priors: prediction.candidates,
     onProgress: progress => onProgress?.({ ...progress, inferenceCalls: 1, elapsedMs: clock() - started }),
   }) : { move: direct.move, scoreCp: null, depth: 0, nodes: 0, qNodes: 0, pv: [], completedIterations: 0, stopReason: 'time-limit', proven: false, mateInPlies: null };
