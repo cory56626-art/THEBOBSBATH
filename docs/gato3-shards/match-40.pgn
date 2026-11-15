@@ -1,0 +1,479 @@
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "1/2-1/2"]
+[Opening "Colle"]
+[Termination "insufficient-material"]
+
+1. d4 d5 2. Nf3 Nf6 3. e3 e6 4. Nc3 Nc6 5. Bb5 Bd7 6. O-O a6 7. Bxc6 Bxc6 8. Ne5 Bd7 9. g4 Bb4 10. g5 Ng8 11. Nxd7 Qxg5+ 12. Kh1 Kxd7 13. e4 Qh4 14. exd5 Ne7 15. dxe6+ fxe6 16. Qd3 Rhf8 17. Ne4 Qh5 18. Rg1 Bd6 19. f4 Bxf4 20. Bxf4 Rxf4 21. Rxg7 Raf8 22. Re1 Ke8 23. Rxh7 Qf5 24. Rg7 Rf3 25. Qc4 Rf1+ 26. Rxf1 Qxf1+ 27. Qxf1 Rxf1+ 28. Rg1 Rxg1+ 29. Kxg1 b6 30. c3 Nf5 31. Kf2 Ke7 32. b4 Kd7 33. Kf3 Kc6 34. Kf4 Kd5 35. Nf6+ Kd6 36. h3 a5 37. bxa5 bxa5 38. a4 c6 39. Ne4+ Kd5 40. Ng5 Kd6 41. Ke4 Ke7 42. Nf3 Kd6 43. Ne5 Ng3+ 44. Kf3 Nf5 45. Nc4+ Kd5 46. Nxa5 c5 47. dxc5 Kxc5 48. Ke4 Ne7 49. Ke5 Ng6+ 50. Kxe6 Nf4+ 51. Kf5 Nxh3 52. Nb7+ Kc6 53. Nd8+ Kc5 54. Ne6+ Kc4 55. Nc7 Kc5 56. Ke5 Nf2 57. a5 Kc6 58. Nd5 Kb5 59. c4+ Kxa5 60. Kd4 Ng4 61. c5 Kb5 62. Nc3+ Kc6 63. Ne4 Kc7 64. Nd6 Nf6 65. Nb5+ Kb7 66. Na3 Nd7 67. Kd5 Nxc5 68. Nc2 Kc7 69. Nd4 Ne4 70. Ne6+ Kd7 71. Ke5 Kc6 72. Nf4 Kc5 73. Nd5 Kc6 74. Kd4 Kd7 75. Nf4 Kd6 76. Nd3 Kd7 77. Kd5 Nf6+ 78. Ke5 Ne4 79. Kd4 Ke6 80. Ne5 Kd6 81. Nc4+ Ke6 82. Ne3 Kd7 83. Ke5 Kc6 84. Nf5 Kc5 85. Nd4 Kc4 86. Ne6 Kd3 87. Nf4+ Kc4 88. Nd5 Kd3 89. Nf4+ Kc4 90. Kxe4 1/2-1/2
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "0-1"]
+[Opening "Colle"]
+[Termination "checkmate"]
+
+1. d4 d5 2. Nf3 Nf6 3. e3 e6 4. Be2 Bd6 5. O-O c6 6. c4 dxc4 7. Nc3 b5 8. e4 Bb4 9. Bg5 h6 10. Bxf6 Qxf6 11. a3 Bxc3 12. bxc3 Nd7 13. e5 Qe7 14. Qc2 O-O 15. a4 a6 16. Rfb1 Nb6 17. axb5 cxb5 18. h3 Bb7 19. Nd2 Bc6 20. Bf3 Bxf3 21. Nxf3 Nd5 22. Kh1 Rfb8 23. Kg1 a5 24. Nd2 a4 25. Ne4 Ra6 26. Nc5 Rab6 27. Rb2 Rc8 28. Qd2 Rxc5 29. dxc5 Qxc5 30. Rba2 Ra6 31. h4 Ra8 32. h5 Qc7 33. Qe1 Qa5 34. Ra3 Qb6 35. Qe4 Rd8 36. Rb1 Qc5 37. Rba1 Ne7 38. Kf1 Rd2 39. Qe1 Rd5 40. f4 Rd3 41. Qf2 Qxf2+ 42. Kxf2 Nd5 43. g4 Nxf4 44. Rb1 Rd5 45. Kg3 Nd3 46. Ra2 Rxe5 47. Kf3 Rd5 48. Re2 Ne5+ 49. Kg3 f6 50. Kf4 Kf7 51. Ra2 Ke7 52. Re2 Kd6 53. Re3 Kc5 54. Rg1 Rd2 55. Kg3 a3 56. Ra1 a2 57. Kf4 Nd3+ 58. Kf3 e5 59. Re4 Rf2+ 60. Ke3 Kd5 61. Rd1 Rc2 62. g5 hxg5 63. Rg4 Rc1 64. Rxc1 Nxc1 65. Rg1 a1=Q 66. Rd1+ Ke6 67. Kf2 Nd3+ 68. Rxd3 cxd3 69. h6 gxh6 70. Ke3 Qxc3 71. Kf3 d2+ 72. Ke2 Qc1 73. Kf3 d1=Q+ 74. Kg3 Qcc2 75. Kh3 Qf3# 0-1
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "0-1"]
+[Opening "Old Indian"]
+[Termination "checkmate"]
+
+1. d4 Nf6 2. c4 d6 3. Nc3 e5 4. dxe5 dxe5 5. Be3 Nbd7 6. Nf3 Bb4 7. Qb3 Qe7 8. O-O-O O-O 9. Nb5 Ba5 10. Nxa7 e4 11. Nxc8 Rfxc8 12. Nd4 Rcb8 13. Kb1 h6 14. f4 Ng4 15. g3 Kh8 16. Bg1 Nc5 17. Qc2 e3 18. Nf5 Qe6 19. Rd5 Bb6 20. Nd4 Qf6 21. Bh3 c6 22. Bxg4 cxd5 23. Bxe3 dxc4 24. Rd1 Rd8 25. Bf3 Ra4 26. h4 Rda8 27. a3 Nb3 28. Nxb3 cxb3 29. Qxb3 Bxe3 30. Qxe3 Qg6+ 31. Rd3 Qxg3 32. Bxb7 Qxe3 33. Rxe3 Rb8 34. Re4 Ra7 35. Bd5 Rxa3 36. Bxf7 Rh3 37. f5 Rh1+ 38. Kc2 Rc8+ 39. Kd2 Rd8+ 40. Ke3 Rf1 41. Be6 Rb1 42. b3 Rb2 43. Ra4 h5 44. Kf3 Kh7 45. Ra7 Kh6 46. Bc4 Rd1 47. e4 Rh1 48. Kg3 Rg1+ 49. Kf4 Rg4+ 50. Ke3 Rxh4 51. Ra6+ Kh7 52. e5 Rh3+ 53. Ke4 Rh4+ 54. Kf3 Rh3+ 55. Ke4 Rh4+ 56. Ke3 Rh3+ 57. Kd4 Rd2+ 58. Ke4 Rh4+ 59. Ke3 Rdh2 60. e6 R2h3+ 61. Kf2 Rf4+ 62. Kg2 Re3 63. Ra5 h4 64. Kh2 Rf2+ 65. Kg1 Rb2 66. Ra1 Kh6 67. Rf1 Kg5 68. Rf2 Re1+ 69. Bf1 Rxb3 70. Kh2 Rbe3 71. Bb5 h3 72. Bf1 Kg4 73. Bc4 Re4 74. Bd3 Rf4 75. Rd2 Re3 76. Bb1 Ref3 77. Bd3 Rf2+ 78. Rxf2 Rxf2+ 79. Kg1 Rg2+ 80. Kh1 Rd2 81. Bb5 Kg3 82. Ba4 Ra2 83. Kg1 Ra1+ 84. Bd1 Rxd1# 0-1
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1/2-1/2"]
+[Opening "Old Indian"]
+[Termination "threefold-repetition"]
+
+1. d4 Nf6 2. c4 d6 3. Nc3 e5 4. dxe5 dxe5 5. Qxd8+ Kxd8 6. Bg5 Be6 7. Nf3 Nd7 8. O-O-O Kc8 9. e3 Bb4 10. Bh4 Bxc3 11. bxc3 Ne4 12. Kc2 Nd6 13. Be7 Bxc4 14. Bxd6 Bxf1 15. Rhxf1 cxd6 16. Ng5 f6 17. Nf7 Kc7 18. Nxh8 Rxh8 19. h4 b6 20. f4 Nc5 21. fxe5 dxe5 22. g4 h6 23. h5 Rd8 24. Rxd8 Kxd8 25. Kd2 Ke7 26. c4 Ne4+ 27. Kc2 Ke6 28. a3 Nc5 29. Rf3 Ne4 30. Kd3 Nc5+ 31. Kc3 Ne4+ 32. Kb4 a6 33. a4 Nd6 34. Rf2 a5+ 35. Kb3 Ne4 36. Rf5 Kd6 37. Kc2 Kc5 38. Kd3 Nd6 39. Rf2 e4+ 40. Kc3 Nxc4 41. Rf5+ Ne5 42. Rf4 Kd5 43. Rf5 Kd6 44. Rf4 Kd5 45. Rf5 Kc5 46. Rf4 Kd5 1/2-1/2
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "1/2-1/2"]
+[Opening "Budapest"]
+[Termination "threefold-repetition"]
+
+1. d4 Nf6 2. c4 e5 3. dxe5 Ng4 4. Nf3 Bc5 5. e3 Nc6 6. Be2 Ngxe5 7. O-O O-O 8. Nxe5 Nxe5 9. Nc3 d6 10. f4 Ng6 11. Ne4 Bb4 12. a3 Re8 13. f5 Nh4 14. axb4 Rxe4 15. Bd3 Qe8 16. Ra5 b6 17. Rd5 Bb7 18. g3 Bxd5 19. cxd5 Rxb4 20. gxh4 Rxh4 21. Qf3 Qa4 22. Bd2 Re8 23. Rc1 Re7 24. Kh1 Qg4 25. Qf2 f6 26. b4 Rh3 27. Ra1 Re5 28. Rxa7 Rxd5 29. Qf1 c6 30. Bc4 Rh5 31. Bxd5+ cxd5 32. Be1 Rxf5 33. Qg2 Rg5 34. Qxg4 Rxg4 35. Ra8+ Kf7 36. Ra7+ Kg8 37. Ra8+ Kf7 38. Ra7+ Kg8 1/2-1/2
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1-0"]
+[Opening "Budapest"]
+[Termination "checkmate"]
+
+1. d4 Nf6 2. c4 e5 3. dxe5 Ng4 4. Nf3 Bc5 5. e3 Qe7 6. Nc3 Nxe5 7. Nd5 Qd6 8. Nd4 O-O 9. Nb5 Qc6 10. Nbxc7 b6 11. f4 Ng6 12. Be2 Ne7 13. Nxa8 Qxa8 14. O-O Nxd5 15. cxd5 Ba6 16. Bxa6 Nxa6 17. a3 Re8 18. Qf3 Nc7 19. b4 Bf8 20. e4 f5 21. exf5 Nxd5 22. Rd1 Nf6 23. Qxa8 Rxa8 24. Be3 Re8 25. Bd4 d6 26. Rac1 Re2 27. Rc8 Re8 28. Rxe8 Nxe8 29. g4 Nc7 30. Kf2 Nb5 31. Bb2 Be7 32. a4 Nc7 33. g5 Kf7 34. b5 h6 35. h4 Ne8 36. Kf3 h5 37. Bd4 Nc7 38. Rc1 Bd8 39. Rc6 d5 40. g6+ Kf8 41. f6 gxf6 42. Bxf6 Bxf6 43. Rxf6+ Kg8 44. Rc6 Ne8 45. Rc8 Kf8 46. g7+ Kxg7 47. Rxe8 Kf7 48. Ra8 Ke6 49. Rxa7 Kd6 50. Rh7 Kc5 51. Rxh5 Kc4 52. f5 d4 53. Ke4 d3 54. f6 d2 55. Rd5 Kc3 56. f7 Kc2 57. f8=Q d1=N 58. Rxd1 Kxd1 59. Qf2 Kc1 60. Qxb6 Kc2 61. Qc5+ Kd2 62. b6 Ke1 63. Qc2 Kf1 64. Kf3 Ke1 65. Qe2# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "0-1"]
+[Opening "Albin"]
+[Termination "checkmate"]
+
+1. d4 d5 2. c4 e5 3. dxe5 d4 4. Nf3 Nc6 5. a3 Bg4 6. Nbd2 Qd7 7. h3 Bf5 8. b4 O-O-O 9. b5 Na5 10. g4 Be6 11. Qa4 b6 12. Bb2 Bc5 13. Rc1 h5 14. Ne4 Qe7 15. g5 h4 16. Bg2 d3 17. Bf1 dxe2 18. Bxe2 Kb8 19. Rd1 Rxd1+ 20. Kxd1 Nb7 21. Ke1 Bf5 22. Nfd2 Qe6 23. Qb3 Ne7 24. Kf1 Rd8 25. Nxc5 Nxc5 26. Qe3 Bd3 27. Kg1 Nf5 28. Qf3 Qg6 29. Bc3 Qxg5+ 30. Qg4 Qe7 31. Kh2 g6 32. Qf3 Bxe2 33. Qxe2 Nd4 34. Bxd4 Rxd4 35. Rg1 Ne6 36. Nf3 Qxa3 37. Nxd4 Nxd4 38. Qd1 Nf3+ 39. Kg2 Nxg1 40. Qd8+ Kb7 41. Qd5+ Kc8 42. Kxg1 Qc1+ 43. Kg2 Qg5+ 44. Kf1 Qf5 45. Kg2 g5 46. Qa8+ Kd7 47. Qd5+ Ke7 48. Qd4 f6 49. exf6+ Qxf6 50. Qd3 Qf4 51. Qg6 Qe5 52. Qd3 Kf6 53. Kg1 Qd6 54. Qf3+ Kg7 55. Qf5 Qf6 56. Qe4 Qf4 57. Qe7+ Kg6 58. Qe8+ Qf7 59. Qe4+ Kh6 60. Kg2 Qd7 61. Kh2 Kg7 62. Kg2 Qd6 63. Kg1 Qf6 64. Kg2 Qf7 65. Kg1 Kh8 66. Qe5+ Kh7 67. Qxg5 Qxc4 68. Qh5+ Kg7 69. Qg5+ Kf7 70. f4 Qc5+ 71. Qxc5 bxc5 72. Kf2 Ke6 73. Kf3 Kf5 74. Ke3 c4 75. Kf3 c3 76. Ke3 c2 77. Kd2 Kxf4 78. Kc1 Kg3 79. Kxc2 Kxh3 80. Kd3 Kg3 81. Kd4 h3 82. Kc5 h2 83. Kc6 h1=Q+ 84. Kxc7 Qh7+ 85. Kb8 Kf4 86. Ka8 Ke5 87. Kb8 Kd6 88. Ka8 Kc5 89. b6 Kxb6 90. Kb8 Qg8# 0-1
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1-0"]
+[Opening "Albin"]
+[Termination "checkmate"]
+
+1. d4 d5 2. c4 e5 3. dxe5 d4 4. e3 dxe3 5. Qxd8+ Kxd8 6. Bxe3 Nc6 7. Nf3 f6 8. exf6 Nxf6 9. Nc3 Bg4 10. O-O-O+ Kc8 11. Be2 Bb4 12. h3 Bxf3 13. Bxf3 Bxc3 14. bxc3 Ne5 15. Be2 Ne4 16. Rd5 Nd7 17. Kc2 c6 18. Rd4 Re8 19. Bg4 Nf6 20. Bxd7+ Nxd7 21. Rb1 Nf6 22. Rd3 a6 23. Bd4 h6 24. Re3 Rxe3 25. fxe3 Ne8 26. Rf1 g6 27. Rf8 Kd7 28. Rf7+ Kc8 29. Re7 Nc7 30. Bb6 Ne6 31. Re8+ Kd7 32. Rxa8 c5 33. Rg8 g5 34. Rh8 h5 35. Rxh5 Kc6 36. Rh6 Kd7 37. Kd3 Kd6 38. Bxc5+ Kd7 39. Rh7+ Kc6 40. Bd4 Nf8 41. Rh6+ Kd7 42. Rb6 Kc7 43. e4 g4 44. hxg4 Kc8 45. g5 Nd7 46. g6 Kc7 47. Rxb7+ Kxb7 48. g7 Nb8 49. g8=Q Nc6 50. Qf7+ Kc8 51. g4 Nb8 52. Be5 Nd7 53. Qe8+ Kb7 54. Qxd7+ Ka8 55. Qc8+ Ka7 56. Qb8# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "0-1"]
+[Opening "Chigorin"]
+[Termination "checkmate"]
+
+1. d4 d5 2. c4 Nc6 3. Nf3 Bg4 4. e3 e6 5. Nc3 Nf6 6. a3 Be7 7. Bd3 O-O 8. h3 Bxf3 9. Qxf3 dxc4 10. Bxc4 e5 11. d5 Na5 12. Ba2 b5 13. Nxb5 e4 14. Qf5 a6 15. Nd4 g6 16. Qg5 h6 17. Qh4 Kh7 18. O-O Nb7 19. Nc6 Qd7 20. Qf4 Nc5 21. Qe5 Rfe8 22. Bd2 Nd3 23. Qd4 Qf5 24. Nxe7 Rxe7 25. f3 Qe5 26. Bc3 Qxd4 27. Bxd4 Nh5 28. fxe4 Ng3 29. Bc4 Ne2+ 30. Kh1 Nxd4 31. Bxd3 Nb3 32. Rad1 Kg7 33. Rf4 Rb8 34. h4 a5 35. Bc2 Nc5 36. Rb1 Nb3 37. h5 gxh5 38. Rbf1 Nd2 39. R1f2 Nc4 40. Bd1 Rxb2 41. Rxb2 Nxb2 42. Be2 Re5 43. g3 Na4 44. Kg2 Nc3 45. Bd3 Kg6 46. Kf3 f6 47. Rf5 a4 48. Rxe5 fxe5 49. Kf2 Kg5 50. Ke1 Kg4 51. Kd2 Kxg3 52. Kxc3 h4 53. Kc4 h3 54. Kb4 h2 55. Kxa4 h1=Q 56. Kb3 Qc1 57. Bc2 Qxe3+ 58. Kb2 h5 59. Bb1 h4 60. a4 h3 61. d6 h2 62. dxc7 Qd4+ 63. Kc2 h1=Q 64. Kb3 Qxb1+ 65. Ka3 Qdb4# 0-1
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1-0"]
+[Opening "Chigorin"]
+[Termination "checkmate"]
+
+1. d4 d5 2. c4 Nc6 3. Nf3 Bg4 4. cxd5 Qxd5 5. Nc3 Qa5 6. d5 Rd8 7. Bd2 Bxf3 8. exf3 Nb4 9. a3 Na6 10. Bb5+ Rd7 11. Bxd7+ Kxd7 12. b4 Qb6 13. Be3 Qd6 14. Bxa7 Nf6 15. Ne4 Qf4 16. Be3 Qf5 17. Nxf6+ exf6 18. Qa4+ Kd8 19. Qb5 Qc8 20. Rc1 Bd6 21. O-O Nb8 22. Rfe1 Nd7 23. Qd3 Ne5 24. Qe4 b5 25. Bf4 Qd7 26. Bxe5 Bxe5 27. Qd3 Re8 28. Qxh7 g6 29. Rcd1 Bb2 30. Rxe8+ Qxe8 31. h4 Qe2 32. Qh8+ Ke7 33. Rb1 Be5 34. Qa8 Qa2 35. Rf1 Qe2 36. g3 f5 37. Qc6 f4 38. g4 Kf8 39. Kg2 Bd6 40. Rc1 Qd3 41. Rc3 Qe2 42. Rc2 Qd1 43. Qa8+ Kg7 44. Rc3 Qd4 45. Rc1 Qd3 46. Re1 f5 47. g5 Qc4 48. Re8 Kf7 49. Rg8 Qe2 50. Rh8 Qxf2+ 51. Kxf2 Bc5+ 52. bxc5 Kg7 53. Qg8# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "0-1"]
+[Opening "Symmetrical English"]
+[Termination "checkmate"]
+
+1. c4 c5 2. Nc3 Nc6 3. g3 g6 4. Nf3 d6 5. Bg2 Nf6 6. O-O e5 7. d3 Bg7 8. Bg5 h6 9. Bd2 O-O 10. Qb3 a6 11. a3 Bd7 12. Rfe1 Qc7 13. e4 Kh7 14. h3 Nd4 15. Nxd4 exd4 16. Ne2 Rab8 17. Rab1 b5 18. Kh2 bxc4 19. Qxc4 Be6 20. Qc1 Nd7 21. Nf4 Ne5 22. b4 Bf6 23. Qc2 c4 24. dxc4 Qxc4 25. Qd1 Qa2 26. Ra1 Qb3 27. Nd5 Bxd5 28. exd5 Qxd1 29. Raxd1 Rfc8 30. Be4 Nc4 31. Bd3 Nb2 32. Bxa6 Rc2 33. a4 Nxd1 34. Rxd1 Kg7 35. a5 Bg5 36. f4 Bf6 37. Kg1 Rb2 38. Bd3 Rb3 39. Be1 Re8 40. Kf1 Re3 41. Bc4 Rb2 42. a6 Kf8 43. b5 Rf3+ 44. Kg1 Ra3 45. Bf1 Ke7 46. Bd3 Kd7 47. Kf1 Kc7 48. h4 Kb6 49. Bf2 Raa2 50. Bg1 Rg2 51. Bc4 Rab2 52. Rd3 h5 53. Rb3 Rxb3 54. Kxg2 Ra3 55. Bf2 Kc5 56. Bf1 Bd8 57. Be2 f5 58. Kg1 Kxd5 59. Kg2 Kc5 60. Bf1 Bf6 61. Be2 d5 62. Kf1 Kb6 63. Kg2 Rc3 64. Kf1 Rc1+ 65. Kg2 Rb1 66. Kf3 Rb3+ 67. Kg2 Bg7 68. Bg1 Ra3 69. Bf2 Bf6 70. Bf1 Ka7 71. Be2 Rb3 72. Bf1 Ka8 73. Bg1 d3 74. b6 Rb2+ 75. Kh3 d2 76. Be2 Bd8 77. b7+ Kb8 78. Bd4 Rb1 79. Bf3 Bb6 80. Be5+ Bc7 81. Bd4 Rb5 82. Be3 Ba5 83. Bd4 Bb6 84. Bc3 d4 85. Bxd2 Ka7 86. Bc1 Bc5 87. Bc6 Rb6 88. Bd5 Kxa6 89. Kg2 Ka7 90. Kh3 d3 91. Bd2 Bd4 92. Ba5 Rb5 93. Bc7 Rxb7 94. Bxb7 Kxb7 95. Ba5 Be3 96. Kg2 d2 97. Bxd2 Bxd2 98. Kf3 Kc6 99. Ke2 Bb4 100. Kf2 Kd5 101. Ke3 Bc5+ 102. Kf3 Kd4 103. Kf2 Ke4+ 104. Ke2 Be3 105. Kd1 Bf2 106. Ke2 Bxg3 107. Kf1 Bxh4 108. Kg2 Bf6 109. Kf2 Kxf4 110. Kg2 g5 111. Kf1 Kf3 112. Ke1 g4 113. Kd2 g3 114. Kd3 g2 115. Kc4 g1=Q 116. Kb5 h4 117. Kc6 f4 118. Kd5 Qb6 119. Kc4 Qe6+ 120. Kc5 h3 121. Kb4 h2 122. Kb5 h1=Q 123. Kc5 Qc1+ 124. Kb4 Qcc4+ 125. Ka3 Qea6# 0-1
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1/2-1/2"]
+[Opening "Symmetrical English"]
+[Termination "threefold-repetition"]
+
+1. c4 c5 2. Nc3 Nc6 3. g3 g6 4. Bg2 Nf6 5. d3 d6 6. Nf3 Bg7 7. O-O O-O 8. a3 a6 9. Bd2 Bg4 10. h3 Bd7 11. e4 Qc7 12. Qc2 e5 13. Nd5 Nxd5 14. cxd5 Nd4 15. Nxd4 exd4 16. Rab1 f5 17. exf5 Bxf5 18. Rfe1 Rae8 19. Rxe8 Rxe8 20. g4 Bd7 21. Be4 b5 22. b4 c4 23. dxc4 bxc4 24. Bg5 Bb5 25. a4 Bxa4 26. Qxa4 Rxe4 27. Qxa6 c3 28. Qc6 Qb8 29. Qc4 h6 30. Bh4 Qe8 31. Ra1 Re1+ 32. Rxe1 Qxe1+ 33. Kg2 g5 34. Bg3 Qe4+ 35. f3 Qc2+ 36. Bf2 Kh7 37. b5 Qd1 38. b6 c2 39. b7 c1=Q 40. Qxc1 Qxc1 41. b8=Q d3 42. Qb4 Qf4 43. Qb3 d2 44. Qc2+ Kg8 45. Qc8+ Bf8 46. Qc2 Bg7 47. Qc8+ Qf8 48. Qc2 Qf4 1/2-1/2
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "1-0"]
+[Opening "English Four Knights"]
+[Termination "checkmate"]
+
+1. c4 e5 2. Nc3 Nf6 3. Nf3 Nc6 4. d4 exd4 5. Nxd4 Bc5 6. Be3 Ne5 7. Nf5 Bxe3 8. Nxe3 O-O 9. f4 Ng6 10. g3 c6 11. Qd4 Re8 12. O-O-O d6 13. Kb1 h6 14. Nc2 Be6 15. Bg2 Qa5 16. Ne3 Ng4 17. Nxg4 Bxg4 18. Be4 Re6 19. h3 Rxe4 20. Nxe4 Bxe2 21. Qd2 Qxd2 22. Rxd2 Bxc4 23. Nxd6 Bd5 24. Re1 b6 25. Rde2 Nf8 26. Re8 Rxe8 27. Rxe8 f6 28. Nc8 g5 29. Nxa7 Kf7 30. Rc8 c5 31. Rc7+ Ke8 32. Nb5 Kd8 33. fxg5 hxg5 34. Ra7 Nd7 35. b3 Bg2 36. h4 Ke7 37. h5 f5 38. h6 f4 39. Nc3 f3 40. Ne4 Bh3 41. h7 f2 42. Nxf2 Bf5+ 43. Kb2 Bxh7 44. Ng4 Bf5 45. Ne5 b5 46. a4 bxa4 47. bxa4 Be6 48. a5 Kd6 49. Nxd7 Bxd7 50. a6 Kc6 51. Rxd7 Kxd7 52. a7 Kd6 53. a8=Q Ke5 54. Kc3 Kf5 55. Qc8+ Kf6 56. Qxc5 g4 57. Qd6+ Kf7 58. Qf4+ Kg7 59. Qxg4+ Kf6 60. Kd4 Kf7 61. Ke5 Ke7 62. Qg7+ Kd8 63. Kd6 Ke8 64. Qe7# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1-0"]
+[Opening "English Four Knights"]
+[Termination "checkmate"]
+
+1. c4 e5 2. Nc3 Nf6 3. Nf3 Nc6 4. a3 d5 5. cxd5 Nxd5 6. e4 Nxc3 7. bxc3 Bd6 8. Bb5 O-O 9. O-O Bg4 10. Rb1 Rb8 11. h3 Bd7 12. d4 exd4 13. cxd4 a6 14. Bd3 f6 15. Be2 Qe7 16. Qc2 Kh8 17. d5 Ne5 18. Nd4 c6 19. f4 cxd5 20. fxe5 Qxe5 21. Nf3 Qxe4 22. Bd3 Qe7 23. Re1 Be5 24. Bxh7 Rbc8 25. Qg6 Qc5+ 26. Kh1 Bc3 27. Qh5 Bd2 28. Bxd2 Bg4 29. hxg4 Qe3 30. Rxe3 Rc1+ 31. Bxc1 Rc8 32. Bf5+ Kg8 33. Be6+ Kf8 34. Qf7# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "1/2-1/2"]
+[Opening "Réti"]
+[Termination "threefold-repetition"]
+
+1. Nf3 d5 2. c4 e6 3. g3 Nf6 4. cxd5 exd5 5. Nc3 d4 6. Nb5 c5 7. Qa4 Bd7 8. Qb3 Nc6 9. Na3 Na5 10. Qd3 Be7 11. b4 cxb4 12. Nc2 Rc8 13. a3 bxa3 14. Nfxd4 O-O 15. Bxa3 Bxa3 16. Qxa3 b6 17. d3 Re8 18. Bg2 Bg4 19. e3 Rc5 20. O-O Qc8 21. Nb4 Bh3 22. Bxh3 Qxh3 23. Rfc1 Rec8 24. Rxc5 Rxc5 25. e4 h6 26. f3 Qd7 27. Qb2 Rc8 28. Kh1 Qd6 29. f4 Qd7 30. Nf5 Nc6 31. Nd5 Kh8 32. Nxf6 Qxd3 33. Nxg7 Kxg7 34. Nh5+ Kf8 35. Qh8+ Ke7 36. Qxc8 Qxe4+ 37. Kg1 Qd4+ 38. Kg2 Qd5+ 39. Kf2 Qd4+ 40. Ke2 Qb2+ 41. Ke3 Qc3+ 42. Kf2 Qd4+ 43. Kf3 Qxa1 44. Qc7+ Kf8 45. Qc8+ Ke7 46. Qc7+ Kf8 47. Qc8+ Ke7 1/2-1/2
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1-0"]
+[Opening "Réti"]
+[Termination "checkmate"]
+
+1. Nf3 d5 2. c4 e6 3. g3 Nf6 4. d4 dxc4 5. e3 b5 6. a4 c6 7. axb5 cxb5 8. b3 Bb4+ 9. Bd2 Bxd2+ 10. Nbxd2 c3 11. Bxb5+ Bd7 12. Bxd7+ Nbxd7 13. Nc4 Nb6 14. O-O O-O 15. Qc2 Nbd5 16. e4 Nc7 17. Qxc3 Nxe4 18. Qd3 Nf6 19. Rfc1 Ncd5 20. h3 Qe7 21. Nce5 Rfc8 22. Nc6 Qb7 23. Nfe5 a6 24. Rc5 g6 25. Qf3 Rc7 26. Na5 Qa7 27. Nec6 Qb6 28. Nc4 Qb7 29. N6e5 Ne8 30. Nd2 Rac8 31. Ne4 f6 32. Rxc7 Qxc7 33. Nc4 Qc6 34. h4 Kh8 35. Kh2 f5 36. Nc5 Nec7 37. Ne5 Qb6 38. Qd3 Nb4 39. Qe2 Kg8 40. h5 Rd8 41. Nc4 Qb8 42. Rd1 Re8 43. Rc1 Nc6 44. hxg6 hxg6 45. Rd1 Qb5 46. Qe3 Kg7 47. Kg1 Rd8 48. Kg2 Kf7 49. Rh1 Rxd4 50. Rh7+ Kf6 51. Ne5 Nxe5 52. Qxd4 Qc6+ 53. Kg1 Qh1+ 54. Kxh1 g5 55. Nd7+ Kg6 56. Nf8+ Kf6 57. Qd8# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "0-1"]
+[Opening "King’s Indian Attack"]
+[Termination "checkmate"]
+
+1. Nf3 d5 2. g3 Nf6 3. Bg2 c6 4. O-O e6 5. d3 Bd6 6. Nc3 e5 7. e4 O-O 8. exd5 cxd5 9. Bg5 d4 10. Ne4 Be7 11. Nxf6+ Bxf6 12. Bxf6 Qxf6 13. Nd2 Nc6 14. Re1 Bf5 15. Bxc6 bxc6 16. Qe2 Rab8 17. Qxe5 Rxb2 18. Nb3 c5 19. Qxc5 Bxd3 20. Nxd4 Rfb8 21. Qxa7 Bc4 22. a4 h6 23. Qc5 Qa6 24. a5 Rc8 25. Qa3 Rcb8 26. Re8+ Rxe8 27. Qxb2 Rd8 28. c3 Bd5 29. Qb6 Qa8 30. a6 Rc8 31. Qa5 Bh1 32. f3 Bxf3 33. a7 Be4 34. Re1 Bb7 35. Re7 Bd5 36. h4 Rd8 37. Nf5 Be6 38. Ne3 Rc8 39. Kf2 Qh1 40. c4 Qe4 41. Qc3 Ra8 42. Qd2 Qe5 43. Rb7 Kh7 44. Qc2+ f5 45. Qb3 f4 46. Qb1+ Kh8 47. gxf4 Qxf4+ 48. Kg2 Rf8 49. Qb3 Qf2+ 50. Kh1 Qxh4+ 51. Kg1 Bxc4 52. a8=Q Qf2+ 53. Kh1 Qf3+ 54. Kh2 Bxb3 55. Qxf8+ Qxf8 56. Rxb3 Qf4+ 57. Kh1 g5 58. Kg2 Qe4+ 59. Kf2 h5 60. Rb5 Kh7 61. Ke2 Kh6 62. Rb6+ Kg7 63. Rb5 Kg6 64. Rb6+ Kf7 65. Rb5 Kf6 66. Rb4 Qe8 67. Rb7 g4 68. Rc7 Qe4 69. Rc4 Qf3+ 70. Kd3 g3 71. Rc8 Kg5 72. Kd2 Kh4 73. Rg8 Kh3 74. Rg5 h4 75. Rf5 Qxf5 76. Nxf5 g2 77. Kd3 g1=Q 78. Ne3 Kg3 79. Ke4 Qb1+ 80. Ke5 h3 81. Nf5+ Kf3 82. Nd4+ Kg4 83. Ne6 h2 84. Kd4 h1=Q 85. Ke5 Qb5+ 86. Nc5 Qhc6 87. Kd4 Qcxc5+ 88. Ke4 Qbc4# 0-1
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1-0"]
+[Opening "King’s Indian Attack"]
+[Termination "checkmate"]
+
+1. Nf3 d5 2. g3 Nf6 3. Bg2 c6 4. O-O e6 5. d4 Bd6 6. c4 dxc4 7. Nbd2 b5 8. e4 Bc7 9. e5 Nd5 10. Ne4 Nd7 11. Bg5 f6 12. exf6 gxf6 13. Bh6 Kf7 14. h3 Kg8 15. a3 f5 16. Nc3 Qf6 17. Qd2 a5 18. Rfe1 Qg6 19. Nh4 Qh5 20. Bf3 Bf4 21. Bxf4 Qf7 22. Bxd5 exd5 23. Qc2 Nf8 24. Be5 Ng6 25. Nxg6 hxg6 26. Bxh8 Kxh8 27. Qe2 Bd7 28. Qe5+ Kh7 29. Rac1 Re8 30. Qd6 a4 31. h4 Kg8 32. Kg2 Re6 33. Rxe6 Qxe6 34. Qxe6+ Bxe6 35. Ne2 Kg7 36. Nf4 Bd7 37. Kf3 Kf7 38. Ke3 Bc8 39. Kd2 Be6 40. Kc3 Bc8 41. Kb4 Kf6 42. Kc5 Bb7 43. Kb6 Ba8 44. Ka7 c5 45. dxc5 Bc6 46. Kb6 Ba8 47. Kxb5 c3 48. Rxc3 d4 49. Rc4 g5 50. hxg5+ Kxg5 51. Rxa4 Bf3 52. Rxd4 Be4 53. c6 Kg4 54. c7 Bb7 55. Kb6 Bc8 56. Rd8 Kf3 57. Rxc8 Kxf2 58. Rg8 Ke3 59. c8=Q Kf2 60. Qc2+ Ke3 61. Qe2+ Kd4 62. Rd8# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "0-1"]
+[Opening "Bird"]
+[Termination "checkmate"]
+
+1. f4 d5 2. Nf3 Nf6 3. e3 g6 4. Nc3 c6 5. Bd3 Bg7 6. O-O Nbd7 7. Kh1 O-O 8. Be2 Ne4 9. Nxe4 dxe4 10. Nd4 e5 11. Nb3 exf4 12. Rxf4 f5 13. d4 Nf6 14. c4 b6 15. Bd2 Bh6 16. Rf2 Qc7 17. a3 Rd8 18. c5 Be6 19. Qc2 Qf7 20. Nc1 b5 21. a4 b4 22. a5 Nd5 23. Qa4 Nxe3 24. Qxc6 Rab8 25. Qa4 Rxd4 26. Be1 Bg7 27. Rf4 b3 28. Qc6 Nc2 29. Rb1 Nxe1 30. Rf2 Nc2 31. Rf4 Nb4 32. Qa4 Nd5 33. Qa3 Nxf4 34. g3 Nd3 35. Nxd3 exd3 36. Bd1 Bd5+ 37. Kg1 Qe8 38. Kf2 Ra4 39. Kf1 Rxa3 40. bxa3 d2 41. Be2 Qe4 42. Kf2 Bd4+ 43. Kf1 Qh1# 0-1
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1-0"]
+[Opening "Bird"]
+[Termination "checkmate"]
+
+1. f4 d5 2. Nf3 Nf6 3. e3 g6 4. Nc3 Bg7 5. d4 O-O 6. Bd3 c5 7. O-O c4 8. Be2 Qc7 9. Ne5 Nc6 10. e4 dxe4 11. Nxc4 Be6 12. d5 Rad8 13. Ne3 Rfe8 14. Nb5 Qc8 15. c4 a6 16. Nc3 Bf5 17. g4 Nxg4 18. Nxg4 Nb4 19. Ne3 Bxc3 20. bxc3 Nd3 21. Rb1 Nxc1 22. Qxc1 Bh3 23. Rf2 Rd7 24. Qd2 Qc5 25. Bf1 Bxf1 26. Rfxf1 e6 27. Rb4 a5 28. Rb5 Qa7 29. Rfb1 f5 30. Rb6 exd5 31. cxd5 Red8 32. Qf2 Kh8 33. c4 a4 34. a3 Rg7 35. c5 Rc8 36. c6 bxc6 37. dxc6 Rgc7 38. Rb7 Qc5 39. Rxc7 Rxc7 40. Qb2+ Rg7 41. Qb6 Qxb6 42. Rxb6 Rf7 43. Rb8+ Kg7 44. Rb7 g5 45. Rxf7+ Kxf7 46. c7 gxf4 47. c8=Q fxe3 48. Qxf5+ Kg7 49. Qxe4 e2 50. Qxe2 Kf6 51. Qa6+ Kg5 52. Qxa4 h6 53. Qb5+ Kg6 54. h4 Kf6 55. Qc6+ Ke5 56. Qxh6 Kd5 57. Qf6 Kc4 58. h5 Kb3 59. h6 Kxa3 60. Qb6 Ka2 61. h7 Ka3 62. h8=Q Ka4 63. Qa1# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "0-1"]
+[Opening "Larsen"]
+[Termination "checkmate"]
+
+1. b3 e5 2. Bb2 Nc6 3. e3 d5 4. Nf3 e4 5. Ne5 Nxe5 6. Bxe5 Nf6 7. Nc3 c6 8. f3 Bd6 9. Bxd6 Qxd6 10. fxe4 dxe4 11. Be2 O-O 12. O-O Qe5 13. Kh1 Rd8 14. a4 h6 15. Qe1 Be6 16. h3 a6 17. a5 Rab8 18. Rf4 Kh8 19. Ra4 Bf5 20. g4 Bg6 21. Bc4 Rd6 22. b4 Rbd8 23. Nb1 Nd5 24. Rf1 f5 25. Qh4 fxg4 26. Qxg4 Rf6 27. Rxf6 Qxf6 28. c3 b5 29. Bxd5 Qf1+ 30. Kh2 Qxb1 31. Qxg6 Rxd5 32. d4 bxa4 33. Qxc6 Qc2+ 34. Kh1 Rg5 35. Qc8+ Kh7 36. Qg4 Rxg4 37. hxg4 Qxc3 38. b5 Qxa5 39. bxa6 a3 40. g5 a2 41. Kg2 Qxg5+ 42. Kh3 Qxe3+ 43. Kg2 a1=Q 44. d5 Qag1# 0-1
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1-0"]
+[Opening "Larsen"]
+[Termination "checkmate"]
+
+1. b3 e5 2. Bb2 Nc6 3. e3 d5 4. Bb5 Bd6 5. Nf3 f6 6. O-O Ne7 7. c4 a6 8. cxd5 axb5 9. dxc6 bxc6 10. d4 exd4 11. Nxd4 O-O 12. Qc2 Bd7 13. Nd2 c5 14. N4f3 Nd5 15. a3 c6 16. Rfd1 Qe7 17. Kh1 Rfe8 18. e4 Nf4 19. h3 Be6 20. Rac1 Red8 21. e5 fxe5 22. Re1 Ng6 23. Bxe5 Nxe5 24. Nxe5 Ra6 25. Ndf3 Kh8 26. Re3 Rda8 27. Rce1 Bf7 28. Ng5 Bg8 29. Ng6+ hxg6 30. Rxe7 Bxe7 31. Rxe7 Bh7 32. Qc3 Rxa3 33. Qxg7# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "1-0"]
+[Opening "Ponziani"]
+[Termination "checkmate"]
+
+1. e4 e5 2. Nf3 Nc6 3. c3 Nf6 4. d4 exd4 5. e5 Ne4 6. Bd3 d5 7. exd6 Nxd6 8. cxd4 Bg4 9. O-O Bxf3 10. Qxf3 Nxd4 11. Qh5 Be7 12. Nc3 h6 13. Re1 c6 14. Qg4 Ne6 15. Be3 Qd7 16. Ne4 O-O 17. Nxd6 Bxd6 18. Rad1 Kh8 19. Bf5 Qc7 20. g3 Rfe8 21. Re2 a6 22. a3 Rad8 23. Red2 Be5 24. Rxd8 Rxd8 25. b3 Rxd1+ 26. Qxd1 Qe7 27. f4 Bb2 28. Bxe6 Bxa3 29. Bxf7 Qxe3+ 30. Kf1 Qe7 31. Bg6 Qf6 32. Be4 Bd6 33. Kg2 Kg8 34. h4 Bc5 35. Qe2 Qd4 36. Kh2 Qc3 37. Bf5 Kf8 38. Qe6 Qd2+ 39. Kh3 Qd8 40. Bg6 Qxh4+ 41. gxh4 Bd4 42. Qf7# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1-0"]
+[Opening "Ponziani"]
+[Termination "checkmate"]
+
+1. e4 e5 2. Nf3 Nc6 3. c3 Nf6 4. d4 exd4 5. e5 Nd5 6. Qb3 Nb6 7. cxd4 d6 8. Bb5 Be6 9. Qc2 Qd7 10. Nc3 Be7 11. O-O O-O 12. Bxc6 Qxc6 13. exd6 Bxd6 14. Re1 Nd5 15. Ng5 g6 16. Nxe6 fxe6 17. a3 Qc4 18. Qe4 Nxc3 19. bxc3 Rfe8 20. Rb1 b6 21. Re3 a5 22. h4 Kh8 23. Bb2 a4 24. g3 Ra5 25. d5 Qa2 26. c4+ e5 27. Qc2 Rxd5 28. cxd5 Qxd5 29. Qxa4 b5 30. Rd1 Qc5 31. Qe4 Re6 32. Qa8+ Bf8 33. Rc1 Qe7 34. Rxc7 Qe8 35. Rc8 Qe7 36. Rxf8+ Kg7 37. Rg8+ Kf7 38. Rf3+ Rf6 39. Qd5+ Qe6 40. Rxf6+ Kxf6 41. Rf8+ Kg7 42. Qxe6 Kxf8 43. Bxe5 h5 44. Bf6 b4 45. Qe7+ Kg8 46. Qg7# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "0-1"]
+[Opening "Bishop’s Opening"]
+[Termination "checkmate"]
+
+1. e4 e5 2. Bc4 Nf6 3. d3 c6 4. Nf3 d5 5. exd5 cxd5 6. Bb3 Bd6 7. O-O O-O 8. Nc3 d4 9. Ne4 Nc6 10. Bg5 Be7 11. Qe2 h6 12. Bxf6 Bxf6 13. Nxf6+ Qxf6 14. Bd5 Bg4 15. h3 Bxf3 16. Qxf3 Qxf3 17. Bxf3 Rac8 18. Rae1 f6 19. Re2 a6 20. Bd5+ Kh8 21. f4 exf4 22. Rxf4 Rfd8 23. Be6 Rc7 24. Kh1 Re8 25. Rfe4 b6 26. a4 a5 27. Bc4 Re5 28. Kh2 g5 29. g4 Kg7 30. b3 Kg6 31. Rxe5 Nxe5 32. Bd5 h5 33. Be4+ Kh6 34. Kg3 h4+ 35. Kh2 Ng6 36. Rf2 Nf4 37. Rd2 Kg7 38. Rf2 Kf7 39. Rd2 Ke6 40. Rf2 Ke5 41. Rd2 Rc5 42. Rf2 b5 43. axb5 Rxb5 44. Bg6 Rc5 45. Be4 Rc7 46. Rd2 Ra7 47. Bc6 Kd6 48. Bb5 Rc7 49. Rf2 Rc3 50. Ba6 Ke5 51. Bb7 f5 52. gxf5 Kxf5 53. Be4+ Ke5 54. Bb7 Rc7 55. Be4 Kd6 56. Bf3 Kc5 57. Be4 Kb4 58. Bf3 Kc3 59. Bd1 Nd5 60. Bf3 Ne3 61. Re2 Kb2 62. c4+ Kxb3 63. Re1 a4 64. Rg1 Rc5 65. Be4 a3 66. Kh1 a2 67. Re1 Nc2 68. Rg1 Kc3 69. Bh7 a1=Q 70. Rxa1 Nxa1 71. Kg2 Nc2 72. Kf3 Ne1+ 73. Kg4 Nxd3 74. Bf5 Nf2+ 75. Kxg5 d3 76. Kxh4 Rxf5 77. c5 d2 78. c6 d1=Q 79. c7 Qh5+ 80. Kg3 Qxh3# 0-1
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1-0"]
+[Opening "Bishop’s Opening"]
+[Termination "checkmate"]
+
+1. e4 e5 2. Bc4 Nf6 3. d3 c6 4. Nf3 d5 5. exd5 cxd5 6. Bb5+ Bd7 7. Bxd7+ Nbxd7 8. O-O Bd6 9. Bg5 Qb6 10. b3 O-O 11. Re1 Rfe8 12. Nbd2 h6 13. Bxf6 Nxf6 14. a4 a5 15. h3 Rac8 16. Rb1 Qc5 17. Rc1 e4 18. dxe4 dxe4 19. Nc4 Bf4 20. Nfd2 Red8 21. Qe2 Rd5 22. Rcd1 Re8 23. Nf1 Rxd1 24. Rxd1 Bc7 25. Qe3 Qxe3 26. Nfxe3 b6 27. g4 Rd8 28. Rxd8+ Bxd8 29. Kg2 Bc7 30. f3 exf3+ 31. Kxf3 g6 32. h4 Bd8 33. Ne5 Bc7 34. N3c4 Kf8 35. g5 hxg5 36. hxg5 Nh7 37. Kg4 Ke7 38. Nd3 Nf8 39. Nf4 Bxf4 40. Kxf4 Nd7 41. c3 Nc5 42. Nxb6 Nxb3 43. Ke5 Nc5 44. Kd5 Ne6 45. Nc4 Nf4+ 46. Ke4 Ne2 47. Kd3 Nf4+ 48. Ke3 Ne6 49. Nxa5 Nxg5 50. Nc4 Ne6 51. a5 Nc5 52. Kd4 Ne6+ 53. Kd5 f5 54. Kc6 Nd8+ 55. Kb6 Ne6 56. a6 Kd8 57. Ne5 f4 58. a7 Nc7 59. Kb7 g5 60. c4 g4 61. Nf7+ Kd7 62. c5 g3 63. c6+ Ke7 64. Kxc7 g2 65. Nd6 g1=Q 66. a8=Q Qg6 67. Qa3 Ke6 68. Qh3+ Ke5 69. Qc3+ Ke6 70. Qc4+ Ke5 71. Nf7+ Kf6 72. Qxf4+ Ke6 73. Ng5+ Kd5 74. Qd2+ Kc5 75. Qa5+ Kc4 76. Qa4+ Kc5 77. Ne4+ Kd5 78. Qb5+ Ke6 79. Qc4+ Ke7 80. Qd5 Qg1 81. Qd8+ Kf7 82. Ng5+ Kg6 83. Qe8+ Kh6 84. Qh8+ Kxg5 85. Qg7+ Kf5 86. Qxg1 Kf4 87. Kd6 Kf3 88. c7 Ke4 89. c8=Q Kd3 90. Qe1 Kd4 91. Qcc3# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "0-1"]
+[Opening "Center Game"]
+[Termination "checkmate"]
+
+1. e4 e5 2. d4 exd4 3. Qxd4 Nc6 4. Qc4 Nf6 5. Bf4 d5 6. exd5 Nxd5 7. Nc3 Nxc3 8. bxc3 Bd6 9. Qe4+ Ne7 10. Bb5+ Kf8 11. Rd1 Bf5 12. Qxb7 Rb8 13. Qa6 Bxc2 14. Rd2 Rb6 15. Qa5 Qb8 16. Bxd6 cxd6 17. c4 Be4 18. f3 Bc6 19. Qa3 Bxb5 20. cxb5 Nf5 21. g4 Ne7 22. Ne2 h5 23. O-O Ng6 24. Rc1 hxg4 25. fxg4 Rxb5 26. Rxd6 Kg8 27. Rcd1 Rb1 28. Qd3 Rxd1+ 29. Qxd1 Qb4 30. Rd8+ Kh7 31. Rxh8+ Kxh8 32. h3 Qb2 33. a4 Qe5 34. Kh1 Qe3 35. Qf1 Ne5 36. Kh2 f6 37. Qg2 Nf3+ 38. Kh1 Ne1 39. Qf1 Qe4+ 40. Kh2 Nf3+ 41. Kg3 Ng5 42. a5 Qe5+ 43. Nf4 Qxa5 44. Qe2 Qc3+ 45. Qd3 Qe1+ 46. Kg2 a5 47. Qd4 Ne4 48. Kf3 Nd2+ 49. Kg2 Qf1+ 50. Kg3 Qf3+ 51. Kh2 Ne4 52. Nh5 Qe2+ 53. Kg1 Ng5 54. Qd8+ Kh7 55. Nxf6+ gxf6 56. Qd7+ Kh6 57. Kh1 Nf3 58. g5+ Kg6 59. Qe8+ Qxe8 60. Kg2 Qe2+ 61. Kg3 Kxg5 62. h4+ Nxh4 63. Kh3 Qg2# 0-1
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1/2-1/2"]
+[Opening "Center Game"]
+[Termination "insufficient-material"]
+
+1. e4 e5 2. d4 exd4 3. Qxd4 Nc6 4. Qe3 Nf6 5. Be2 Qe7 6. Nc3 Nb4 7. Kd1 Qe6 8. h3 b6 9. a3 Nc6 10. Nd5 Bd6 11. Bc4 Nxd5 12. Bxd5 Qf6 13. Nf3 Bc5 14. Qe2 Qg6 15. b4 Nd4 16. Nh4 Qf6 17. Qh5 c6 18. Bxf7+ Qxf7 19. Qxf7+ Kxf7 20. bxc5 Re8 21. f3 bxc5 22. c3 Nb3 23. Rb1 Nxc1 24. Kxc1 d5 25. Rf1 Kg8 26. Nf5 Bxf5 27. exf5 Re2 28. g4 d4 29. cxd4 cxd4 30. Rd1 Rd8 31. Rb7 Re3 32. Rxa7 Rxf3 33. a4 Rxh3 34. Kd2 Rg3 35. Rc1 Rc8 36. Ra6 c5 37. a5 c4 38. Rd6 Rg2+ 39. Kd1 d3 40. Rc3 Rg1+ 41. Kd2 Rxg4 42. Rdxd3 Rg5 43. Rd5 g6 44. Ke3 h5 45. Kf4 Rg4+ 46. Ke5 gxf5 47. Kxf5 Rf8+ 48. Ke6 Re4+ 49. Kd6 h4 50. Rg5+ Kh7 51. Rc5 Rff4 52. a6 Rf6+ 53. Kd5 Re7 54. Ra3 c3 55. Rcxc3 Rf5+ 56. Kd6 Ra7 57. Rc7+ Rxc7 58. Kxc7 Rf7+ 59. Kd6 Ra7 60. Kc6 Kh6 61. Kb6 Ra8 62. Kb7 Rg8 63. a7 Kh5 64. a8=Q Rxa8 65. Rxa8 h3 66. Ra1 Kg4 67. Kc6 h2 68. Rh1 Kh3 69. Kd5 Kg2 70. Rc1 h1=Q 71. Rxh1 Kxh1 1/2-1/2
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "1-0"]
+[Opening "Smith-Morra"]
+[Termination "checkmate"]
+
+1. e4 c5 2. d4 cxd4 3. c3 dxc3 4. Nxc3 a6 5. Nf3 Nc6 6. Be2 Nf6 7. O-O e5 8. Be3 Ng4 9. Bg5 Be7 10. Bxe7 Qxe7 11. Nd5 Qd8 12. Qb3 O-O 13. Rfd1 Nf6 14. Qd3 b5 15. a4 b4 16. Rac1 Rb8 17. h3 b3 18. Rc3 Kh8 19. Rdc1 Nxd5 20. Qxd5 Qe7 21. Rxb3 Bb7 22. Kh1 f6 23. Qd2 f5 24. Rd3 fxe4 25. Rxd7 Qb4 26. Qg5 Rg8 27. Nxe5 Nxe5 28. Qxe5 Rbd8 29. Rxd8 Rxd8 30. Rc7 Qe1+ 31. Kh2 Rg8 32. Bc4 Qxf2 33. Rxg7 Qf4+ 34. Qxf4 Kxg7 35. Qg5+ Kf8 36. Qxg8+ Ke7 37. Qxh7+ Kd6 38. Qxb7 Kc5 39. Qd5+ Kb6 40. a5+ Kc7 41. Qxe4 Kd6 42. Bxa6 Kd7 43. Bb5+ Kd6 44. b4 Kc7 45. Qe7+ Kb8 46. Ba6 Ka8 47. Qb7# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1-0"]
+[Opening "Smith-Morra"]
+[Termination "checkmate"]
+
+1. e4 c5 2. d4 cxd4 3. c3 dxc3 4. Nxc3 Nc6 5. Nf3 a6 6. Bd3 e6 7. O-O Bd6 8. a3 Nf6 9. h3 Qc7 10. Bg5 O-O 11. Bxf6 gxf6 12. Ne2 b5 13. Qd2 Bb7 14. Rac1 Qb6 15. Bb1 Ne5 16. Rfd1 Nxf3+ 17. gxf3 Bc5 18. Nf4 Bc6 19. Nh5 Kh8 20. Nxf6 b4 21. Qh6 Bxf2+ 22. Kh1 Bxe4 23. Bxe4 d5 24. Qxh7# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "1/2-1/2"]
+[Opening "Caro-Kann Two Knights"]
+[Termination "threefold-repetition"]
+
+1. e4 c6 2. Nc3 d5 3. Nf3 Bg4 4. exd5 cxd5 5. h3 Bxf3 6. Qxf3 e6 7. Bd3 Nc6 8. O-O Nf6 9. Re1 Bd6 10. Nb5 Be5 11. Nc3 Bd6 12. Nb5 Be5 13. Nc3 Bd6 1/2-1/2
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "0-1"]
+[Opening "Caro-Kann Two Knights"]
+[Termination "checkmate"]
+
+1. e4 c6 2. Nc3 d5 3. Nf3 Bg4 4. exd5 cxd5 5. Bb5+ Nc6 6. h3 Bxf3 7. Qxf3 e6 8. d3 Nf6 9. Bg5 Bd6 10. O-O a6 11. Bxc6+ bxc6 12. Rfe1 h6 13. Bxf6 Qxf6 14. Qxf6 gxf6 15. Ne2 Rb8 16. Rab1 Kd7 17. Nd4 Rhg8 18. Nb3 f5 19. a3 c5 20. Re2 h5 21. Rd1 a5 22. a4 Rb4 23. Ra1 Rc8 24. Ra2 c4 25. dxc4 Rcxc4 26. Ra1 Rxa4 27. Rae1 Rcb4 28. g3 Rb5 29. Rb1 Ra2 30. Kg2 a4 31. Nc1 Raxb2 32. Rxb2 Rxb2 33. Nd3 Rb1 34. Rd2 Ke7 35. c3 a3 36. Kf3 Rb3 37. Ke2 Rxc3 38. h4 d4 39. Nf4 Bxf4 40. gxf4 Rc4 41. Kd3 Ra4 42. Ra2 Kd6 43. Kc2 d3+ 44. Kxd3 Rxf4 45. Ke3 Re4+ 46. Kd2 Ra4 47. Kc2 Kd5 48. Kd2 Kd4 49. Kc2 Kc4 50. f3 e5 51. Kb1 Rb4+ 52. Ka1 Kb3 53. Re2 f6 54. Rh2 Rc4 55. Kb1 Rd4 56. Rh1 Rd3 57. Rf1 a2+ 58. Ka1 f4 59. Re1 f5 60. Rf1 Rd5 61. Re1 Rd4 62. Rf1 Rd3 63. Re1 Rd8 64. Rh1 Rd6 65. Re1 Rd7 66. Rh1 Rd8 67. Re1 Rd5 68. Rc1 e4 69. fxe4 fxe4 70. Re1 f3 71. Re3+ Kc2 72. Rxe4 Rd1+ 73. Kxa2 f2 74. Rc4+ Kd3 75. Rf4 f1=Q 76. Rxf1 Rxf1 77. Kb2 Rh1 78. Kb3 Rxh4 79. Kb2 Rb4+ 80. Ka3 Kc3 81. Ka2 Ra4+ 82. Kb1 h4 83. Kc1 Ra1# 0-1
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "1/2-1/2"]
+[Opening "Scandinavian Modern"]
+[Termination "threefold-repetition"]
+
+1. e4 d5 2. exd5 Nf6 3. d4 Nxd5 4. c4 Nf6 5. Nc3 e6 6. Nf3 Bb4 7. Bd3 c5 8. dxc5 Nbd7 9. Qa4 Qa5 10. Qxa5 Bxa5 11. Be3 Ng4 12. Bd2 Nxc5 13. Bc2 O-O 14. h3 Nf6 15. O-O b6 16. Rfd1 Bb7 17. Ne5 Rad8 18. f3 Nh5 19. a3 Bxc3 20. Bxc3 f6 21. b4 Nf4 22. Rxd8 Rxd8 23. Re1 Na6 24. Ng4 e5 25. Ne3 Nc7 26. h4 Nce6 27. g3 Nd3 28. Rd1 e4 29. Nd5 b5 30. fxe4 bxc4 31. Bxd3 cxd3 32. Rxd3 h5 33. Kf2 Kf7 34. Kf3 Ba6 35. Rd2 Bc4 36. a4 Bb3 37. a5 Rc8 38. Bb2 Rd8 39. Ke3 Bc4 40. Bd4 a6 41. Nf4 Nxf4 42. gxf4 Rb8 43. Bc5 Kg8 44. Rd7 Re8 45. Rc7 Kh7 46. Kd4 Be2 47. Be7 Kg6 48. f5+ Kh6 49. Ke3 Bf1 50. Bc5 Rd8 51. Kf3 Bb5 52. Be3+ Kh7 53. Kf4 Rd3 54. Bf2 Rd2 55. Be1 Rh2 56. Kf3 Re2 57. Bc3 Kg8 58. Bd4 Rd2 59. Bf2 Kh7 60. Bb6 Kg8 61. Be3 Rb2 62. Bc5 Bc4 63. Kf4 Rh2 64. Kg3 Rb2 65. Kf3 Be2+ 66. Ke3 Bb5 67. Rc8+ Kh7 68. Kf4 Rh2 69. Kg3 Rb2 70. Kf3 Rb3+ 71. Kf4 Rh3 72. Bf2 Rb3 73. Be1 Rb1 74. Bd2 Rf1+ 75. Kg3 Rg1+ 76. Kf3 Rh1 77. Bf4 Rxh4 78. Bg3 Rh1 79. Rc7 Rb1 80. Bd6 Kh6 81. Bf8 Rg1 82. Bc5 Rf1+ 83. Bf2 Bd3 84. Ra7 Rb1 85. Rb7 Bc4 86. Bd4 Rb3+ 87. Kf4 h4 88. Rb8 Kh7 89. Rb7 Kh6 90. Rb8 Kh7 91. Rb7 Kh6 1/2-1/2
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1/2-1/2"]
+[Opening "Scandinavian Modern"]
+[Termination "threefold-repetition"]
+
+1. e4 d5 2. exd5 Nf6 3. d4 Nxd5 4. c4 Nf6 5. Nf3 e6 6. Be2 Bb4+ 7. Nc3 c5 8. a3 Bxc3+ 9. bxc3 b6 10. Rb1 O-O 11. O-O Nbd7 12. Bf4 Ne4 13. Qc2 Bb7 14. Ne5 Nxe5 15. dxe5 f6 16. Bf3 f5 17. Be2 g5 18. Bc1 Qc7 19. f3 Qxe5 20. fxe4 Bxe4 21. Bd3 Bxd3 22. Qxd3 Rad8 23. Qc2 h6 24. h4 Qf6 25. hxg5 hxg5 26. Be3 g4 27. Bf2 Rf7 28. Rfd1 Rfd7 29. Rxd7 Rxd7 30. Qa4 Re7 31. Rd1 Qxc3 32. Rd8+ Kh7 33. Kh2 Kg6 34. Bh4 Qe5+ 35. Kg1 Rf7 36. Rg8+ Kh5 37. Bf2 Qf6 38. Qe8 f4 39. Be1 f3 40. Bc3 Qf5 41. Rh8+ Kg5 42. Bd2+ Kf6 43. Qd8+ Ke5 44. Bc3+ Ke4 45. Qd2 a5 46. Rb8 Rh7 47. Qc2+ Ke3 48. Qc1+ Kd3 49. Be1 fxg2 50. Qc3+ Ke4 51. Qc2+ Ke5 52. Qe2+ Kf6 53. Kxg2 Qb1 54. Bh4+ Rxh4 55. Qf2+ Ke5 56. Qxh4 Qe4+ 57. Kh2 Qe2+ 58. Kg1 Qd1+ 59. Kg2 Qf3+ 60. Kh2 Qe2+ 61. Kg3 Qf3+ 62. Kh2 Qe2+ 1/2-1/2
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "1/2-1/2"]
+[Opening "Owen"]
+[Termination "threefold-repetition"]
+
+1. e4 b6 2. d4 Bb7 3. Bd3 e6 4. Nf3 c5 5. O-O cxd4 6. Nxd4 Nc6 7. Nxc6 Bxc6 8. Be3 Nf6 9. Nd2 Qc7 10. f4 Be7 11. c3 O-O 12. e5 Nd5 13. Bd4 Bc5 14. Bxc5 bxc5 15. Qe2 Rab8 16. Nc4 Bb5 17. g3 f5 18. a3 Kh8 19. a4 Bxc4 20. Bxc4 Qb6 21. Bxd5 exd5 22. Rf2 d4 23. Rc1 Qb3 24. cxd4 cxd4 25. Qc4 Qe3 26. Rd1 Rxb2 27. Qxd4 Qxd4 28. Rxd4 Rb6 29. Rxd7 Ra6 30. Ra2 Kg8 31. Kf2 Rc8 32. h4 h5 33. Rd6 Rxd6 34. exd6 Rd8 35. Rd2 Kf7 36. Rd5 g6 37. Ra5 Rd7 38. Ra6 Ke6 39. Ke3 Kd5 40. Kd3 Rxd6 41. Rxa7 Kc5+ 42. Kc3 Kb6 43. Ra8 Re6 44. Kd4 Re4+ 45. Kd3 Rb4 46. Kc3 Re4 47. Kd2 Rd4+ 48. Ke2 Re4+ 49. Kf3 Re6 50. Kf2 Rc6 51. Kg2 Rc2+ 52. Kh3 Rc6 53. Rd8 Ka5 54. Rd4 Ra6 55. Kg2 Rb6 56. Kf3 Rb3+ 57. Kf2 Rb2+ 58. Kg1 Rb3 59. Kh2 Rb2+ 60. Kh3 Rb6 61. Rc4 Rd6 62. Kg2 Rb6 63. Kh2 Rb2+ 64. Kh3 Rb6 65. Rc5+ Kxa4 66. Rc7 Kb5 67. Kg2 Rc6 68. Rb7+ Ka6 69. Rg7 Kb5 70. Kf3 Kb6 71. Ke3 Rc3+ 72. Kf2 Rc6 73. Ke2 Kc5 74. Rd7 Rb6 75. Kf3 Rb3+ 76. Kf2 Rb2+ 77. Ke3 Rb3+ 78. Kf2 Rb2+ 79. Kf3 Rb3+ 80. Kg2 Rb2+ 81. Kf3 Rb3+ 1/2-1/2
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1-0"]
+[Opening "Owen"]
+[Termination "checkmate"]
+
+1. e4 b6 2. d4 Bb7 3. Bd3 e6 4. Nf3 Nc6 5. c3 d5 6. Nbd2 Qd7 7. O-O O-O-O 8. e5 a5 9. a3 Kb8 10. b4 h5 11. Bb5 h4 12. bxa5 bxa5 13. h3 Be7 14. Nb3 Qc8 15. Rb1 Ka8 16. Bg5 Rh5 17. Bxe7 Ngxe7 18. Nc5 Rdh8 19. Qa4 g5 20. Bxc6 Nxc6 21. Rxb7 Qxb7 22. Nxb7 Nxd4 23. Qxa5+ Kxb7 24. Rb1+ Kc8 25. Nxd4 R5h6 26. Qa8+ Kd7 27. Qc6+ Kc8 28. Rb7 Kd8 29. Rb8+ Ke7 30. Qxc7# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "1-0"]
+[Opening "Queen’s Gambit Exchange"]
+[Termination "checkmate"]
+
+1. d4 d5 2. c4 e6 3. cxd5 exd5 4. Nc3 Nf6 5. Bf4 Bd6 6. Bxd6 Qxd6 7. Nf3 O-O 8. e3 Nc6 9. Bd3 a6 10. O-O Re8 11. a4 Bd7 12. h3 Rab8 13. Rc1 h6 14. Re1 Nb4 15. Ne5 c6 16. Qe2 Re7 17. b3 Kh8 18. a5 Nxd3 19. Qxd3 Qb4 20. Ra1 Rbe8 21. Reb1 Bf5 22. Qxf5 Qxc3 23. b4 Ne4 24. Ra4 Kg8 25. Ra2 Nd2 26. Rd1 Nc4 27. Nxc4 Qxc4 28. Rb2 Re4 29. Qd7 R8e7 30. Qd8+ Kh7 31. Rdd2 Qc3 32. g4 Re8 33. Qb6 Qc1+ 34. Kg2 R8e7 35. Qc5 Qe1 36. Qc2 Kh8 37. Rb1 Rxe3 38. Rxe1 Rxe1 39. f4 R7e4 40. f5 Kg8 41. Qc5 Kh7 42. Rb2 f6 43. Rc2 Re8 44. Qb6 R8e7 45. Kg3 Kh8 46. h4 R1e3+ 47. Kg2 R3e4 48. Kh3 Re3+ 49. Kh2 Kh7 50. h5 R3e4 51. Kg3 Re3+ 52. Kh4 Re1 53. Qd8 R7e3 54. Rh2 Rb3 55. Qb6 Re7 56. Qa7 Rc3 57. Rb2 Ree3 58. Rh2 Re7 59. Rh3 Rc2 60. Qb6 Rce2 61. Rc3 Rh2+ 62. Kg3 Rb2 63. Kh3 Kg8 64. Qd8+ Kf7 65. Qd6 Rbe2 66. Kh4 R2e4 67. Qc5 Kg8 68. Rc2 Re1 69. Qd6 R7e3 70. Qb8+ Kh7 71. Rb2 Re7 72. Qd6 R7e4 73. Qc7 R4e3 74. Rh2 Re7 75. Qd8 R7e4 76. Qd7 Rg1 77. Rd2 Rgxg4+ 78. Kh3 Rh4+ 79. Kg3 Rxh5 80. Qxb7 Rg5+ 81. Kh3 Rh5+ 82. Kg2 Rg5+ 83. Kf1 Rxf5+ 84. Rf2 Rxf2+ 85. Kxf2 Rxd4 86. Qxa6 Rxb4 87. Qxc6 d4 88. Qc2+ Kg8 89. a6 Rb8 90. a7 Ra8 91. Qb3+ Kh7 92. Qb8 Rxb8 93. axb8=Q Kg6 94. Qg3+ Kf7 95. Qb3+ Kg6 96. Qd5 Kh7 97. Kf3 Kg6 98. Kg4 Kh7 99. Qxd4 Kg6 100. Qd3+ Kf7 101. Qd7+ Kf8 102. Kf5 Kg8 103. Kg6 Kh8 104. Qd8# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1-0"]
+[Opening "Queen’s Gambit Exchange"]
+[Termination "checkmate"]
+
+1. d4 d5 2. c4 e6 3. cxd5 exd5 4. Nf3 Nf6 5. e3 Bd6 6. Bd3 O-O 7. Nc3 c6 8. O-O Re8 9. a3 a5 10. h3 b5 11. Qc2 Nbd7 12. e4 dxe4 13. Nxe4 Qc7 14. Nxd6 Qxd6 15. Bd2 Nb6 16. Rfe1 Be6 17. Ne5 Rec8 18. Bg5 h6 19. Bxf6 gxf6 20. Nf3 Nd5 21. Rac1 a4 22. Bh7+ Kg7 23. Be4 Ra7 24. Qd2 Re7 25. Rc5 Nf4 26. Bc2 Rce8 27. Re4 Nd5 28. Rh4 Rh8 29. Bd3 Bc8 30. Bxb5 cxb5 31. Rxc8 Re4 32. Rxh8 Rxh4 33. Nxh4 Kxh8 34. Qxh6+ Kg8 35. Nf5 Qf8 36. Qh5 Qd8 37. Qg4+ Kf8 38. Qg7+ Ke8 39. Qg8+ Kd7 40. Qxf7+ Kc6 41. Qe6+ Kc7 42. h4 Nb6 43. Qf7+ Kc6 44. h5 Nc4 45. h6 Kb6 46. Qe6+ Ka5 47. h7 Nb6 48. Qe7 Qxe7 49. Nxe7 f5 50. h8=Q Ka6 51. Qf6 Ka7 52. Qxf5 Ka6 53. g4 Ka5 54. Nc6+ Ka6 55. Qf7 Nc8 56. Qc7 b4 57. Nxb4+ Kb5 58. Qc5# 1-0
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "improved"]
+[Result "0-1"]
+[Opening "London King’s Indian"]
+[Termination "checkmate"]
+
+1. d4 Nf6 2. Nf3 g6 3. Bf4 Bg7 4. Nc3 d5 5. e3 O-O 6. h3 a6 7. Bd3 Nh5 8. Bh2 c5 9. g4 Nf6 10. dxc5 Nbd7 11. O-O Nxc5 12. Be5 h5 13. g5 Nfe4 14. Bxg7 Kxg7 15. Kg2 Nxc3 16. bxc3 e5 17. Be2 Ne4 18. h4 Nxc3 19. Qd2 Qc7 20. Rfe1 Bg4 21. a4 Nxe2 22. Rxe2 Qc4 23. Nxe5 Qxe2 24. Qd4 f6 25. Nxg4 Qxg4+ 26. Qxg4 hxg4 27. gxf6+ Rxf6 28. Rb1 Rf7 29. Rd1 Rc8 30. Rd2 Rc4 31. Kg3 Rxa4 32. Rxd5 Rc4 33. Rd2 b5 34. Re2 Rf3+ 35. Kg2 Rh3 36. Rd2 Rxh4 37. Rd6 a5 38. Rd7+ Kf6 39. Rd6+ Kf7 40. Rd7+ Ke6 41. Rb7 b4 42. Rg7 Rxc2 43. Rxg6+ Kf5 44. Ra6 Ra2 45. Rb6 Ke4 46. Rb7 Kd3 47. Kg3 Rh1 48. Kg2 Re1 49. Kg3 Rg1+ 50. Kh2 Raa1 51. Rc7 Ke2 52. f3 gxf3 53. Kh3 f2 54. Kh4 f1=Q 55. Rc2+ Kxe3 56. Rc4 Qxc4+ 57. Kh3 Rh1+ 58. Kg2 Rag1# 0-1
+
+[Event "INTUITION controlled before-after AI match"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "improved"]
+[Black "baseline"]
+[Result "1/2-1/2"]
+[Opening "London King’s Indian"]
+[Termination "threefold-repetition"]
+
+1. d4 Nf6 2. Nf3 g6 3. Bf4 Bg7 4. Nc3 d6 5. e4 Nh5 6. Bd2 Bg4 7. d5 Nd7 8. h3 Bxf3 9. Qxf3 Bd4 10. Qd3 Bb6 11. Be2 Ne5 12. Qb5+ c6 13. Qb3 Nf6 14. O-O O-O 15. a3 cxd5 16. exd5 Qd7 17. Kh1 Qc7 18. f4 Ned7 19. f5 Ne5 20. fxg6 fxg6 21. Bh6 Rf7 22. Bf4 a6 23. Bg5 Kh8 24. Rad1 Rc8 25. Bf4 Rcf8 26. Bh6 Rc8 27. Bd2 Bc5 28. Rb1 Qd7 29. Na4 b5 30. Nc3 Qa7 31. a4 b4 32. Na2 a5 33. Bf4 Rcf8 34. c3 Qb7 35. cxb4 axb4 36. Rbc1 Ne4 37. Bxe5+ dxe5 38. Rxf7 Rxf7 39. a5 Rf2 40. a6 Qb6 41. Rc2 Qf6 42. Rxc5 Nxc5 43. Qe3 Nxa6 44. Nc1 Nc7 45. Nd3 Rf5 46. Qe4 Qd6 47. g4 Rf6 48. Bf3 Kg7 49. h4 Rxf3 50. Qxf3 h6 51. g5 hxg5 52. hxg5 Nxd5 53. Qe4 Nf4 54. Qxe5+ Qxe5 55. Nxe5 Nh3 56. Nf3 Nf2+ 57. Kg1 Nd3 58. b3 Kf7 59. Kf1 Ke6 60. Nh4 Nf4 61. Kf2 Kd5 62. Kf3 e5 63. Ke3 Ke6 64. Kf3 Kd6 65. Ke4 Ne6 66. Nxg6 Nxg5+ 67. Kd3 Kd5 68. Ne7+ Kc5 69. Ke3 Kd6 70. Nf5+ Ke6 71. Ng7+ Kd5 72. Nf5 Nf7 73. Ne7+ Kd6 74. Nf5+ Ke6 75. Ng7+ Kd5 76. Ne8 Nd6 77. Nc7+ Kc5 78. Kd3 Kc6 79. Na6 Kb5 80. Nc7+ Kb6 81. Nd5+ Ka5 82. Nf6 Kb5 83. Nd5 Nf7 84. Ke4 Kc5 85. Nc7 Kd6 86. Na6 Ng5+ 87. Kd3 Nh7 88. Nxb4 Ng5 89. Ke3 Ke6 90. Nd3 Kd5 91. Nb4+ Kd6 92. Nd3 e4 93. Nf4 Ke5 94. b4 Nf7 95. Ng6+ Kf6 96. Nf4 Kf5 97. Nd5 Ke5 98. Nb6 Nd6 99. Nd7+ Ke6 100. Nb6 Kf5 101. Nd7 Nb5 102. Nc5 Nd6 103. Kd4 Nb5+ 104. Kc4 Na3+ 105. Kd4 Nc2+ 106. Kc3 Na3 107. Kd4 Nc2+ 108. Kc3 Ne3 109. Kd4 Nc2+ 1/2-1/2
