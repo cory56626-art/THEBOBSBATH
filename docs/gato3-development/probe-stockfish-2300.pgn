@@ -1,0 +1,111 @@
+[Event "INTUITION provisional Stockfish nominal-Elo ladder"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "intuition"]
+[Black "stockfish"]
+[Result "0-1"]
+[Opening "Italian"]
+[Termination "checkmate"]
+[StockfishElo "2300"]
+[StockfishMoveTimeMs "150"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. O-O d6 5. c3 Nf6 6. d4 exd4 7. cxd4 Bb6 8. Nc3 Bg4 9. d5 Ne7 10. Bg5 O-O 11. Bxf6 gxf6 12. h3 Bd7 13. a3 Kh8 14. Nd4 Rg8 15. Kh1 Qc8 16. g4 h5 17. Qd2 Rg7 18. gxh5 Rh7 19. Be2 Bxh3 20. Rg1 Qf8 21. f4 Qh6 22. Kh2 Bxd4 23. Qxd4 Bd7 24. Qd2 Ng6 25. Raf1 Rg7 26. Rg3 a6 27. b3 Re8 28. Kh1 Reg8 29. Na2 Ne7 30. Rc3 c6 31. Nb4 c5 32. Nc2 f5 33. e5 Rg2 34. Ne3 Qg7 35. Qe1 Rg3 36. Bg4 Rxg4 37. exd6 Nxd5 38. Nxg4 Qxg4 39. Rc2 Bc6 40. Rg1 Ne3+ 41. Rgg2 Qh3+ 42. Kg1 Rxg2+ 43. Rxg2 Qxg2# 0-1
+
+[Event "INTUITION provisional Stockfish nominal-Elo ladder"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "stockfish"]
+[Black "intuition"]
+[Result "0-1"]
+[Opening "Italian"]
+[Termination "checkmate"]
+[StockfishElo "2300"]
+[StockfishMoveTimeMs "150"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. O-O d6 5. Re1 Nge7 6. d3 O-O 7. a4 a6 8. Na3 Ng6 9. h3 Nh4 10. Nxh4 Qxh4 11. Be3 Bxe3 12. fxe3 Qg3 13. Qh5 Bd7 14. Re2 Nd8 15. Nb1 Ne6 16. a5 g6 17. Qf3 Qxf3 18. gxf3 Ng5 19. Nc3 h5 20. Nd5 Bxh3 21. f4 exf4 22. Nxc7 f3 23. Rh2 Rac8 24. Nd5 Kg7 25. Bb3 Be6 26. Nb6 Rc6 27. Ra3 Rc7 28. Nd5 Rc5 29. c4 f5 30. exf5 Bxf5 31. Bd1 f2+ 32. Kf1 Bh3+ 33. Rxh3 Nxh3 34. b4 Rcc8 35. Ra2 Kh6 36. Ba4 Rf7 37. Nc3 Rcf8 38. c5 dxc5 39. bxc5 Rf3 40. Ne4 Rxe3 41. Ra1 Rxd3 42. Rb1 Re3 43. Nd2 Rf4 44. Bd7 Rd4 45. Bxh3 Rxd2 46. Bg4 hxg4 47. Rd1 Rxd1+ 48. Kxf2 Rde1 49. c6 R3e2+ 50. Kg3 Kg5 51. cxb7 Rg1# 0-1
+
+[Event "INTUITION provisional Stockfish nominal-Elo ladder"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "intuition"]
+[Black "stockfish"]
+[Result "1-0"]
+[Opening "Queen’s Gambit"]
+[Termination "checkmate"]
+[StockfishElo "2300"]
+[StockfishMoveTimeMs "150"]
+
+1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Nf3 Nbd7 5. e3 b6 6. cxd5 Nxd5 7. Bb5 Bb4 8. Bd2 Bd6 9. Nxd5 exd5 10. Bc6 Rb8 11. Bxd5 Nf6 12. Bc6+ Bd7 13. Rc1 Qe7 14. Qa4 a5 15. O-O Ne4 16. h3 h6 17. Rc2 Qe6 18. d5 Bxc6 19. Rxc6 Qf5 20. Rc4+ b5 21. Rxe4+ Kd8 22. Qd4 Qf6 23. Rg4 Qxd4 24. Nxd4 a4 25. Nc6+ Kc8 26. Nxb8 c5 27. Nc6 a3 28. bxa3 g5 29. Na7+ Kd7 30. Nxb5 Bb8 31. Bc3 Rg8 32. Rc4 Bd6 33. Rb1 Rb8 34. Bg7 Bc7 35. Rxc5 Rxb5 36. Rbxb5 Bd8 37. Rb7+ Kd6 38. Bf8+ Ke5 39. d6+ Ke6 40. Be7 g4 41. Bxd8 f6 42. d7 h5 43. Bxf6 Kf7 44. d8=Q+ Ke6 45. Qe7# 1-0
+
+[Event "INTUITION provisional Stockfish nominal-Elo ladder"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "stockfish"]
+[Black "intuition"]
+[Result "0-1"]
+[Opening "Queen’s Gambit"]
+[Termination "checkmate"]
+[StockfishElo "2300"]
+[StockfishMoveTimeMs "150"]
+
+1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Nf3 Be7 5. cxd5 exd5 6. Qc2 Nc6 7. Bg5 O-O 8. a3 h6 9. Bxf6 Bxf6 10. Qd1 Re8 11. e3 Bg4 12. Be2 Bxf3 13. Bxf3 Nxd4 14. Bg4 c6 15. Rc1 Qb6 16. Na4 Qa5+ 17. b4 Qc7 18. Nc5 Nb5 19. Qb3 a5 20. O-O axb4 21. Qxb4 Rxa3 22. h4 Rea8 23. Bf5 Qe7 24. e4 Bc3 25. Rxc3 Rxc3 26. exd5 Qxc5 27. dxc6 Qxb4 28. cxb7 Rb8 29. g4 Rxb7 30. Rb1 Qc5 31. Be4 Rg3+ 32. Bg2 Rxg4 33. Re1 Rb8 34. Rf1 Nd4 35. Ra1 Nf3+ 36. Kf1 Qc4# 0-1
+
+[Event "INTUITION provisional Stockfish nominal-Elo ladder"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "intuition"]
+[Black "stockfish"]
+[Result "1-0"]
+[Opening "Sicilian"]
+[Termination "checkmate"]
+[StockfishElo "2300"]
+[StockfishMoveTimeMs "150"]
+
+1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Qxd4 Nf6 5. Nc3 a6 6. Be2 e5 7. Qa4+ Bd7 8. Qc4 b5 9. Qd3 Be6 10. O-O Nbd7 11. Bg5 Qc8 12. Bxf6 Bc4 13. Qe3 Nxf6 14. a3 Be6 15. Rfd1 Be7 16. Ng5 Bd7 17. h3 O-O 18. Rac1 g6 19. Nd5 Bd8 20. Nxf6+ Bxf6 21. Rxd6 Be7 22. Rd3 f6 23. Rc3 Qb7 24. Nf3 Rfd8 25. Rd1 Be6 26. Nd2 Rac8 27. Bg4 Rd6 28. Bxe6+ Rxe6 29. Rxc8+ Kg7 30. Qc3 b4 31. Qc4 Qxc8 32. Qxc8 Kf7 33. axb4 Rb6 34. c3 h6 35. Nc4 Bc5 36. Qxc5 Rc6 37. Rd7+ Ke6 38. Qxc6# 1-0
+
+[Event "INTUITION provisional Stockfish nominal-Elo ladder"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "stockfish"]
+[Black "intuition"]
+[Result "0-1"]
+[Opening "Sicilian"]
+[Termination "checkmate"]
+[StockfishElo "2300"]
+[StockfishMoveTimeMs "150"]
+
+1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Qxd4 e5 5. Bb5+ Bd7 6. Qc4 a6 7. Ng5 Nh6 8. Bxd7+ Nxd7 9. a4 Be7 10. Nh3 Rc8 11. Qe2 Ng8 12. a5 Ngf6 13. O-O O-O 14. Rd1 h6 15. g3 Qc7 16. Nc3 Nc5 17. Kh1 Ne6 18. f4 Nd4 19. Qd3 Qc4 20. Nf2 Qxd3 21. Nxd3 Nxc2 22. Ra4 Nd7 23. Nb4 Nc5 24. Nbd5 Bd8 25. Rc4 Rc6 26. Ne3 Nxe3 27. Bxe3 Bxa5 28. fxe5 Bxc3 29. Rxc3 Nxe4 30. Rxc6 bxc6 31. exd6 Rd8 32. d7 Nf6 33. Ra1 Rxd7 34. Bc5 Ne4 35. Be3 Rd3 36. Re1 f5 37. Ba7 Rd2 38. b4 Rd7 39. Be3 Rb7 40. Rc1 Rxb4 41. Rxc6 Rb3 42. Bg1 a5 43. Ra6 Ra3 44. Ra8+ Kh7 45. Bb6 Ra1+ 46. Kg2 Ra2+ 47. Kg1 a4 48. Bc7 a3 49. h4 g5 50. Bd8 Kg6 51. Ra7 Nxg3 52. Be7 gxh4 53. Bxh4 Ne4 54. Be7 Ra1+ 55. Kg2 a2 56. Bf8 h5 57. Be7 f4 58. Kf3 Ng5+ 59. Kf2 Rh1 60. Ra6+ Ne6 61. Bh4 a1=Q 62. Rxa1 Rxa1 63. Bf6 Kxf6 64. Ke2 Nd4+ 65. Kd3 Ke5 66. Kc3 f3 67. Kb2 f2 68. Kxa1 f1=Q+ 69. Ka2 Qd1 70. Kb2 Qb3+ 71. Kc1 Qc2# 0-1
+
+[Event "INTUITION provisional Stockfish nominal-Elo ladder"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "intuition"]
+[Black "stockfish"]
+[Result "0-1"]
+[Opening "English"]
+[Termination "checkmate"]
+[StockfishElo "2300"]
+[StockfishMoveTimeMs "150"]
+
+1. c4 e5 2. Nc3 Nf6 3. g3 d5 4. cxd5 Be7 5. e4 c6 6. d4 cxd5 7. dxe5 Nxe4 8. Qxd5 Nxc3 9. Qxd8+ Bxd8 10. bxc3 Be6 11. Bg2 Nd7 12. Bxb7 Ba5 13. Ne2 Rb8 14. Bc6 Rb6 15. Bxd7+ Kxd7 16. Be3 Rbb8 17. O-O-O+ Kc7 18. Bxa7 Rbf8 19. Bc5 Ra8 20. Bd6+ Kc8 21. a3 f6 22. exf6 gxf6 23. Kb2 Bg4 24. Rd2 Rd8 25. Re1 Re8 26. f4 Re4 27. Kc2 Ra7 28. Bc5 Rb7 29. h4 Re6 30. Kd3 Rc7 31. f5 Re8 32. Kc4 Bb6 33. Rd5 Bxe2+ 34. Kb4 Re4+ 35. Bd4 Rb7 36. Ka4 h6 37. g4 Kc7 38. Rxe2 Rxe2 39. Bxb6+ Rxb6 40. Rd4 Rh2 41. h5 Rhb2 42. Rc4+ Rc6 43. Rb4 Rd2 44. Kb3 Re2 45. a4 Re8 46. Rd4 Re5 47. Kb4 Re2 48. c4 Rd6 49. Rf4 Re1 50. c5 Rdd1 51. Kb5 Re8 52. Rb4 Rb8+ 53. Ka5 Ra8+ 54. Kb5 Re8 55. Ka6 Ra1 56. Rb7+ Kc6 57. Rb6+ Kxc5 58. a5 Ra8+ 59. Kb7 Rf8 60. Ka6 Ra8+ 61. Kb7 R1xa5 62. Rc6+ Kb5 63. Rb6+ Kc5 64. Rc6+ Kd4 65. Rxf6 Rh8 66. Re6 Kd5 67. Kb6 Rc5 68. Rg6 Rc4 69. Kb5 Rd4 70. Kb6 Rf4 71. Kc7 Ra4 72. Rd6+ Ke5 73. Re6+ Kd4 74. Kd6 Ra7 75. Rg6 Ra6+ 76. Kc7 Ra7+ 77. Kd6 Ra6+ 78. Kc7 Rh7+ 79. Kb8 Ra3 80. Rb6 Re3 81. Rd6+ Ke5 82. Rd8 Re7 83. Rg8 Kf4 84. Kc8 Rh7 85. Kb8 Re4 86. Kc8 Kf3 87. Kd8 Ra4 88. Rg7 Rxg7 89. f6 Ra8# 0-1
+
+[Event "INTUITION provisional Stockfish nominal-Elo ladder"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "stockfish"]
+[Black "intuition"]
+[Result "0-1"]
+[Opening "English"]
+[Termination "checkmate"]
+[StockfishElo "2300"]
+[StockfishMoveTimeMs "150"]
+
+1. c4 e5 2. Nc3 Nf6 3. g3 d5 4. f4 exf4 5. cxd5 fxg3 6. d4 Bd6 7. hxg3 Bxg3+ 8. Kd2 Nxd5 9. e4 Nxc3 10. bxc3 Nc6 11. Qf3 Bh4 12. Kc2 O-O 13. Qh5 Nxd4+ 14. cxd4 g5 15. Rxh4 gxh4 16. Nf3 Qf6 17. Bh6 Re8 18. Bb5 Rxe4 19. Rg1+ Kh8 20. Bg7+ Qxg7 21. Rxg7 Kxg7 22. Bc4 Be6 23. Bd3 Rg4 24. d5 Bd7 25. Kc3 h6 26. Qe5+ Kg8 27. Qh5 Re8 28. Ne5 Rxe5 29. Qxe5 Rg3 30. Kd4 c5+ 31. Kc4 b5+ 32. Kc3 c4 33. Qb8+ Kg7 34. Qxa7 Rxd3+ 35. Kb4 Rxd5 36. Qg1+ Kf8 37. Qc1 Rg5 38. Qf4 h3 39. Qf6 Rg2 40. Qd8+ Be8 41. Qd6+ Kg8 42. Qb8 Re2 43. Qg3+ Kh7 44. Qxh3 Rxa2 45. Qc8 Rb2+ 46. Ka5 Re2 47. Qd8 Kg6 48. Qd6+ Re6 49. Qd1 f5 50. Qf3 h5 51. Qg3+ Kf6 52. Qf4 Re5 53. Qh4+ Ke6 54. Qd8 Bf7 55. Qd2 Rd5 56. Qh6+ Kd7 57. Qg7 Ke8 58. Kb4 Ke7 59. Qh6 Rd3 60. Kxb5 c3 61. Kc6 c2 62. Kb7 Rd1 63. Qg5+ Ke8 64. Kc7 c1=Q+ 65. Kb6 Rd6+ 66. Kb5 Qc4+ 67. Ka5 Ra6# 0-1
