@@ -1,9 +1,11 @@
 import { readFile, writeFile } from 'node:fs/promises';
-import { selectEngine } from './lib/match-selection.mjs';
+import { selectEngine, selectEngineSignFlip } from './lib/match-selection.mjs';
 import { validateGames } from './lib/validate-games.mjs';
-const [input, output] = process.argv.slice(2);
+const flags = process.argv.slice(2).filter(arg => arg.startsWith('--'));
+const [input, output] = process.argv.slice(2).filter(arg => !arg.startsWith('--'));
+const rule = (flags.find(arg => arg.startsWith('--rule=')) || '--rule=v4').slice(7);
 if (!input) throw Error('Usage: node scripts/select-engine.mjs match.json [selection.json]');
 const report = JSON.parse(await readFile(input, 'utf8'));
-const selection = { input, engines: report.engines, validation: validateGames(report), ...selectEngine(report) };
+const selection = { input, rule, engines: report.engines, validation: validateGames(report), ...(rule === 'gato3' ? selectEngineSignFlip(report) : selectEngine(report)) };
 if (output) await writeFile(output, JSON.stringify(selection, null, 2) + '\n');
 console.log(JSON.stringify(selection, null, 2));

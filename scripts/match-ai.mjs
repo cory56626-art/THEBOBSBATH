@@ -30,7 +30,12 @@ const improved = await loadEngine(args['candidate-revision'] ? { sourceRevision:
 const model = createModelFromBytes(JSON.parse(await readFile(new URL('model/capsule.json', root), 'utf8')), await readFile(new URL('model/weights.bin', root)));
 const engines = { baseline, improved };
 const openingSet = args['opening-set'] || 'pilot8';
-const openings = getOpenings(openingSet);
+const allOpenings = getOpenings(openingSet);
+// Optional shard of the opening list; pair numbers stay global across shards.
+const openingOffset = integer('opening-offset', 0, 0);
+const openingLimit = integer('opening-limit', allOpenings.length - openingOffset, 1);
+if (openingOffset + openingLimit > allOpenings.length) throw new Error('Opening shard exceeds the opening set');
+const openings = allOpenings.slice(openingOffset, openingOffset + openingLimit);
 const plannedGames = openings.length * 2 * rounds;
 const uciOf = move => move.from + move.to + (move.promotion || '');
 function terminal(chess) {
@@ -48,7 +53,7 @@ const report = {
   harnessDependencies: { loaderSHA256: hash(await readFile(new URL('scripts/lib/load-engine.mjs', root))), openingsSHA256: hash(await readFile(new URL('scripts/lib/chess-openings.mjs', root))) },
   model: { ...MODEL_METADATA, actualWeightsSHA256: hash(await readFile(new URL('model/weights.bin', root))) },
   environment: { node: process.version, platform: os.platform(), architecture: os.arch(), cpu: os.cpus()[0]?.model },
-  settings: { mode: 'search', budgetMs, baselineMaxNodes: maxNodes, candidateMaxNodes, maxPlies, clockPerSideMs: Math.ceil(maxPlies / 2) * budgetMs + reserveMs, reserveMs, openingSet, rounds, plannedGames, openings, colorReversed: true, adjudication: 'Only rules-terminal games and explicit time/illegal-move forfeits are scored. Move-cap truncations remain unfinished and unscored.', clockPolicy: 'Competition clock exhaustion is a forfeit regardless of remaining mating material; such wins are reported separately from checkmate.' },
+  settings: { mode: 'search', shard: { openingOffset, openingLimit, setSize: allOpenings.length }, budgetMs, baselineMaxNodes: maxNodes, candidateMaxNodes, maxPlies, clockPerSideMs: Math.ceil(maxPlies / 2) * budgetMs + reserveMs, reserveMs, openingSet, rounds, plannedGames, openings, colorReversed: true, adjudication: 'Only rules-terminal games and explicit time/illegal-move forfeits are scored. Move-cap truncations remain unfinished and unscored.', clockPolicy: 'Competition clock exhaustion is a forfeit regardless of remaining mating material; such wins are reported separately from checkmate.' },
   caveats: ['This small pilot cannot establish a reliable Elo change.', 'Identical model weights are shared; this tests decision-engine changes, not a new trained network.', 'The configured node limits can count different work units across engine versions. They are recorded separately; total move budgets and game clocks are equal.', 'Wall-time limits are soft because individual synchronous operations cannot be interrupted. Actual elapsed time around the entire decision call is deducted from equal game clocks.', 'Opening order is fixed; colors reverse within each pair. No evaluation-based win/draw adjudication is used.'],
   games: [],
 };
@@ -94,7 +99,7 @@ for (let round = 0; round < rounds; round++) for (let openingIndex = 0; openingI
     }
     outcome ||= { status: 'truncated', result: '*', winner: null };
     chess.header('Event', 'INTUITION controlled before-after AI match', 'White', whiteEngine, 'Black', blackEngine, 'Opening', opening.name, 'Result', outcome.result, 'Termination', outcome.status);
-    report.games.push({ id: report.games.length + 1, round: round + 1, pair: openingIndex + 1, opening: opening.name, openingMoves: opening.moves, openingFen, whiteEngine, blackEngine, ...outcome, plies: moves.length, finalFen: chess.fen(), clocks, moves, pgn: chess.pgn() });
+    report.games.push({ id: report.games.length + 1, round: round + 1, pair: openingOffset + openingIndex + 1, opening: opening.name, openingMoves: opening.moves, openingFen, whiteEngine, blackEngine, ...outcome, plies: moves.length, finalFen: chess.fen(), clocks, moves, pgn: chess.pgn() });
     await save();
     console.log(`FINISHED ${report.games.length}/${plannedGames} ${opening.name}: ${whiteEngine} vs ${blackEngine} ${outcome.result} (${outcome.status}) ${moves.length} plies`);
   }
