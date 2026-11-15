@@ -193,3 +193,20 @@ test('underpromotion and en-passant moves are emitted in UCI and are legal', asy
   const result = await gatoSearch(ep, { ...settings, maxDepth: 3 });
   assert.ok(ep.moves({ verbose: true }).some(move => move.lan === result.move));
 });
+
+test('search memory is reused only when the same game continues, and never changes legality', async () => {
+  const board = new Chess();
+  for (const move of ['e4', 'e5', 'Nf3']) board.move(move);
+  const first = await gatoSearch(board, { ...settings, maxNodes: 3000 });
+  const again = await gatoSearch(board, { ...settings, maxNodes: 3000 });
+  assert.equal(first.continued, false);
+  assert.equal(again.continued, false, 'repeating the same root starts fresh, so fixed-node searches stay deterministic');
+  assert.equal(again.nodes, first.nodes);
+  moved(board, first.move);
+  board.move(board.moves()[0]);
+  const next = await gatoSearch(board, { ...settings, maxNodes: 3000 });
+  assert.equal(next.continued, true);
+  assert.ok(board.moves({ verbose: true }).some(move => move.lan === next.move));
+  const unrelated = await gatoSearch(new Chess('4k3/8/8/8/8/8/4P3/4K3 w - - 0 1'), { ...settings, maxNodes: 3000 });
+  assert.equal(unrelated.continued, false);
+});

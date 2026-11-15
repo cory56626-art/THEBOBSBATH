@@ -875,6 +875,7 @@ function createSearcher(weights = GATO3_WEIGHTS) {
   }
 
   /** Load the position, the reversible history keys and run a bounded search. */
+  let lastRootFen = null;
   async function run(setup, options) {
     loadFen(setup.fen);
     keyCount = 0;
@@ -885,8 +886,14 @@ function createSearcher(weights = GATO3_WEIGHTS) {
     maxNodes = Math.max(1, Math.floor(Number(options.maxNodes) || 20000));
     const maxDepth = Math.max(1, Math.min(64, Math.floor(Number(options.maxDepth) || 64)));
     deadline = started + budgetMs; signal = options.signal || null;
-    nodes = 0; qNodes = 0; selDepth = 0; generation++;
-    killers.fill(0); history.fill(0); counter.fill(0);
+    nodes = 0; qNodes = 0; selDepth = 0;
+    // Continuing the same game (the previous root is one or two plies back):
+    // keep the transposition table and evaluation cache, and halve history.
+    const continued = !!setup.continuation && lastRootFen !== null;
+    if (continued) for (let i = 0; i < history.length; i++) history[i] >>= 1;
+    else { generation++; history.fill(0); counter.fill(0); }
+    killers.fill(0);
+    lastRootFen = setup.fen;
     rootPriorMap = new Map((options.priors || []).map(move => [move.uci, Number(move.probability ?? move.prior) || 0]));
     const rootInCheck = inCheckNow();
     // Legal root moves and a deterministic fallback ordered by the neural prior.
@@ -946,7 +953,7 @@ function createSearcher(weights = GATO3_WEIGHTS) {
       } catch (error) { if (error !== STOP) throw error; } finally { maxNodes = savedMax; while (sp > startSp) unmake(keyCount > startKeys); keyCount = startKeys; }
     }
     const stopReason = proven ? 'proven-mate' : nodes >= maxNodes ? 'node-limit' : interrupted ? 'time-limit' : 'depth-limit';
-    return { move: moveToUci(best), scoreCp, nodes, qNodes, depth, selDepth, pv: pv.map(moveToUci), completedIterations: completed, elapsedMs: performance.now() - started, stopReason, proven, mateInPlies: proven ? MATE - scoreCp : null, rootStats };
+    return { move: moveToUci(best), scoreCp, nodes, qNodes, depth, selDepth, pv: pv.map(moveToUci), completedIterations: completed, elapsedMs: performance.now() - started, stopReason, proven, mateInPlies: proven ? MATE - scoreCp : null, rootStats, continued };
   }
 
   function repeatCount() {
@@ -999,45 +1006,53 @@ function createSearcher(weights = GATO3_WEIGHTS) {
   }
   function historyKeyFor(fen) { loadFen(fen); return [hashLo, hashHi]; }
 
-  return { verify: (fen, depth) => { loadFen(fen); keyCount = 0; return verifyIncremental(depth); }, run, perft: (fen, depth) => { loadFen(fen); keyCount = 0; return perft(depth); }, evaluateFen: fen => { loadFen(fen); return evaluateFull(); }, traceFen: fen => { loadFen(fen); return traceFeatures(); }, traceQuietLeaf, historyKeyFor, seeFor: (fen, uci) => { loadFen(fen); const end = generate(0, false); for (let i = 0; i < end; i++) if (moveToUci(moveBuf[i]) === uci) return see(moveBuf[i]); return null; } };
+  return { get lastRootFen() { return lastRootFen; }, verify: (fen, depth) => { loadFen(fen); keyCount = 0; return verifyIncremental(depth); }, run, perft: (fen, depth) => { loadFen(fen); keyCount = 0; return perft(depth); }, evaluateFen: fen => { loadFen(fen); return evaluateFull(); }, traceFen: fen => { loadFen(fen); return traceFeatures(); }, traceQuietLeaf, historyKeyFor, seeFor: (fen, uci) => { loadFen(fen); const end = generate(0, false); for (let i = 0; i < end; i++) if (moveToUci(moveBuf[i]) === uci) return see(moveBuf[i]); return null; } };
 }
 
 // Idle searchers are reused; a concurrent search gets its own instance.
 const idle = [];
 const acquire = () => idle.pop() || createSearcher();
 const release = searcher => { if (idle.length < 2) idle.push(searcher); };
+/** Prefer the idle searcher whose last root is one or two plies behind this game. */
+function acquireFor(priorFens) {
+  const index = idle.findIndex(searcher => priorFens.includes(searcher.lastRootFen));
+  if (index < 0) return { searcher: acquire(), continuation: false };
+  return { searcher: idle.splice(index, 1)[0], continuation: true };
+}
 
-/** Positions since the last irreversible move, oldest first, as FEN strings. */
-function reversibleHistoryFens(chess) {
+/**
+ * Reads the caller's game backwards without changing it: the positions since
+ * the last irreversible move (oldest first, for repetition) and the positions
+ * one and two plies back (to recognise a continuing game).
+ */
+function readHistory(chess) {
   const history = chess._history;
-  if (!Array.isArray(history) || !history.length) return [];
-  const halfMoves = chess._halfMoves | 0;
-  const count = Math.min(halfMoves, history.length);
-  if (!count) return [];
-  const fens = [];
-  const undone = [];
+  if (!Array.isArray(history) || !history.length) return { reversible: [], prior: [] };
+  const count = Math.min(history.length, Math.max(2, chess._halfMoves | 0));
+  const reversibleCount = Math.min(chess._halfMoves | 0, history.length);
+  const fens = [], undone = [];
   try {
-    for (let i = 0; i < count; i++) { undone.push(chess.undo()); fens.push(chess.fen()); }
+    for (let i = 0; i < count; i++) { const move = chess.undo(); if (!move) break; undone.push(move); fens.push(chess.fen()); }
   } finally {
-    for (let i = undone.length - 1; i >= 0; i--) if (undone[i]) chess.move(undone[i]);
+    for (let i = undone.length - 1; i >= 0; i--) chess.move(undone[i]);
   }
-  return fens.reverse();
+  return { reversible: fens.slice(0, reversibleCount).reverse(), prior: fens.slice(0, 2) };
 }
 
 /**
  * Search the caller's chess.js position. The caller's board and history are
  * restored before this returns (moves are undone/replayed only to read the
- * reversible history needed for repetition detection).
+ * history needed for repetition detection and game continuity).
  */
 export async function gatoSearch(chess, options = {}) {
   if (options.signal?.aborted) throw new DOMException('Run cancelled', 'AbortError');
   const fen = chess.fen(), pgnLength = chess._history?.length;
-  const fens = reversibleHistoryFens(chess);
+  const { reversible, prior } = readHistory(chess);
   if (chess.fen() !== fen || chess._history?.length !== pgnLength) throw new Error('Gato search failed to restore its caller board');
-  const searcher = acquire();
+  const { searcher, continuation } = acquireFor(prior);
   try {
-    const historyKeys = fens.map(item => searcher.historyKeyFor(item));
-    return await searcher.run({ fen, historyKeys }, options);
+    const historyKeys = reversible.map(item => searcher.historyKeyFor(item));
+    return await searcher.run({ fen, historyKeys, continuation }, options);
   } finally { release(searcher); }
 }
 

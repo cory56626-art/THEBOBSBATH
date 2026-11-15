@@ -2,7 +2,7 @@ import { Chess } from 'chess.js';
 import { extractFeatures, predictRisk } from './controller.js';
 import { gatoSearch } from './gato-search.js';
 
-export const ENGINE_VERSION = 'intuition-hybrid-5';
+export const ENGINE_VERSION = 'intuition-hybrid-6';
 export const uciOf = move => move.from + move.to + (move.promotion || '');
 const clock = () => performance.now();
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
