@@ -136,3 +136,23 @@ caveats above, and they were measured on different machines; the direct
 comparison is their head-to-head match. [Report](AI-STRENGTH-GATO2.md) ·
 [raw ladder](ai-gato2-provisional-elo.json) ·
 [PGN](ai-gato2-provisional-elo.pgn) · [audit](ai-gato2-audit.json).
+
+## Gato 3 measurement
+
+Gato 3 (frozen at `94eab0e`) was selected by a predeclared 120-game match
+against Gato 2: 85.5–34.5 over 60 color-reversed opening pairs, exact
+one-sided sign-flip p = 9.95 × 10⁻⁷. Its ladder used settings 2200, 2400,
+2600 and 2800 with all twelve `strength24` openings at each, for 96 games
+and 48 pairs. Everything else is unchanged.
+
+- **Attempt 1** finished, but two drawn endings hit the 400-ply cap, so its
+  estimate is withheld.
+- **Attempt 2** was killed by a session restart after 30 games and is
+  aborted.
+- **Attempt 3** used a 1,000-ply cap, declared in advance as final, and
+  completed: **27 wins, 10 draws, 59 losses (32/96)**. Provisional estimate
+  **2334**, conservative 95% sampling interval **2087–2528** (score radius
+  0.196).
+
+[Report](AI-STRENGTH-GATO3.md) · [raw ladder](ai-gato3-provisional-elo.json)
+· [PGN](ai-gato3-provisional-elo.pgn) · [audit](ai-gato3-audit.json).

@@ -1,0 +1,82 @@
+{
+  "auditedAt": "2026-11-15T00:52:44.465Z",
+  "inputs": {
+    "docs/ai-gato3-vs-gato2.json": {
+      "sha256": "0278cb980a5efb13fa0950f912fb2a8e17b20598e73f84e80c00169a830480ae",
+      "games": 120,
+      "scored": 120,
+      "unfinished": 0,
+      "moves": 15738,
+      "terminations": {
+        "threefold-repetition": 18,
+        "checkmate": 95,
+        "fifty-move-draw": 4,
+        "insufficient-material": 3
+      }
+    },
+    "docs/ai-gato3-provisional-elo.json": {
+      "sha256": "66c109db73bcccad97ebd21b0996185e3bd50293dcfa6d742f05a01f243f0770",
+      "games": 96,
+      "scored": 96,
+      "unfinished": 0,
+      "moves": 11875,
+      "terminations": {
+        "checkmate": 86,
+        "threefold-repetition": 5,
+        "fifty-move-draw": 4,
+        "insufficient-material": 1
+      }
+    }
+  },
+  "shards": {
+    "docs/gato3-shards/match-0.json": "d8a4fb56b1975c793f5d79e23048c421efa2c90a0b7972f97eb835813c1da588",
+    "docs/gato3-shards/match-20.json": "1badaffae123ab66cd108c5b28b9c8ad22a499d16556a0d2fbdecffd0d7ec3a4",
+    "docs/gato3-shards/match-40.json": "189128137e12f6284bfd36d2055e394aefe45f8a0f5a6b90a7cecf23bc9c5c1b",
+    "docs/gato3-shards/ladder-low.json": "4582331a6b01977ea2641f7476eab1a4c19759c272a54a7c662e2d6e409f4ef0",
+    "docs/gato3-shards/ladder-high.json": "4ce1b7adfa05f1303cb21d81154ad922ef383d2b3e55ab426d3c8843df8731f9"
+  },
+  "selection": {
+    "rule": "sign-flip",
+    "selected": "improved",
+    "accepted": true,
+    "candidatePoints": 85.5,
+    "favorable": 38,
+    "unfavorable": 7,
+    "tied": 15,
+    "oneSidedP": 9.952420896297554e-7
+  },
+  "selectedEngine": "intuition-hybrid-6",
+  "frozenCandidate": {
+    "revision": "94eab0e1fa1b0d5dbb4d487cc67032688977c73f",
+    "sourceTreeSHA256": "1119ecf784823427423afe8d74d3c4a6e64e0e4af1be6c0c019a95dfe0e6918b",
+    "sourceFiles": {
+      "src/controller.js": "77d6ff8b271939fff79cc65c21c68137b6b8258964b6db577c0aa7f2121c4dbd",
+      "src/engine.js": "cec60af023b7c4a1c8fa2be72ca6045f411cfb2dc40e86804130cce81db7229f",
+      "src/gato-eval-params.js": "18c67f0a2749efe63ba84ba18b41c25da1faefa689d4e620da9b85a5c92efd45",
+      "src/gato-search.js": "bf57b3de75b3f6fe14ca4fa86f137e0662aa15435ce53b54a388429237f2847f",
+      "src/gato3-weights.js": "8b5f3374ff861877d43a87e3b41dae87e71bc2c0c97f76179ccbb953daa04791"
+    }
+  },
+  "activeSourceTreeSHA256": "1119ecf784823427423afe8d74d3c4a6e64e0e4af1be6c0c019a95dfe0e6918b",
+  "activeMatchesFrozenCandidate": true,
+  "matchCandidateTreeMatches": true,
+  "matchBaselineIsGato2": true,
+  "ladderEngineTreeMatches": true,
+  "ratingRecomputed": {
+    "pointEstimate": 2334.4041067932167,
+    "lower": 2086.5300890673607,
+    "upper": 2528.467815037605,
+    "upperUnbounded": false,
+    "matchesReport": true
+  },
+  "published": {
+    "estimate": 2334,
+    "lower": 2087,
+    "upper": 2528
+  },
+  "opponent": {
+    "name": "Stockfish 19",
+    "executableSHA256": "6e46ebada59b2beaaf73913d910ac70f10617a64003d97ac77cf2f94a251938a",
+    "build": "sf_19 tag edb0d9db6731067ec50ce619ff372b463bc4dd5d, make profile-build ARCH=x86-64-avx2, nn-1a298aa575a0.nnue"
+  }
+}

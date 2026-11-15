@@ -1,0 +1,82 @@
+{
+  "input": "docs/ai-gato3-vs-gato2.json",
+  "rule": "gato3",
+  "engines": {
+    "baseline": {
+      "version": "intuition-hybrid-5",
+      "sourceSHA256": "4e02d1d9ef6431375ab406e3603d4d2ccc3166c0b2d13f7bb06f6dfe7d8253c6",
+      "sourceRef": "c50e6ed:src/engine.js",
+      "sourceDependencies": {
+        "src/controller.js": "77d6ff8b271939fff79cc65c21c68137b6b8258964b6db577c0aa7f2121c4dbd",
+        "src/gato-search.js": "7567a231a32719fcaa71d0a6e7f08cd8d27f35976c268d19e8185442525af3fc"
+      },
+      "sourceTreeSHA256": "98ca1cb8386b329f8cd74e906be1d3de3826d827c91026276094528738dbfdbb",
+      "packageLockSHA256": "a16e88747194cd5a3cfd3bf7bf9c441d457b0c4ae0a46c8020d8bb01ed5bc94c",
+      "runtimePackageLockSHA256": "a16e88747194cd5a3cfd3bf7bf9c441d457b0c4ae0a46c8020d8bb01ed5bc94c",
+      "packageDependencies": {
+        "chess.js": {
+          "package": "chess.js",
+          "version": "1.4.0",
+          "lockedVersion": "1.4.0",
+          "lockIntegrity": "sha512-BBJgrrtKQOzFLonR0l+k64A98NLemPwNsCskwb+29bRwobUa4iTm51E1kwGPbWXAcfdDa18nad6vpPPKPWarqw==",
+          "packageJSONSHA256": "36a258fdfb5e76d0816bf2b63dab3c917a0a8652f943da0e6be7e9b543765dfd",
+          "entry": "dist/cjs/chess.js",
+          "entrySHA256": "ccf63ba6a6023ccebc8c110361361b8e14f85d40b556eff387baa8ede4fdd21f"
+        }
+      }
+    },
+    "improved": {
+      "version": "intuition-hybrid-6",
+      "sourceSHA256": "cec60af023b7c4a1c8fa2be72ca6045f411cfb2dc40e86804130cce81db7229f",
+      "sourceRef": "94eab0e:src/engine.js",
+      "sourceDependencies": {
+        "src/controller.js": "77d6ff8b271939fff79cc65c21c68137b6b8258964b6db577c0aa7f2121c4dbd",
+        "src/gato-eval-params.js": "18c67f0a2749efe63ba84ba18b41c25da1faefa689d4e620da9b85a5c92efd45",
+        "src/gato-search.js": "bf57b3de75b3f6fe14ca4fa86f137e0662aa15435ce53b54a388429237f2847f",
+        "src/gato3-weights.js": "8b5f3374ff861877d43a87e3b41dae87e71bc2c0c97f76179ccbb953daa04791"
+      },
+      "sourceTreeSHA256": "1119ecf784823427423afe8d74d3c4a6e64e0e4af1be6c0c019a95dfe0e6918b",
+      "packageLockSHA256": "a16e88747194cd5a3cfd3bf7bf9c441d457b0c4ae0a46c8020d8bb01ed5bc94c",
+      "runtimePackageLockSHA256": "a16e88747194cd5a3cfd3bf7bf9c441d457b0c4ae0a46c8020d8bb01ed5bc94c",
+      "packageDependencies": {
+        "chess.js": {
+          "package": "chess.js",
+          "version": "1.4.0",
+          "lockedVersion": "1.4.0",
+          "lockIntegrity": "sha512-BBJgrrtKQOzFLonR0l+k64A98NLemPwNsCskwb+29bRwobUa4iTm51E1kwGPbWXAcfdDa18nad6vpPPKPWarqw==",
+          "packageJSONSHA256": "36a258fdfb5e76d0816bf2b63dab3c917a0a8652f943da0e6be7e9b543765dfd",
+          "entry": "dist/cjs/chess.js",
+          "entrySHA256": "ccf63ba6a6023ccebc8c110361361b8e14f85d40b556eff387baa8ede4fdd21f"
+        }
+      }
+    }
+  },
+  "validation": {
+    "games": 120,
+    "scored": 120,
+    "unfinished": 0,
+    "moves": 15738,
+    "terminations": {
+      "threefold-repetition": 18,
+      "checkmate": 95,
+      "fifty-move-draw": 4,
+      "insufficient-material": 3
+    }
+  },
+  "selected": "improved",
+  "accepted": true,
+  "complete": true,
+  "planned": 120,
+  "games": 120,
+  "unfinished": 0,
+  "forfeits": 0,
+  "candidatePoints": 85.5,
+  "scoreFraction": 0.7125,
+  "favorable": 38,
+  "unfavorable": 7,
+  "tied": 15,
+  "oneSidedP": 9.952420896297554e-7,
+  "threshold": 0.05,
+  "method": "Exact one-sided sign-flip permutation test on color-reversed pair score differences; all planned games and zero forfeits required.",
+  "caveat": "Fixed-opening engine-versus-engine comparison, not an Elo estimate against other opponents."
+}

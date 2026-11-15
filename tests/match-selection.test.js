@@ -24,3 +24,32 @@ test('unfinished, missing, unpaired and forfeited games cannot select the candid
     assert.equal(selectEngine(r).accepted, false);
   }
 });
+
+import { signFlipPValue, selectEngineSignFlip } from '../scripts/lib/match-selection.mjs';
+
+test('the exact sign-flip test matches hand-computed probabilities', () => {
+  assert.equal(signFlipPValue([]), 1);
+  assert.equal(signFlipPValue([1]), 0.5);
+  assert.equal(signFlipPValue([1, 1, 1]), 0.125);
+  assert.equal(signFlipPValue([-1, -1]), 1);
+  // |d| = 1 and 0.5: sums {1.5, 0.5, -0.5, -1.5}; observed 0.5 -> P(S >= 0.5) = 1/2.
+  assert.equal(signFlipPValue([1, -0.5]), 0.5);
+  assert.equal(signFlipPValue([0, 0, 1]), 0.5);
+});
+
+test('the Gato 3 selection rule requires the full schedule and significance', () => {
+  const game = (pair, white, result) => ({ round: 1, pair, whiteEngine: white, blackEngine: white === 'improved' ? 'baseline' : 'improved', result, winner: result === '1-0' ? 'w' : result === '0-1' ? 'b' : null, status: result === '1/2-1/2' ? 'stalemate' : 'checkmate' });
+  const games = [];
+  for (let pair = 1; pair <= 60; pair++) {
+    const win = pair <= 30;
+    games.push(game(pair, 'improved', win ? '1-0' : '1/2-1/2'), game(pair, 'baseline', win ? '0-1' : '1/2-1/2'));
+  }
+  const accepted = selectEngineSignFlip({ games, settings: { plannedGames: 120 } });
+  assert.equal(accepted.accepted, true);
+  assert.equal(accepted.candidatePoints, 90);
+  assert.ok(accepted.oneSidedP < 1e-8);
+  const short = selectEngineSignFlip({ games: games.slice(0, 118), settings: { plannedGames: 120 } });
+  assert.equal(short.accepted, false);
+  const even = games.map((g, i) => i < 60 ? g : { ...g, result: g.whiteEngine === 'improved' ? '0-1' : '1-0', winner: g.whiteEngine === 'improved' ? 'b' : 'w' });
+  assert.equal(selectEngineSignFlip({ games: even, settings: { plannedGames: 120 } }).accepted, false);
+});
