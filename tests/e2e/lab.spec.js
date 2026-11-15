@@ -171,7 +171,10 @@ test('New game in watch mode restarts autoplay instead of leaving a motionless b
   await openLab(page);
   await page.locator('#mode').selectOption('search');
   await page.locator('#budget').selectOption('2000');
-  await page.locator('#node-limit').selectOption('131072');
+  // A time-bound cap keeps each move in flight for about 2 seconds, so Pause
+  // reliably lands during the second move. Under a 131,072-position cap the
+  // faster Gato 3 can finish that move inside the poll interval.
+  await page.locator('#node-limit').selectOption('1000000');
   await page.locator('#side').selectOption('watch');
   await page.locator('#play-engine').click();
   await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(true);
