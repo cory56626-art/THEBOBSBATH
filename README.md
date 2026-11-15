@@ -1,8 +1,14 @@
-# Gato 2 — Bobs Bath Chess
+# Gato 3 — Bobs Bath Chess
 
-[Play Gato 2](https://cory56626-art.github.io/THEBOBSBATH/), our second bot. Its provisional Stockfish-scale estimate is **≈2278**, with a conservative 95% sampling interval of **1933 – unbounded**. It was measured over 32 games (24 points) at Search / 150 ms / 1,000,000 positions. Before rating, Gato 2 beat Gato 1 **24–0** in a predeclared color-reversed match. This is not a FIDE, Chess.com or Lichess rating; calibration error is outside the interval.
+[Play Gato 3](https://cory56626-art.github.io/THEBOBSBATH/), our third bot. Its provisional Stockfish-scale estimate is **≈2334**, with a conservative 95% sampling interval of **2087–2528**. It was measured over 96 games (32 points) at Search / 150 ms / 1,000,000 positions. Before rating, Gato 3 beat Gato 2 **85.5–34.5** in a predeclared 120-game color-reversed match. Every earlier Gato stays playable, and the Battle tab sets any two against each other. This is not a FIDE, Chess.com or Lichess rating; calibration error is outside the interval.
 
-[Gato 2 selection and rating report](docs/AI-STRENGTH-GATO2.md) · [Predeclared protocol](docs/GATO2-PREDECLARATION.md) · [Elo methodology](docs/ELO-METHODOLOGY.md) · [Gato 1 report](docs/AI-STRENGTH-V4.md)
+| Bot | Engine | Provisional Elo (Stockfish scale) | 95% interval | Report |
+| --- | --- | ---: | --- | --- |
+| **Gato 3** | Gato 2's search + Texel-tuned evaluation + in-game search memory | ≈2334 | 2087–2528 | [Gato 3](docs/AI-STRENGTH-GATO3.md) |
+| Gato 2 | Fast PVS search on its own board | ≈2278 | 1933 – unbounded | [Gato 2](docs/AI-STRENGTH-GATO2.md) |
+| Gato 1 | Neural ordering + chess.js tactical search | ≈1650 | 1289–2047 | [Gato 1](docs/AI-STRENGTH-V4.md) |
+
+Each estimate belongs to its own ladder; the head-to-head matches are the direct comparisons (Gato 2 beat Gato 1 24–0; Gato 3 beat Gato 2 85.5–34.5). [Elo methodology](docs/ELO-METHODOLOGY.md) · [Gato 3 protocol](docs/GATO3-PREDECLARATION.md)
 
 A chess engine combining neural move ordering with fast tactical search. The experiment retains **direct neural play**, **always searching**, and **selective searching** as separate decision procedures. The previous game remains in Git history.
 
@@ -11,7 +17,7 @@ This is an experiment, **not a claim to have surpassed Stockfish**. The small pr
 ## Try it
 
 - **Play:** choose a decision mode, your side, and a search budget. Click a piece and a destination to make a legal move. Start a new game, undo, flip the board, or export the game as PGN.
-- **Pick your Gato:** every released bot stays playable. Choose Gato 2 or Gato 1 as your opponent; each plays the exact engine that earned its rating, and the profile card shows that bot's own measured strength.
+- **Pick your Gato:** every released bot stays playable. Choose Gato 3, Gato 2 or Gato 1 as your opponent; each plays the exact engine that earned its rating, and the profile card shows that bot's own measured strength.
 - **Battle:** pick any two Gatos (or one against itself) and watch a 1–10 game series on the board, with colors swapping after each game, a live score and PGN export. Battles are for exploration; official comparisons are the predeclared matches in `docs/`.
 - **Position lab:** load a FEN position and compare all three modes. Inspect each move, its inference/search time, and its search work. Direct scores come from the neural model; hybrid search uses its own positional evaluation. Neither is an independent assessment of correctness.
 - **Benchmark:** run the supplied position suite or paired games. A game pair uses the same opening with colors reversed. Export raw results instead of relying only on the summary.
@@ -32,6 +38,19 @@ The model and engine run locally in your browser. No API key, account, paid infe
 Every mode uses the same neural weights, legal-move rules, and initial position. Search also has a handcrafted evaluation function, so this compares complete decision procedures rather than isolating computation alone. Direct still performs neural inference and legal move generation; “no search” does not mean zero computation. A high policy probability is not a calibrated guarantee that a move is correct. Two methods can also agree on a mistake.
 
 The included model is Peter Baer's **v3.1-clean-distilled** transformer: 116,266 parameters and 464,936 weight bytes. It was distilled from a larger model trained on human Lichess games. It is not a Stockfish-trained model. Exact source revision, fingerprint, and license information are in [model/provenance.json](model/provenance.json).
+
+## Gato 3 engine (internal version 6)
+
+Gato 3 keeps Gato 2's search and changes what it knows and remembers:
+
+- **A tuned evaluation.** Every evaluation term is now a middlegame/endgame weight pair ([`src/gato-eval-params.js`](src/gato-eval-params.js)).
+  - **Data:** 2,700 fast Gato 2 self-play games, 210,550 unique quiet positions labeled only by game result. Stockfish played no part.
+  - **Fit:** all 976 weights by Texel tuning ([`src/gato3-weights.js`](src/gato3-weights.js)).
+  - **New terms:** king danger, threats, connected and blocked pawns, and tempo. They started at zero and were switched on by the data alone.
+  - **Checks:** tests prove the starting point equals Gato 2 exactly, that traced features reproduce every score, and that the evaluation is color-symmetric.
+- **Search memory within a game.** The transposition table and evaluation cache carry over from the previous move when the same game continues. Gato 3 averaged depth 10.2 versus Gato 2's 9.6 in their match.
+
+The [development record](docs/GATO3-PREDECLARATION.md#development-record-not-official-evidence) and the tuning scripts are in [`docs/gato3-development/`](docs/gato3-development/).
 
 ## Gato 2 engine (internal version 5)
 

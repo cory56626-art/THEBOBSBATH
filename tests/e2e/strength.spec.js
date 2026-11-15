@@ -25,11 +25,11 @@ test('real hybrid search expands tactical positions offline and rejects a poison
   await expect(page.locator('#comparison-results tbody tr')).toHaveCount(3);
   await expect.poll(() => page.evaluate(() => window.__INTUITION__.busy)).toBe(false);
   const report = await page.evaluate(() => window.__INTUITION__.latestReport);
-  expect(report.engineVersion).toBe('intuition-hybrid-5');
+  expect(report.engineVersion).toBe('intuition-hybrid-6');
 
   for (const mode of ['search', 'selective']) {
     const decision = report.rows.find(row => row.mode === mode);
-    expect(decision.engineVersion).toBe('intuition-hybrid-5');
+    expect(decision.engineVersion).toBe('intuition-hybrid-6');
     expect(decision.searchKind).toBe('neural-ordered-pvs');
     expect(decision.nodeUnit).toBe('tactical-position');
     expect(decision.inferenceCalls).toBe(1);

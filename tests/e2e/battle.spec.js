@@ -5,8 +5,8 @@ import { Chess } from 'chess.js';
 test('older Gatos stay playable with their own measured profile and engine', async ({ page }) => {
   await page.goto('./');
   await page.waitForFunction(() => window.__INTUITION__?.ready);
-  await expect(page.locator('#opponent option')).toHaveCount(2);
-  await expect(page.locator('#opponent')).toHaveValue('gato-2');
+  await expect(page.locator('#opponent option')).toHaveCount(3);
+  await expect(page.locator('#opponent')).toHaveValue('gato-3');
   await page.locator('#opponent').selectOption('gato-1');
   await expect(page.locator('#bot-name')).toHaveText('Gato 1');
   await expect(page.locator('#play-heading')).toHaveText('Play Gato 1.');
@@ -23,6 +23,7 @@ test('older Gatos stay playable with their own measured profile and engine', asy
   await expect(page.locator('#top-player-detail')).toContainText('GATO 1');
   await page.locator('#opponent').selectOption('gato-2');
   await expect(page.locator('#bot-rating')).toHaveText('≈2278');
+  await expect(page.locator('#bot-generation')).toHaveText('OUR SECOND BOT');
   await expect(page.locator('#node-limit')).toHaveValue('1000000');
 });
 
@@ -33,7 +34,9 @@ test('a bot battle plays a complete color-swapped series on the board and export
   await page.goto('./');
   await page.waitForFunction(() => window.__INTUITION__?.ready);
   await page.locator('[data-tab="battle"]').click();
-  await page.locator('#battle-white').selectOption('gato-2');
+  await expect(page.locator('#battle-white')).toHaveValue('gato-3');
+  await expect(page.locator('#battle-black')).toHaveValue('gato-2');
+  await page.locator('#battle-white').selectOption('gato-3');
   await page.locator('#battle-black').selectOption('gato-1');
   await page.locator('#battle-games').selectOption('2');
   await page.locator('#battle-budget').selectOption('100');
@@ -49,12 +52,12 @@ test('a bot battle plays a complete color-swapped series on the board and export
     if (decision?.botId) seen.add(`${decision.botId}:${decision.engineVersion}`);
     return seen.size;
   }, { timeout: 30_000 }).toBe(2);
-  expect([...seen].sort()).toEqual(['gato-1:intuition-hybrid-3', 'gato-2:intuition-hybrid-5']);
+  expect([...seen].sort()).toEqual(['gato-1:intuition-hybrid-3', 'gato-3:intuition-hybrid-6']);
 
   await expect.poll(() => page.evaluate(() => window.__INTUITION__.battle?.running), { timeout: 200_000, intervals: [1000] }).toBe(false);
   const battle = await page.evaluate(() => window.__INTUITION__.battle);
   expect(battle.games).toHaveLength(2);
-  expect(battle.games.map(row => [row.white, row.black])).toEqual([['gato-2', 'gato-1'], ['gato-1', 'gato-2']]);
+  expect(battle.games.map(row => [row.white, row.black])).toEqual([['gato-3', 'gato-1'], ['gato-1', 'gato-3']]);
   await expect(page.locator('#battle-results tbody tr')).toHaveCount(2);
   await expect(page.locator('#battle-score')).toBeVisible();
   await expect(page.locator('#battle-status')).toContainText('Battle complete · 2 games');
@@ -66,7 +69,7 @@ test('a bot battle plays a complete color-swapped series on the board and export
   expect(games).toHaveLength(2);
   games.forEach((text, index) => {
     const replay = new Chess(); replay.loadPgn(text);
-    expect(replay.getHeaders().White).toBe(index ? 'Gato 1' : 'Gato 2');
+    expect(replay.getHeaders().White).toBe(index ? 'Gato 1' : 'Gato 3');
     expect(replay.getHeaders().Result).toBe(battle.games[index].result);
   });
   expect(errors).toEqual([]);

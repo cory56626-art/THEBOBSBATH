@@ -15,6 +15,14 @@ const SNAPSHOTS = {
   gato2: { revision: 'c50e6ed', files: ['engine.js', 'controller.js', 'gato-search.js'], version: 'intuition-hybrid-5' },
 };
 
+test('the active engine served as Gato 3 is byte-identical to its rated revision 94eab0e', async () => {
+  for (const file of ['engine.js', 'controller.js', 'gato-search.js', 'gato-eval-params.js', 'gato3-weights.js']) {
+    const local = await readFile(new URL(`src/${file}`, root));
+    const rated = execFileSync('git', ['show', `94eab0e:src/${file}`], { cwd: root });
+    assert.equal(sha(local), sha(rated), `src/${file} drifted from Gato 3's rated revision`);
+  }
+});
+
 for (const [folder, snapshot] of Object.entries(SNAPSHOTS)) {
   test(`${folder} is byte-identical to its rated revision ${snapshot.revision}`, async () => {
     const present = (await readdir(new URL(`src/bots/${folder}/`, root))).sort();

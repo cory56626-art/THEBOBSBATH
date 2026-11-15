@@ -1,20 +1,20 @@
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
-test('Gato 2 shows its measured provisional rating and distinguishes unmeasured settings', async ({ page }) => {
+test('Gato 3 shows its measured provisional rating and distinguishes unmeasured settings', async ({ page }) => {
   await page.goto('./');
   await page.waitForFunction(() => window.__INTUITION__?.ready);
-  await expect(page).toHaveTitle('Gato 2 — Bobs Bath Chess');
-  await expect(page.locator('#bot-name')).toHaveText('Gato 2');
-  await expect(page.locator('#bot-rating')).toHaveText('≈2278');
-  await expect(page.locator('#bot-rating-interval')).toHaveText('1933 – unbounded');
+  await expect(page).toHaveTitle('Gato 3 — Bobs Bath Chess');
+  await expect(page.locator('#bot-name')).toHaveText('Gato 3');
+  await expect(page.locator('#bot-rating')).toHaveText('≈2334');
+  await expect(page.locator('#bot-rating-interval')).toHaveText('2087–2528');
   await expect(page.locator('#node-limit')).toHaveValue('1000000');
   await expect(page.locator('#budget')).toHaveValue('150');
   await expect(page.locator('#bot-rating-context')).toContainText('Current settings match');
-  await expect(page.locator('#top-player-detail')).toContainText('GATO 2');
+  await expect(page.locator('#top-player-detail')).toContainText('GATO 3');
   await page.locator('.bot-rating-details summary').click();
   await expect(page.locator('.bot-rating-details')).toContainText('not a FIDE, Chess.com or Lichess rating');
-  await expect(page.locator('.bot-rating-details')).toContainText('Gato 2 won all 24 games of its color-reversed match against Gato 1');
+  await expect(page.locator('.bot-rating-details')).toContainText('85.5 of 120 games against Gato 2');
   await page.locator('#budget').selectOption('500');
   await expect(page.locator('#bot-rating-context')).toContainText('These search limits are unmeasured');
   await page.locator('#budget').selectOption('150');
@@ -28,16 +28,16 @@ test('Gato 2 shows its measured provisional rating and distinguishes unmeasured 
   await page.locator('#mode').selectOption('search');
   await expect(page.locator('#bot-rating-context')).toContainText('Current settings match');
   await page.locator('#new-game').click();
-  await expect(page.locator('#bot-rating')).toHaveText('≈2278');
-  expect((await page.evaluate(() => window.__INTUITION__.bot)).name).toBe('Gato 2');
+  await expect(page.locator('#bot-rating')).toHaveText('≈2334');
+  expect((await page.evaluate(() => window.__INTUITION__.bot)).name).toBe('Gato 3');
   const downloaded = page.waitForEvent('download');
   await page.locator('#download-logs').click();
   const session = JSON.parse(await readFile(await (await downloaded).path(), 'utf8'));
-  expect(session.bot.name).toBe('Gato 2');
-  expect(session.bot.rating.estimate).toBe(2278);
-  expect(session.bot.rating.upper).toBe(null);
+  expect(session.bot.name).toBe('Gato 3');
+  expect(session.bot.rating.estimate).toBe(2334);
+  expect(session.bot.rating.upper).toBe(2528);
   expect(session.bot.rating.maxNodes).toBe(1000000);
-  expect(session.bot.previous.estimate).toBe(1650);
+  expect(session.bot.previous.estimate).toBe(2278);
   expect(session.bot.rating.mode).toBe('search');
   expect(session.bot.rating.budgetMs).toBe(150);
   expect(session.engineVersion).toBe(session.bot.engineVersion);

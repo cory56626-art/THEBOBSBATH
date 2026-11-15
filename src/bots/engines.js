@@ -9,10 +9,12 @@ import * as gato2 from './gato2/engine.js';
 import * as gato1 from './gato1/engine.js';
 
 export const ENGINES = Object.freeze({
+  // Gato 3 is the active engine; tests pin its source graph to the rated 94eab0e.
+  'gato-3': active,
   'gato-2': gato2,
   'gato-1': gato1,
 });
-/** The development engine in src/engine.js (the next Gato before release). */
+/** The engine in src/engine.js: the newest released Gato until the next one is frozen. */
 export const ACTIVE_ENGINE = active;
 
 export function engineFor(botId) {

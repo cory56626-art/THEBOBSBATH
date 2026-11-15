@@ -1,10 +1,35 @@
 # Latest selected-engine verification
 
-The selected chess engine is **Gato 2** (`intuition-hybrid-5`). Its engine entry and search/controller dependencies are byte-identical to the frozen candidate `c50e6ed` that played both official runs (source tree `98ca1cb8…`, confirmed in [ai-gato2-audit.json](ai-gato2-audit.json)). The neural weights are unchanged from Gato 1.
+The selected chess engine is **Gato 3** (`intuition-hybrid-6`). The active
+engine graph (`src/engine.js`, `controller.js`, `gato-search.js`,
+`gato-eval-params.js`, `gato3-weights.js`) is byte-identical to the frozen
+candidate `94eab0e` that played both official runs. A unit test pins it, and
+[ai-gato3-audit.json](ai-gato3-audit.json) confirms it. Gato 1 (`b1d5002`)
+and Gato 2 (`c50e6ed`) ship as byte-identical snapshots under `src/bots/`,
+also verified against Git by tests.
 
-The selected source passes **127 unit tests**, the production build, and all **15 browser tests**. The unit tests include perft against six reference positions, incremental-state verification at every perft node, evaluation parity with Gato 1 on random-game positions, SEE, forced-mate re-proof, repetition from game history, fifty-move/stalemate boundaries, exact node caps, determinism, cancellation and caller-history restoration. The browser tests include real-model offline search and the Gato 2 profile with its unbounded interval. Locally, Playwright ran against the preinstalled Chromium build.
+The release passes **137 unit tests**, the production build, and all
+**18 browser tests**. The unit tests cover:
 
-[Gato 2 selection and rating report](AI-STRENGTH-GATO2.md): 24–0 against immutable Gato 1, then 24/32 on the Stockfish 19 nominal ladder 1720–2320, published as ≈2278 with a 95% interval of 1933 – unbounded. Both reports replay-validated: **56 games, 4,948 moves**.
+- perft and incremental-state verification;
+- exact starting-weight parity with Gato 1 and Gato 2, feature-trace
+  consistency and color symmetry;
+- search-memory reuse rules, the sign-flip selection test, and bot snapshots.
+
+The browser tests include a full Gato 3 vs Gato 1 battle with PGN export,
+battle cancellation, and older bots playing with their own profiles.
+
+[Gato 3 report](AI-STRENGTH-GATO3.md) covers the 120-game selection
+(85.5–34.5 against Gato 2) and the final 96-game ladder (≈2334, 2087–2528).
+Replay validated **216 official games and 27,613 moves**.
+
+---
+
+# Gato 2 verification (previous)
+
+The Gato 2 release passed 127 unit tests, the production build and 15
+browser tests. Its selection match and ladder replay-validated 56 games and
+4,948 moves ([report](AI-STRENGTH-GATO2.md)).
 
 ---
 
