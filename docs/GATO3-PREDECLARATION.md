@@ -110,3 +110,41 @@ their own ratings.
 
 A second self-play round was started with the tuned engine and stopped
 unused. The candidate contains only the weights fitted on the first round.
+
+## Amendment 1 (committed before ladder attempt 2)
+
+**What happened.** Ladder attempt 1 completed its 96-game schedule, but two
+games reached the 400-ply cap in drawn opposite-colored-bishop endings
+before the fifty-move rule could end them:
+
+- game 17 at nominal 2200, halfmove clock 54;
+- game 31 at nominal 2800, halfmove clock 92.
+
+As declared, **attempt 1's estimate is withheld**. Its per-setting tallies
+are published ([report](ai-gato3-ladder-attempt1.json),
+[PGN](ai-gato3-ladder-attempt1.pgn)), and no rating is computed from the 94
+completed games. The cap caused this, not any score.
+
+**Attempt 2** repeats the ladder exactly, with the same engine `94eab0e`,
+Stockfish executable, settings, openings and two shards, except for
+**`--max-plies=1000`**. The runner scales the equal game clocks with the cap:
+500 × 150 ms + 1 s = 76 seconds per side. That leaves room for the
+fifty-move and repetition rules to finish such endings; still no evaluation
+adjudication is used.
+
+**Attempt 2 is the rating, whatever its result.** If it also contains an
+unfinished game, the estimate stays withheld and Gato 3 ships without a
+rating. Attempt 1 and attempt 2 games are never pooled.
+
+```sh
+SF=/path/to/stockfish19
+node scripts/rate-ai.mjs --stockfish=$SF --engine-revision=94eab0e:src/engine.js \
+  --opening-set=strength24 --elos=2200,2400 --max-nodes=1000000 --max-plies=1000 \
+  --output=docs/gato3-shards/ladder-low.json --pgn=docs/gato3-shards/ladder-low.pgn &
+node scripts/rate-ai.mjs --stockfish=$SF --engine-revision=94eab0e:src/engine.js \
+  --opening-set=strength24 --elos=2600,2800 --max-nodes=1000000 --max-plies=1000 \
+  --output=docs/gato3-shards/ladder-high.json --pgn=docs/gato3-shards/ladder-high.pgn &
+wait
+node scripts/merge-shards.mjs --planned=96 --output=docs/ai-gato3-provisional-elo.json \
+  --pgn=docs/ai-gato3-provisional-elo.pgn docs/gato3-shards/ladder-low.json docs/gato3-shards/ladder-high.json
+```
