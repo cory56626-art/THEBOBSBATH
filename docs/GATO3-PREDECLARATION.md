@@ -148,3 +148,26 @@ wait
 node scripts/merge-shards.mjs --planned=96 --output=docs/ai-gato3-provisional-elo.json \
   --pgn=docs/ai-gato3-provisional-elo.pgn docs/gato3-shards/ladder-low.json docs/gato3-shards/ladder-high.json
 ```
+
+## Amendment 2 (committed before ladder attempt 3)
+
+**What happened.** Attempt 2 was interrupted after 30 of its 96 games
+(18 in the 2200/2400 shard, 12 in the 2600/2800 shard). The cloud session's
+worker process restarted and killed both runner processes. This was an
+infrastructure failure, unrelated to any game. The schedule is incomplete, so
+**attempt 2 has no estimate**. Its 30 games are published as aborted
+([shards](gato3-shards/attempt2-aborted/)), unpooled and unrated.
+
+| Attempt 2 (aborted) | Wins | Draws | Losses |
+| --- | ---: | ---: | ---: |
+| Nominal 2200 | 10 | 0 | 8 |
+| Nominal 2600 | 2 | 1 | 9 |
+
+**Attempt 3** is identical to attempt 2: engine `94eab0e`, the same
+Stockfish executable, settings 2200–2800, all twelve `strength24` openings
+with colors reversed, 96 games, a 1,000-ply cap and two shards. The runner
+processes are detached from the session (`setsid nohup`) so a worker
+restart cannot kill them. **Attempt 3 is the rating, whatever its result**:
+if it is interrupted or contains an unfinished game, the estimate is withheld
+and Gato 3 ships without a rating. No games from attempts 1, 2 and 3 are
+pooled.
