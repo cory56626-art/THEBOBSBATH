@@ -28,14 +28,23 @@ def read(rel):
 
 
 def lighting() -> Inst:
-    """Plain, bright daytime lighting so everything is easy to see while testing."""
+    """Foggy dusk: spooky, but you can still see the shapes around you (the flashlight helps up close)."""
     L = Inst("Lighting", "Lighting")
-    L.set("TimeOfDay", "string", "14:30:00")
-    L.set("Brightness", "float", 2.5)
-    L.set("Ambient", "Color3", (90, 90, 90))
-    L.set("OutdoorAmbient", "Color3", (140, 140, 140))
+    L.set("TimeOfDay", "string", "18:55:00")
+    L.set("Brightness", "float", 1.2)
+    L.set("Ambient", "Color3", (62, 62, 72))
+    L.set("OutdoorAmbient", "Color3", (92, 96, 112))
     L.set("GlobalShadows", "bool", True)
+    L.set("EnvironmentDiffuseScale", "float", 0.4)
+    L.set("EnvironmentSpecularScale", "float", 0.6)
     L.set("FogEnd", "float", 100000)
+    L.add(Inst("Atmosphere", "Atmosphere", Density=("float", 0.4), Offset=("float", 0.12),
+               Color=("Color3", (118, 122, 136)), Decay=("Color3", (66, 68, 82)),
+               Glare=("float", 0), Haze=("float", 2.2)))
+    L.add(Inst("ColorCorrectionEffect", "Grade", Brightness=("float", 0.02), Contrast=("float", 0.12),
+               Saturation=("float", -0.35), TintColor=("Color3", (222, 228, 242)), Enabled=("bool", True)))
+    L.add(Inst("BloomEffect", "Bloom", Intensity=("float", 0.6), Size=("float", 24),
+               Threshold=("float", 1.4), Enabled=("bool", True)))
     return L
 
 
@@ -85,21 +94,24 @@ def main():
     ai = script("Script", "SkinwalkerAI", read("ServerScriptService/SkinwalkerAI/init.server.luau"))
     ai.add(script("ModuleScript", "Memory", read("ServerScriptService/SkinwalkerAI/Memory.luau")),
            script("ModuleScript", "Mover", read("ServerScriptService/SkinwalkerAI/Mover.luau")))
-    sss.add(ai)
+    sss.add(ai, script("Script", "PlayerSystems", read("ServerScriptService/PlayerSystems.server.luau")))
 
     starter_player = Inst("StarterPlayer", "StarterPlayer")
     sps = Inst("StarterPlayerScripts", "StarterPlayerScripts")
     sps.add(script("LocalScript", "SkinwalkerAnimator", read("StarterPlayerScripts/SkinwalkerAnimator.client.luau")),
-            script("LocalScript", "SkinwalkerClient", read("StarterPlayerScripts/SkinwalkerClient.client.luau")))
+            script("LocalScript", "SkinwalkerClient", read("StarterPlayerScripts/SkinwalkerClient.client.luau")),
+            script("LocalScript", "PlayerControls", read("StarterPlayerScripts/PlayerControls.client.luau")))
     starter_player.add(sps)
 
     services = [workspace, lighting(), starter_player, rs, sss]
     if "--test" in sys.argv:
         # compile-check copies of the client scripts, wrapped so requiring them doesn't run them
         ss = Inst("ServerStorage", "ServerStorage")
-        for name in ("SkinwalkerAnimator", "SkinwalkerClient"):
+        for name in ("SkinwalkerAnimator", "SkinwalkerClient", "PlayerControls"):
             src = read(f"StarterPlayerScripts/{name}.client.luau").replace("--!strict\n", "")
             ss.add(script("ModuleScript", name + "Check", "return function()\n" + src + "\nend\n"))
+        ss.add(script("ModuleScript", "PlayerSystemsCheck",
+                      "return function()\n" + read("ServerScriptService/PlayerSystems.server.luau") + "\nend\n"))
         # the test runner doesn't start place scripts, so ship a startable copy of the AI
         ai_run = script("ModuleScript", "SkinwalkerAIRun",
                         "return function()\n" + read("ServerScriptService/SkinwalkerAI/init.server.luau") + "\nend\n")

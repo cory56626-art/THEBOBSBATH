@@ -150,16 +150,16 @@ def floodlight(base, target):
 
 
 # ---------------------------------------------------------------------------- phase 2 test arena
-CONCRETE = (110, 110, 115)
-CONCRETE_DK = (85, 86, 92)
-BASEPLATE = (91, 93, 99)
+CONCRETE = (92, 92, 96)
+CONCRETE_DK = (68, 69, 74)
+BASEPLATE = (58, 56, 52)
 
 
 def build_arena(seed=7) -> Inst:
     """Plain daylight test arena with simple cover: walls, huts, pillars and crates to hide behind."""
     rng = random.Random(seed)
     arena = Inst("Model", "Arena")
-    arena.add(anchored("Baseplate", CF(v(0, -1, 0)), (600, 2, 600), BASEPLATE, "Concrete"))
+    arena.add(anchored("Baseplate", CF(v(0, -1, 0)), (600, 2, 600), BASEPLATE, "Ground"))
 
     def block(name, centre, size, color=CONCRETE, yaw=0.0):
         arena.add(anchored(name, CF.angles(0, yaw, 0, add(centre, v(0, size[1] / 2, 0))), size, color, "Concrete"))

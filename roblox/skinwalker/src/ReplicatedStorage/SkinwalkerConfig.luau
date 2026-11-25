@@ -1,12 +1,12 @@
 -- Tuning for the skinwalker's hunting brain. Players walk at 16 studs/s.
 local Config = {
-	DEBUG = true, -- show its brain state + hunger above its head (turn off for the real game)
+	DEBUG = false, -- show its brain state above its head (handy when testing)
 
 	-- movement (studs per second)
-	PROWL_SPEED = 8,
-	STALK_SPEED = 5.5,
-	CHASE_SPEED = 15.5, -- a hair slower than you: run in the open and you can outlast it...
-	DESPERATE_SPEED = 18.5, -- ...until it is starving, then it is faster than you
+	PROWL_SPEED = 10,
+	STALK_SPEED = 7,
+	CHASE_SPEED = 19.5, -- faster than walking (16), slower than sprinting (26): you have to spend stamina
+	DESPERATE_SPEED = 23, -- starving: nearly as fast as your sprint
 
 	-- senses
 	SIGHT_RANGE = 170,
@@ -14,13 +14,15 @@ local Config = {
 	HEARING_PER_SPEED = 2.6, -- you are heard within (your speed x this) studs; standing still is silent
 	WATCHED_ANGLE = 26, -- degrees: if your camera points this close to it, it knows you are looking
 	WATCH_RANGE = 170,
+	FEEL_RANGE = 9, -- it always senses prey this close, even behind it
+	FLASHLIGHT_SIGHT = 280, -- a lit flashlight can be seen from this far, from any angle within 70 studs
 
 	-- attacks
 	POUNCE_RANGE = 22,
 	POUNCE_MIN = 7,
-	POUNCE_SPEED = 46,
-	POUNCE_UP = 26,
-	ATTACK_RANGE = 6.5,
+	POUNCE_SPEED = 52,
+	POUNCE_UP = 18,
+	ATTACK_RANGE = 8, -- measured from its hips; its head/claws reach this far
 	ATTACK_DAMAGE = 28,
 	ATTACK_COOLDOWN = 1.3,
 

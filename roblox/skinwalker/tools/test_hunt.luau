@@ -14,7 +14,7 @@ local function log(...)
 end
 
 -- 1. compile checks for the client scripts
-for _, name in { "SkinwalkerAnimatorCheck", "SkinwalkerClientCheck" } do
+for _, name in { "SkinwalkerAnimatorCheck", "SkinwalkerClientCheck", "PlayerControlsCheck", "PlayerSystemsCheck" } do
 	local m = ServerStorage:FindFirstChild(name)
 	if m then
 		local ok, err = pcall(require, m)
@@ -106,6 +106,30 @@ local function makeDummy(pos: Vector3): Model
 	return m
 end
 
+-- 2a. prey standing silently right BEHIND it: it should feel it there and turn its body around
+do
+	local back = -Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z).Unit
+	local p0 = root.Position + back * 6.5
+	local sneak = makeDummy(Vector3.new(p0.X, 0, p0.Z))
+	local sh = sneak:FindFirstChildOfClass("Humanoid") :: Humanoid
+	sh.WalkSpeed = 0
+	local turned = false
+	for _ = 1, 30 do
+		task.wait(0.1)
+		local to = sneak.PrimaryPart.Position - root.Position
+		if root.CFrame.LookVector:Dot(Vector3.new(to.X, 0, to.Z).Unit) > 0.7 then
+			turned = true
+			break
+		end
+	end
+	log(("behind test: sensed+turned=%s state=%s colliders=%s"):format(tostring(turned), tostring(sw:GetAttribute("State")),
+		tostring(sw:FindFirstChild("BodyCollider") ~= nil and sw:FindFirstChild("HeadCollider") ~= nil)))
+	sneak:Destroy()
+	task.wait(3)
+	ai:SetAttribute("SetHunger", 75)
+	task.wait(0.3)
+end
+
 -- place prey 45 studs in front of the creature, walking slowly away
 local look = root.CFrame.LookVector
 local preyPos = root.Position + Vector3.new(look.X, 0, look.Z).Unit * 45
@@ -151,7 +175,7 @@ look = root.CFrame.LookVector
 local runnerStart = root.Position + Vector3.new(look.X, 0, look.Z).Unit * 25
 local runner = makeDummy(Vector3.new(runnerStart.X, 0, runnerStart.Z))
 local rh = runner:FindFirstChildOfClass("Humanoid") :: Humanoid
-rh.WalkSpeed = 22
+rh.WalkSpeed = 30
 rh:MoveTo(runner.PrimaryPart.Position + Vector3.new(look.X, 0, look.Z).Unit * 2000)
 local died = false
 local diedAt = 0

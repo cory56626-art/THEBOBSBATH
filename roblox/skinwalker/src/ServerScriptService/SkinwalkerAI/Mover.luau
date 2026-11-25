@@ -24,7 +24,7 @@ function Mover.new(model: Model, hum: Humanoid, root: BasePart)
 	self.lastPos = root.Position
 	self.stuckTime = 0
 	self.path = PathfindingService:CreatePath({
-		AgentRadius = 2.5,
+		AgentRadius = 3,
 		AgentHeight = 10,
 		AgentCanJump = true,
 		AgentCanClimb = false,
@@ -39,14 +39,15 @@ function Mover:setIgnore(list: { Instance })
 	self.params.FilterDescendantsInstances = list
 end
 
-function Mover:moveTo(goal: Vector3, speed: number)
+-- face: optional point to keep looking at while moving (e.g. backing away from prey)
+function Mover:moveTo(goal: Vector3, speed: number, face: Vector3?)
 	if not self.goal or (self.goal - goal).Magnitude > 4 then
 		self.failed = false -- a new destination gets a fresh chance
 		self.stuckTime = 0
 	end
 	self.goal = goal
 	self.speed = speed
-	self.faceTarget = nil
+	self.faceTarget = face
 end
 
 function Mover:stop(face: Vector3?)
@@ -109,22 +110,31 @@ function Mover:_compute(goal: Vector3)
 	end)
 end
 
+function Mover:_turnToward(dt: number, rate: number)
+	local root = self.root
+	local p = root.Position
+	local f = self.faceTarget :: Vector3
+	local look = Vector3.new(f.X, p.Y, f.Z)
+	if (look - p).Magnitude > 0.5 then
+		local want = CFrame.lookAt(p, look)
+		root.CFrame = root.CFrame:Lerp(want, math.min(1, dt * rate))
+	end
+end
+
 function Mover:step(dt: number)
 	local hum, root = self.hum, self.root
 	if not self.goal then
 		hum.WalkSpeed = 0
 		if self.faceTarget then
 			hum.AutoRotate = false
-			local p = root.Position
-			local look = Vector3.new(self.faceTarget.X, p.Y, self.faceTarget.Z)
-			if (look - p).Magnitude > 0.5 then
-				local want = CFrame.lookAt(p, look)
-				root.CFrame = root.CFrame:Lerp(want, math.min(1, dt * 4))
-			end
+			self:_turnToward(dt, 3)
 		end
 		return
 	end
-	hum.AutoRotate = true
+	hum.AutoRotate = self.faceTarget == nil
+	if self.faceTarget then
+		self:_turnToward(dt, 6)
+	end
 	hum.WalkSpeed = self.speed
 
 	if self:clearLine(self.goal) then

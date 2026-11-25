@@ -49,6 +49,8 @@ class Rig:
         b = part(name, CF(pos), (0.2, 0.2, 0.2), (0, 0, 0), transparency=1.0,
                  anchored=anchored, shadow=False, query=False)
         b.meta["hidden"] = True
+        b.meta["parent"] = parent
+        b.meta["joint"] = pos
         if parent is not None:
             b.add(motor("Joint", self.bones[parent], b))
         self.bones[name] = b
@@ -57,6 +59,7 @@ class Rig:
 
     # ---------------------------------------------------------- pieces
     def _attach(self, bone, p):
+        p.meta["bone"] = bone
         p.add(weld("Weld", self.bones[bone], p))
         self.model.add(p)
         self.count += 1

@@ -56,7 +56,7 @@ local root = model:WaitForChild("HumanoidRootPart") :: BasePart
 local headBone = model:WaitForChild("Head") :: BasePart
 local spawnCFrame = root.CFrame
 
-root.Size = Vector3.new(2.4, 2, 2.4)
+root.Size = Vector3.new(3, 2, 3)
 root.Transparency = 1
 root.CanCollide = true
 root.Massless = false
@@ -77,6 +77,26 @@ for _, s in { Enum.HumanoidStateType.FallingDown, Enum.HumanoidStateType.Ragdoll
 	Enum.HumanoidStateType.Seated, Enum.HumanoidStateType.Swimming, Enum.HumanoidStateType.Dead } do
 	hum:SetStateEnabled(s, false)
 end
+-- Invisible colliders around the torso and head, so its body can't pass through walls, roofs or players.
+local function collider(name: string, offset: CFrame, size: Vector3)
+	local c = Instance.new("Part")
+	c.Name = name
+	c.Size = size
+	c.Transparency = 1
+	c.CanCollide = true
+	c.CanQuery = false
+	c.CanTouch = false
+	c.Massless = true
+	c.CastShadow = false
+	c.CFrame = root.CFrame * offset
+	local w = Instance.new("WeldConstraint")
+	w.Part0, w.Part1 = root, c
+	w.Parent = c
+	c.Parent = model
+end
+collider("BodyCollider", CFrame.new(0, 2.6, -0.9), Vector3.new(3.6, 4.4, 4.4))
+collider("HeadCollider", CFrame.new(0, 3.6, -4.2), Vector3.new(1.8, 1.8, 3.2))
+
 root.Anchored = false
 pcall(function()
 	root:SetNetworkOwner(nil)
@@ -149,12 +169,14 @@ local COS_FOV = math.cos(math.rad(Config.SIGHT_FOV / 2))
 local function canSee(p: Prey): boolean
 	local e = eye()
 	local to = p.head.Position - e
-	if to.Magnitude > Config.SIGHT_RANGE then
+	-- a lit flashlight gives you away from much farther, and from any angle when close
+	local lit = p.model:GetAttribute("Flashlight") == true
+	if to.Magnitude > (if lit then Config.FLASHLIGHT_SIGHT else Config.SIGHT_RANGE) then
 		return false
 	end
 	local fwd = root.CFrame.LookVector
 	local flat = Vector3.new(to.X, 0, to.Z)
-	if flat.Magnitude > 2 and fwd:Dot(flat.Unit) < COS_FOV then
+	if not (lit and to.Magnitude < 70) and flat.Magnitude > 2 and fwd:Dot(flat.Unit) < COS_FOV then
 		return false
 	end
 	return lineClear(e, p.head.Position) or lineClear(e, p.root.Position)
@@ -397,6 +419,10 @@ local function strike(p: Prey): boolean
 end
 
 local function doPounce(p: Prey)
+	if math.abs(p.root.Position.Y - root.Position.Y) > 5 then
+		setState("Chase", "")
+		return
+	end
 	local aim = intercept(root.Position, Config.POUNCE_SPEED, p.root.Position, p.root.AssemblyLinearVelocity, 0.7)
 	local flat = Vector3.new(aim.X - root.Position.X, 0, aim.Z - root.Position.Z)
 	if flat.Magnitude < 0.5 then
@@ -487,7 +513,7 @@ local function think()
 	local heard: Prey? = nil
 	for _, p in prey do
 		local n = memory:note(p.id)
-		if canSee(p) then
+		if canSee(p) or (p.root.Position - root.Position).Magnitude < Config.FEEL_RANGE then
 			table.insert(visible, p)
 			if not n.lastSeenPos or now - n.lastSeenTime > 3 then
 				n.seen += 1
@@ -591,7 +617,7 @@ local function think()
 			local away = (root.Position - t.root.Position)
 			away = Vector3.new(away.X, 0, away.Z)
 			if dist < 11 and away.Magnitude > 0.1 then
-				mover:moveTo(root.Position + away.Unit * 6, Config.STALK_SPEED + 3)
+				mover:moveTo(root.Position + away.Unit * 6, Config.STALK_SPEED + 3, t.head.Position)
 			else
 				mover:stop(t.head.Position)
 			end
