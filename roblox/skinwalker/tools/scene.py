@@ -147,3 +147,47 @@ def floodlight(base, target):
         m.add(anchored("Cable", CF.along(pts[i], pts[i + 1]), (_dist(pts[i], pts[i + 1]), 0.1, 0.1), (15, 15, 15),
                        "SmoothPlastic", shape="Cylinder", collide=False))
     return m
+
+
+# ---------------------------------------------------------------------------- phase 2 test arena
+CONCRETE = (110, 110, 115)
+CONCRETE_DK = (85, 86, 92)
+BASEPLATE = (91, 93, 99)
+
+
+def build_arena(seed=7) -> Inst:
+    """Plain daylight test arena with simple cover: walls, huts, pillars and crates to hide behind."""
+    rng = random.Random(seed)
+    arena = Inst("Model", "Arena")
+    arena.add(anchored("Baseplate", CF(v(0, -1, 0)), (600, 2, 600), BASEPLATE, "Concrete"))
+
+    def block(name, centre, size, color=CONCRETE, yaw=0.0):
+        arena.add(anchored(name, CF.angles(0, yaw, 0, add(centre, v(0, size[1] / 2, 0))), size, color, "Concrete"))
+
+    # long walls to break line of sight
+    for x, z, yaw, ln in ((-60, 20, 0.0, 40), (55, -10, 0.5, 46), (0, 85, 1.57, 50), (-95, -60, 1.2, 36),
+                          (100, 70, -0.4, 40), (20, -95, 0.1, 44), (-130, 60, 0.0, 30), (140, -40, 1.57, 34)):
+        block("Wall", v(x, 0, z), (ln, 12, 2), CONCRETE_DK, yaw)
+    # small huts (three walls + roof) to hide in
+    for hx, hz, yaw in ((-40, -40, 0.0), (75, 35, 1.57), (-110, 110, 0.8), (120, 120, -0.6)):
+        base = CF.angles(0, yaw, 0, v(hx, 0, hz))
+        for lx, lz, sx, sz in ((0, 8, 18, 1.5), (-8.5, 0, 1.5, 16), (8.5, 0, 1.5, 16)):
+            p = base.point(v(lx, 0, lz))
+            arena.add(anchored("Hut", CF(add(p, v(0, 6, 0)), base.R), (sx, 12, sz), CONCRETE, "Concrete"))
+        arena.add(anchored("HutRoof", CF(add(base.point(v(0, 0, 0)), v(0, 12.5, 0)), base.R), (19, 1, 18),
+                           CONCRETE_DK, "Concrete"))
+    # pillars and crates
+    for _ in range(14):
+        block("Pillar", v(rng.uniform(-170, 170), 0, rng.uniform(-170, 170)), (4, 16, 4))
+    for _ in range(18):
+        s = rng.uniform(4, 7)
+        block("Crate", v(rng.uniform(-170, 170), 0, rng.uniform(-170, 170)), (s, s, s), (125, 110, 90),
+              rng.uniform(0, 3.1))
+
+    spawn = Inst("SpawnLocation", "Spawn")
+    sp = anchored("Spawn", CF.look(v(0, -0.4, -150), v(0, 0, 1)), (8, 1, 8), (60, 120, 70), "SmoothPlastic")
+    spawn.props.update(sp.props)
+    spawn.set("Neutral", "bool", True)
+    spawn.set("Duration", "int", 0)
+    arena.add(spawn)
+    return arena

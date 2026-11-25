@@ -24,11 +24,11 @@ def main():
     if version:
         path += f"/versions/{version}"
     task = curl("-X", "POST", f"{path}/luau-execution-session-tasks", "-H", "Content-Type: application/json",
-                "--data-binary", json.dumps({"script": src, "timeout": "60s"}))
+                "--data-binary", json.dumps({"script": src, "timeout": "180s"}))
     if "path" not in task:
         print(json.dumps(task, indent=2))
         sys.exit(1)
-    for _ in range(60):
+    for _ in range(100):
         time.sleep(3)
         t = curl(f"{BASE}/{task['path']}")
         if t.get("state") in ("COMPLETE", "FAILED", "CANCELLED"):

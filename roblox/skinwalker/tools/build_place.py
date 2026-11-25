@@ -14,7 +14,8 @@ sys.path.insert(0, HERE)
 from creature import build_creature  # noqa: E402
 from rbx import Inst, script, write_place  # noqa: E402
 from rbxl_binary import write_rbxl  # noqa: E402
-from scene import build_scene  # noqa: E402
+from scene import build_arena  # noqa: E402
+from rbx import CF  # noqa: E402
 
 ROOT = os.path.dirname(HERE)
 SRC = os.path.join(ROOT, "src")
@@ -27,26 +28,14 @@ def read(rel):
 
 
 def lighting() -> Inst:
+    """Plain, bright daytime lighting so everything is easy to see while testing."""
     L = Inst("Lighting", "Lighting")
-    L.set("TimeOfDay", "string", "00:00:00")
-    L.set("Brightness", "float", 0.6)
-    L.set("Ambient", "Color3", (8, 8, 12))
-    L.set("OutdoorAmbient", "Color3", (38, 42, 54))
+    L.set("TimeOfDay", "string", "14:30:00")
+    L.set("Brightness", "float", 2.5)
+    L.set("Ambient", "Color3", (90, 90, 90))
+    L.set("OutdoorAmbient", "Color3", (140, 140, 140))
     L.set("GlobalShadows", "bool", True)
-    L.set("Technology", "token", 4)  # Future
-    L.set("EnvironmentDiffuseScale", "float", 0.25)
-    L.set("EnvironmentSpecularScale", "float", 1.0)
-    L.set("ExposureCompensation", "float", 0.2)
-    L.set("FogColor", "Color3", (30, 34, 42))
-    L.set("FogStart", "float", 0)
     L.set("FogEnd", "float", 100000)
-    L.add(Inst("Atmosphere", "Atmosphere", Density=("float", 0.32), Offset=("float", 0.1),
-               Color=("Color3", (52, 60, 74)), Decay=("Color3", (24, 28, 38)),
-               Glare=("float", 0), Haze=("float", 1.6)))
-    L.add(Inst("ColorCorrectionEffect", "Grade", Brightness=("float", 0.0), Contrast=("float", 0.18),
-               Saturation=("float", -0.22), TintColor=("Color3", (225, 232, 255)), Enabled=("bool", True)))
-    L.add(Inst("BloomEffect", "Bloom", Intensity=("float", 0.8), Size=("float", 28),
-               Threshold=("float", 1.2), Enabled=("bool", True)))
     return L
 
 
@@ -68,25 +57,59 @@ def collect_preview(inst: Inst, out: list):
         collect_preview(c, out)
 
 
+def shift_model(model: Inst, d):
+    """Translate every part of a model (welds/motors store relative offsets, so they stay valid)."""
+    for c in model.children:
+        meta = getattr(c, "meta", None)
+        if meta:
+            cf = meta["cf"].translated(d)
+            meta["cf"] = cf
+            c.set("CFrame", "CoordinateFrame", cf)
+
+
 def main():
     os.makedirs(BUILD, exist_ok=True)
     creature, rig = build_creature()
-    scene = build_scene()
+    arena = build_arena()
+    # move the creature away from the spawn (rig bones are world-aligned, so shift every part)
+    shift_model(creature, (0.0, 0.0, 90.0))
 
     workspace = Inst("Workspace", "Workspace")
     workspace.set("StreamingEnabled", "bool", False)
-    workspace.add(scene, creature)
+    workspace.add(arena, creature)
+
+    rs = Inst("ReplicatedStorage", "ReplicatedStorage")
+    rs.add(script("ModuleScript", "SkinwalkerConfig", read("ReplicatedStorage/SkinwalkerConfig.luau")))
+
+    sss = Inst("ServerScriptService", "ServerScriptService")
+    ai = script("Script", "SkinwalkerAI", read("ServerScriptService/SkinwalkerAI/init.server.luau"))
+    ai.add(script("ModuleScript", "Memory", read("ServerScriptService/SkinwalkerAI/Memory.luau")),
+           script("ModuleScript", "Mover", read("ServerScriptService/SkinwalkerAI/Mover.luau")))
+    sss.add(ai)
 
     starter_player = Inst("StarterPlayer", "StarterPlayer")
     sps = Inst("StarterPlayerScripts", "StarterPlayerScripts")
-    sps.add(script("LocalScript", "SkinwalkerAnimator", read("StarterPlayerScripts/SkinwalkerAnimator.client.luau")))
+    sps.add(script("LocalScript", "SkinwalkerAnimator", read("StarterPlayerScripts/SkinwalkerAnimator.client.luau")),
+            script("LocalScript", "SkinwalkerClient", read("StarterPlayerScripts/SkinwalkerClient.client.luau")))
     starter_player.add(sps)
 
-    services = [workspace, lighting(), starter_player,
-                Inst("ReplicatedStorage", "ReplicatedStorage"), Inst("ServerScriptService", "ServerScriptService")]
+    services = [workspace, lighting(), starter_player, rs, sss]
+    if "--test" in sys.argv:
+        # compile-check copies of the client scripts, wrapped so requiring them doesn't run them
+        ss = Inst("ServerStorage", "ServerStorage")
+        for name in ("SkinwalkerAnimator", "SkinwalkerClient"):
+            src = read(f"StarterPlayerScripts/{name}.client.luau").replace("--!strict\n", "")
+            ss.add(script("ModuleScript", name + "Check", "return function()\n" + src + "\nend\n"))
+        # the test runner doesn't start place scripts, so ship a startable copy of the AI
+        ai_run = script("ModuleScript", "SkinwalkerAIRun",
+                        "return function()\n" + read("ServerScriptService/SkinwalkerAI/init.server.luau") + "\nend\n")
+        ai_run.add(script("ModuleScript", "Memory", read("ServerScriptService/SkinwalkerAI/Memory.luau")),
+                   script("ModuleScript", "Mover", read("ServerScriptService/SkinwalkerAI/Mover.luau")))
+        ss.add(ai_run)
+        services.append(ss)
     # .rbxl (binary) is what Open Cloud accepts; .rbxlx is kept for reading/diffing
     write_place(services, os.path.join(BUILD, "place.rbxlx"))
-    place = os.path.join(BUILD, "place.rbxl")
+    place = os.path.join(BUILD, "place-test.rbxl" if "--test" in sys.argv else "place.rbxl")
     write_rbxl(services, place)
 
     preview: list = []
