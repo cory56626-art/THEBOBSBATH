@@ -44,6 +44,10 @@ def main():
     for name in sorted(os.listdir(os.path.join(SRC, "ReplicatedStorage"))):
         if name.endswith(".luau"):
             rs.add(script("ModuleScript", name[:-5], read(f"ReplicatedStorage/{name}")))
+    tmpl = os.path.join(HERE, "templates.py")
+    if os.path.exists(tmpl):
+        from templates import build_templates  # noqa: E402
+        rs.add(build_templates())
     sss = Inst("ServerScriptService", "ServerScriptService")
     for name in sorted(os.listdir(os.path.join(SRC, "ServerScriptService"))):
         if name.endswith(".server.luau"):
@@ -56,6 +60,7 @@ def main():
         if name.endswith(".client.luau"):
             sps.add(script("LocalScript", name[:-12], read(f"StarterPlayerScripts/{name}")))
     sp.add(sps)
+    sp.set("CharacterWalkSpeed", "float", 14)
     services = [workspace, rs, sss, sp]
     lighting = os.path.join(HERE, "lighting.py")
     if os.path.exists(lighting):
