@@ -59,6 +59,26 @@ for r = 1, 6 do
 	check(ok, "spirit " .. r .. ": " .. tostring(err))
 end
 log("visual parts for all storms x all mutations:", partCount)
+for _, id in Data.BOSS_ORDER do
+	local ok, err = pcall(function()
+		local v = Visuals.boss(id, 1)
+		v.model.Parent = vf
+		Visuals.update(v, CFrame.new(0, 60, 0), 3)
+		log("boss", id, "parts:", #v.parts)
+	end)
+	check(ok, "boss visual " .. id .. ": " .. tostring(err))
+end
+do
+	local ok, err = pcall(function()
+		local tv = Visuals.tornado(18, Color3.new(0.5, 0.5, 0.5), 2)
+		tv.model.Parent = vf
+		Visuals.update(tv, CFrame.new(0, 40, 0), 1)
+		local lv = Visuals.spirit(4, 3, true)
+		lv.model.Parent = vf
+		Visuals.update(lv, CFrame.new(0, 40, 10), 1)
+	end)
+	check(ok, "tornado / lurker visuals: " .. tostring(err))
+end
 vf:Destroy()
 
 -- 3. the game
@@ -96,8 +116,10 @@ for root, rec in G.storms do
 		check(math.abs(root.Position.Y - 6) < 1, "storm hovers 6 above ground: " .. root.Position.Y)
 	end
 end
-log("wild storms per zone:", zoneCounts[1], zoneCounts[2], zoneCounts[3])
-check(zoneCounts[1] == 8 and zoneCounts[2] == 6 and zoneCounts[3] == 4, "zones filled")
+log("wild storms per stage:", zoneCounts[1], zoneCounts[2], zoneCounts[3], zoneCounts[4], zoneCounts[5])
+for i, S in Data.STAGES do
+	check(zoneCounts[i] == S.count, "stage " .. i .. " filled: " .. tostring(zoneCounts[i]))
+end
 
 local function fake(id, name)
 	local char = Instance.new("Model")
@@ -189,7 +211,8 @@ check(G.buy(alice, "Money") and d.money == 1, "bought money")
 check(G.interact(alice, thunder.root, "catch"), "now she can lift the rare")
 PA.chase.spawnAt = 0
 G.step()
-check(#PA.chase.bodies == 3, "golden rare: 2 + 1 spirits, got " .. #PA.chase.bodies)
+check(#PA.chase.bodies == Data.STAGES[2].spirits + Data.RARITIES[3].extraSpirits + 1,
+	"golden rare in stage 2: spirits + 1, got " .. #PA.chase.bodies)
 moveTo(alice, PA.plot.floor.Position + Vector3.new(0, 3, 10))
 G.step()
 check(thunder.state == "placed", "rare placed")
@@ -401,10 +424,10 @@ do
 	G.stepChase(P2.chase, tnow)
 	check(b1.part:GetAttribute("Charge") ~= nil and b1.chargeUntil > tnow, "spirit charges up")
 	local slow = b1.lv.VectorVelocity.Magnitude
-	check(slow < Data.RARITIES[3].chaserSpeed * 0.6 + 6, "charging spirits slow down: " .. slow)
+	check(slow < P2.chase.speed * 0.6 + 6, "charging spirits slow down: " .. slow)
 	G.stepChase(P2.chase, b1.chargeUntil + 0.01)
 	local fast = b1.lv.VectorVelocity.Magnitude
-	check(fast > Data.RARITIES[3].chaserSpeed * 1.5, "then dash fast: " .. fast)
+	check(fast > P2.chase.speed * 1.5, "then dash fast: " .. fast)
 	-- strike lands on her
 	G.strikes = {}
 	local k0 = knocks
@@ -451,6 +474,217 @@ do
 	check(G.players[alice].chase.count == 2, "blood moon adds a spirit: " .. G.players[alice].chase.count)
 	G.drop(alice, "caught")
 	G.endEvent()
+end
+
+-- ===================== Storm Titans =====================
+PD.profiles[alice].carry = 5
+PD.profiles[bob].carry = 5
+-- deeper stages: faster, more spirits
+do
+	local fire = G.spawnWild(4, nil, "Firestorm", "")
+	moveTo(alice, fire.root.Position - Vector3.new(0, 4, 0))
+	check(G.interact(alice, fire.root, "catch"), "catch in the Cinder Wastes")
+	local ch = G.players[alice].chase
+	check(ch.stage == 4 and ch.speed == Data.STAGES[4].spiritSpeed + Data.RARITIES[5].spiritBonus, "stage 4 spirit speed: "
+		.. ch.speed)
+	check(ch.count == Data.STAGES[4].spirits + Data.RARITIES[5].extraSpirits, "stage 4 spirit count: " .. ch.count)
+	G.drop(alice, "caught")
+	check((fire.root.Position - fire.origin.Position).Magnitude < 0.01, "back to its spot")
+end
+
+-- lurkers hunt anyone in their stage
+do
+	local total = 0
+	for _, S in Data.STAGES do
+		total += S.lurkers
+	end
+	check(#G.lurkers == total, "lurkers spawned: " .. #G.lurkers)
+	local L
+	for _, l in G.lurkers do
+		if l.stage == 3 then
+			L = l
+			break
+		end
+	end
+	local spot = L.b.part.Position + Vector3.new(12, -1, 0)
+	moveTo(alice, Vector3.new(spot.X, 3, spot.Z))
+	L.nextLook, L.restUntil = 0, 0
+	G.stepLurkers(os.clock())
+	check(L.target == alice and L.b.part:GetAttribute("Target") == 1, "lurker locked on")
+	L.b.part.CFrame = alice.Character.HumanoidRootPart.CFrame * CFrame.new(1, 0, 0)
+	local k0 = knocks
+	G.stepLurkers(os.clock())
+	check(knocks == k0 + 1 and L.restUntil > os.clock(), "lurker knocked her down, then backs off")
+end
+
+-- hazards: icicles, lava, geysers, roaming tornadoes
+do
+	G.strikes = {}
+	moveTo(alice, Vector3.new(-30, 3, 290))
+	G.hazardAt.icicles = 0
+	G.stepHazards(os.clock())
+	local ice
+	for _, st in G.strikes do
+		if st.kind == "icicle" then
+			ice = st
+		end
+	end
+	check(ice ~= nil, "icicle aimed in Frostbite Peaks")
+	local snow = G.spawnWild(3, nil, "IceStorm", "")
+	moveTo(alice, snow.root.Position - Vector3.new(0, 4, 0))
+	check(G.interact(alice, snow.root, "catch"), "catch an ice storm")
+	G.strikes = {}
+	G.queueStrike(alice.Character.HumanoidRootPart.Position, 0, 5, "icicle")
+	G.stepStrikes(os.clock() + 1)
+	check(G.players[alice].carrying == nil and string.find(notes[#notes], "icicle", 1, true) ~= nil, "icicle: " .. notes[#notes])
+	-- lava
+	local lava = G.lava[1]
+	check(lava ~= nil and #G.lava >= 6, "lava rivers found: " .. #G.lava)
+	moveTo(alice, lava.Position + Vector3.new(0, 3, 0))
+	G.players[alice].lastBurn = -100
+	local k0 = knocks
+	G.stepHazards(os.clock())
+	check(knocks == k0 + 1, "lava burns")
+	-- geysers
+	check(#G.geysers == 8, "geysers found: " .. #G.geysers)
+	local g = G.geysers[1]
+	moveTo(alice, g.pos + Vector3.new(1, 3, 0))
+	g.nextAt = os.clock() - 0.01
+	g.warned = true
+	k0 = knocks
+	local f0 = fxLog.geyser or 0
+	G.stepHazards(os.clock())
+	check((fxLog.geyser or 0) == f0 + 1 and knocks == k0 + 1, "geyser erupts under her")
+	-- roaming tornado
+	local sw
+	for _, x in G.sweepers do
+		if not x.mini then
+			sw = x
+			break
+		end
+	end
+	check(sw ~= nil, "roaming tornadoes in the Eye")
+	moveTo(alice, sw.b.part.Position + Vector3.new(2, -1, 0))
+	sw.hitAt = {}
+	k0 = knocks
+	G.stepHazards(os.clock())
+	check(knocks == k0 + 1, "tornado flings her")
+end
+
+-- bosses: portal, blast, phases, attacks, the shockwave, loot, timeout
+do
+	G.endEvent()
+	G.startBoss("ThunderKing")
+	local B = G.boss
+	check(B and workspace:GetAttribute("Boss") == "ThunderKing" and B.hp == B.maxHp, "thunder king awakens")
+	-- the boss portal takes you to the arena
+	local portal
+	for _, p in G.portals do
+		if p.kind == "boss" then
+			portal = p
+		end
+	end
+	check(portal ~= nil and #G.portals == 3, "portals found: " .. #G.portals)
+	moveTo(alice, portal.pos + Vector3.new(0, 3, 0))
+	G.players[alice].lastPortal = -100
+	G.stepPortals(os.clock())
+	local apos = alice.Character.HumanoidRootPart.Position
+	local def = Data.BOSSES.ThunderKing
+	check((Vector3.new(apos.X, 0, apos.Z) - def.center).Magnitude < def.radius, "portal into the arena: " .. tostring(apos))
+	-- blast the boss
+	local hp0 = B.hp
+	local aim = B.mover.part.Position - (apos + Vector3.new(0, 1.5, 0))
+	check(G.blast(alice, aim), "blast fired")
+	check(B.hp < hp0, "boss took damage: " .. hp0 - B.hp)
+	check(not G.blast(alice, aim), "blast cooldown")
+	-- attacks
+	B.nextAttack = 0
+	B.attackIndex = 0
+	G.strikes = {}
+	G.stepBoss(os.clock())
+	check(#G.strikes >= 5, "lightning rain: " .. #G.strikes)
+	B.nextAttack = 0
+	G.stepBoss(os.clock())
+	check(B.clap ~= nil, "thunderclap")
+	-- standing on the ground where the ring passes = hit; the ring is at radius 10 at this moment
+	local tc = B.clap.t0 + 10 / B.clap.speed
+	moveTo(alice, B.clap.center + Vector3.new(10, 3, 0))
+	local k0 = knocks
+	G.stepBoss(tc)
+	check(knocks == k0 + 1, "the shockwave hits players on the ground")
+	B.nextAttack = 0
+	G.stepBoss(os.clock())
+	check(#B.minions >= 2, "minions summoned: " .. #B.minions)
+	-- enrage, then defeat
+	G.damageBoss(bob, B.maxHp * 0.5 + 1)
+	check(B.phase == 2 and workspace:GetAttribute("BossPhase") == 2, "enraged at half health")
+	local before = #tells
+	G.damageBoss(alice, B.hp + 10)
+	check(G.boss == nil and workspace:GetAttribute("Boss") == "", "thunder king defeated")
+	local loot = 0
+	for i = before + 1, #tells do
+		if tells[i].kind == "Crate" and type(tells[i].a) == "table" and tells[i].a.boss == "ThunderKing" then
+			loot += 1
+			check(tells[i].a.rarity >= 4, "boss loot is Epic or better")
+		end
+	end
+	check(loot == 2, "both fighters got loot: " .. loot)
+	check(string.find(table.concat(notes, "\n"), "DEFEATED", 1, true) ~= nil, "victory announced")
+	-- the tyrant: pull, debris, twisters, and it can escape
+	G.startBoss()
+	local T = G.boss
+	check(T and T.id == "TornadoTyrant", "next boss alternates: " .. tostring(T and T.id))
+	moveTo(alice, Data.BOSSES.TornadoTyrant.center + Vector3.new(20, 3, 0))
+	T.nextAttack, T.attackIndex = 0, 0
+	G.stepBoss(os.clock())
+	check(T.mover.part:GetAttribute("PullUntil") > workspace:GetServerTimeNow(), "pull")
+	T.nextAttack = 0
+	G.strikes = {}
+	G.stepBoss(os.clock())
+	local rocks = 0
+	for _, st in G.strikes do
+		if st.kind == "rock" then
+			rocks += 1
+		end
+	end
+	check(rocks >= 1, "debris thrown: " .. rocks)
+	T.nextAttack = 0
+	G.stepBoss(os.clock())
+	check(#T.twisters >= 2, "mini twisters: " .. #T.twisters)
+	T.endsAt = workspace:GetServerTimeNow() - 1
+	G.stepBoss(os.clock())
+	check(G.boss == nil and #T.twisters == 0, "the tyrant escaped and cleaned up")
+	-- the home portal in the arena
+	local home
+	for _, p in G.portals do
+		if p.kind == "home" then
+			home = p
+		end
+	end
+	moveTo(alice, home.pos + Vector3.new(0, 3, 0))
+	G.players[alice].lastPortal = -100
+	G.stepPortals(os.clock())
+	check(G.inPlot(G.players[alice].plot, alice.Character.HumanoidRootPart.Position), "exit portal takes you home")
+end
+
+-- blasting a spirit stuns it
+do
+	local storm = G.spawnWild(2, nil, "Hailstorm", "")
+	moveTo(alice, storm.root.Position - Vector3.new(0, 4, 0))
+	G.interact(alice, storm.root, "catch")
+	local ch = G.players[alice].chase
+	ch.spawnAt = 0
+	G.step()
+	local b = ch.bodies[1]
+	local hrp = alice.Character.HumanoidRootPart
+	b.part.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 1, -15))
+	G.players[alice].lastBlast = -100
+	G.blast(alice, (b.part.Position - hrp.Position))
+	check(b.stunUntil > os.clock() and b.part:GetAttribute("Stunned") ~= nil, "spirit stunned")
+	b.part.CFrame = CFrame.new(hrp.Position + Vector3.new(1, 0, 0))
+	G.stepChase(ch, os.clock())
+	check(G.players[alice].carrying ~= nil, "a stunned spirit can't catch you")
+	G.drop(alice, "caught")
 end
 
 log("fx kinds sent:", (function()

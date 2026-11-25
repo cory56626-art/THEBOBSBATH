@@ -101,6 +101,7 @@ do n += 1; local ok = pcall(function() local i = Instance.new("UIPadding"); loca
 do n += 1; local ok = pcall(function() local i = Instance.new("UIPadding"); local _ = (i :: any).PaddingTop end) if not ok then table.insert(bad, "UIPadding.PaddingTop") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("UIScale"); local _ = (i :: any).Name end) if not ok then table.insert(bad, "UIScale.Name") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("UIScale"); local _ = (i :: any).Scale end) if not ok then table.insert(bad, "UIScale.Scale") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("UISizeConstraint"); local _ = (i :: any).MaxSize end) if not ok then table.insert(bad, "UISizeConstraint.MaxSize") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("UIStroke"); local _ = (i :: any).ApplyStrokeMode end) if not ok then table.insert(bad, "UIStroke.ApplyStrokeMode") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("UIStroke"); local _ = (i :: any).Color end) if not ok then table.insert(bad, "UIStroke.Color") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("UIStroke"); local _ = (i :: any).Thickness end) if not ok then table.insert(bad, "UIStroke.Thickness") end end

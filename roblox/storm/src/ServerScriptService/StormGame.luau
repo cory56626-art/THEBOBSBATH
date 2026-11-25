@@ -34,6 +34,7 @@ G.tell = function(_player, _kind: string, ...) end -- one player's UI moments (d
 
 local stormsFolder: Folder
 local chasersFolder: Folder
+local HIT_TEXT: { [string]: string }
 local rayParams = RaycastParams.new()
 rayParams.FilterType = Enum.RaycastFilterType.Exclude
 
@@ -218,12 +219,7 @@ function G.findSpot(zone): Vector3?
 end
 
 function G.zoneAt(z: number): number
-	for i, zone in Data.ZONES do
-		if z <= zone.zMax + 5 then
-			return i
-		end
-	end
-	return #Data.ZONES
+	return Data.stageAt(z)
 end
 
 -- a mutation for a new wild storm (weather events make theirs much more likely)
@@ -281,6 +277,7 @@ function G.spawnWild(zoneIndex: number, rarity: number?, kind: string?, mutation
 	local root = newRoot(kind :: string, mut, cf)
 	local rec = newRec(root, kind :: string, mut)
 	rec.zone = zoneIndex
+	rec.stage = zoneIndex
 	rec.origin = cf
 	rec.expires = os.clock() + G.rand:NextNumber(Data.WILD_LIFETIME[1], Data.WILD_LIFETIME[2])
 	if r >= 5 or Data.mutationMult(mut) >= 6 then
@@ -495,7 +492,101 @@ function G.lock(player): boolean
 	return true
 end
 
----------------------------------------------------------------- carrying and chasers
+---------------------------------------------------------------- spirits and other flying things
+-- every flying thing (storm spirits, lurkers, boss minions, tornadoes, bosses) is a server physics body steered by
+-- velocity; clients draw it from its tag and attributes
+function G.makeMover(name: string, size: number, tag: string, pos: Vector3, attrs: { [string]: any }?)
+	local body = Instance.new("Part")
+	body.Name = name
+	body.Shape = Enum.PartType.Ball
+	body.Size = Vector3.new(size, size, size)
+	body.Transparency = 1
+	body.CanCollide = false
+	body.CanTouch = false
+	body.CanQuery = false
+	body.CFrame = CFrame.new(pos)
+	local att = Instance.new("Attachment")
+	att.Parent = body
+	local lv = Instance.new("LinearVelocity")
+	lv.Attachment0 = att
+	lv.MaxForce = math.huge
+	lv.VelocityConstraintMode = Enum.VelocityConstraintMode.Vector
+	lv.RelativeTo = Enum.ActuatorRelativeTo.World
+	lv.VectorVelocity = Vector3.zero
+	lv.Parent = body
+	local ao = Instance.new("AlignOrientation")
+	ao.Mode = Enum.OrientationAlignmentMode.OneAttachment
+	ao.Attachment0 = att
+	ao.MaxTorque = math.huge
+	ao.Responsiveness = 40
+	ao.Parent = body
+	for k, val in attrs or {} do
+		body:SetAttribute(k, val)
+	end
+	CollectionService:AddTag(body, tag)
+	body.Parent = chasersFolder
+	pcall(function()
+		body:SetNetworkOwner(nil)
+	end)
+	return {
+		part = body,
+		lv = lv,
+		ao = ao,
+		nextDash = os.clock() + 2 + G.rand:NextNumber() * 2,
+		chargeUntil = 0,
+		dashUntil = 0,
+		stunUntil = 0,
+		immuneUntil = 0,
+	}
+end
+
+-- velocity toward the target, plus a push away from the others
+function G.steer(pos: Vector3, target: Vector3, speed: number, others: { Vector3 }?): Vector3
+	local to = target - pos
+	local v = if to.Magnitude > 0.01 then to.Unit * speed else Vector3.zero
+	if others then
+		for _, o in others do
+			local d = pos - o
+			local m = d.Magnitude
+			if m > 0.01 and m < 6 then
+				v += d.Unit * (6 - m) * 2
+			end
+		end
+	end
+	return v
+end
+
+-- steer a spirit at a target: it charges up (eyes flare) and dashes when close, and freezes while stunned.
+-- Returns the distance to the target (math.huge while stunned: stunned spirits can't catch anyone).
+function G.moveSpirit(b, target: Vector3, speed: number, others: { Vector3 }?, t: number, canDash: boolean): number
+	local pos = b.part.Position
+	local to = target - pos
+	if t < b.stunUntil then
+		b.lv.VectorVelocity = Vector3.zero
+		return math.huge
+	end
+	local S = Data.SPIRIT
+	local dist = to.Magnitude
+	if canDash and t >= b.nextDash and dist < S.range and t >= b.dashUntil then
+		b.chargeUntil = t + S.chargeTime
+		b.dashUntil = b.chargeUntil + S.dashTime
+		b.nextDash = b.dashUntil + G.rand:NextNumber(S.cooldown[1], S.cooldown[2])
+		b.part:SetAttribute("Charge", t)
+	end
+	local s = speed
+	if t < b.chargeUntil then
+		s *= S.chargeSlow
+	elseif t < b.dashUntil then
+		s *= S.dashMult
+	end
+	b.lv.VectorVelocity = G.steer(pos, target, s, others)
+	local flat = Vector3.new(to.X, 0, to.Z)
+	if flat.Magnitude > 0.1 then
+		b.ao.CFrame = CFrame.lookAt(Vector3.zero, flat)
+	end
+	return dist
+end
+
 local function endChase(chase)
 	for _, b in chase.bodies do
 		G.fx("vanish", b.part.Position)
@@ -510,20 +601,26 @@ local function endChase(chase)
 end
 G.endChase = endChase
 
+-- the deeper the stage you grabbed it in, the faster and more numerous the spirits
 local function startChase(player, rec)
 	local P = G.players[player]
 	if P.chase then
 		endChase(P.chase)
 	end
 	local ev = eventDef()
+	local stage = rec.stage or Data.stageAt(rec.root.Position.Z)
+	local S = Data.STAGES[stage]
+	local R = Data.RARITIES[rec.rarity]
 	local chase = {
 		player = player,
 		root = rec.root,
 		rarity = rec.rarity,
-		count = Data.RARITIES[rec.rarity].chasers + (if rec.mutation ~= "" then 1 else 0) + ((ev and ev.extraChasers) or 0),
+		stage = stage,
+		speed = S.spiritSpeed + R.spiritBonus,
+		count = S.spirits + R.extraSpirits + (if rec.mutation ~= "" then 1 else 0) + ((ev and ev.extraChasers) or 0),
 		bodies = {},
 		started = os.clock(),
-		spawnAt = os.clock() + 1.2,
+		spawnAt = os.clock() + 1.1,
 		spawned = false,
 		origin = rec.root.Position,
 	}
@@ -539,64 +636,15 @@ function G.spawnChasers(chase)
 	for i = 1, chase.count do
 		local a = (i / chase.count) * math.pi * 2 + G.rand:NextNumber() * 0.6
 		local pos = ground + Vector3.new(math.cos(a) * 5, 2.5, math.sin(a) * 5)
-		local body = Instance.new("Part")
-		body.Name = "StormSpirit"
-		body.Shape = Enum.PartType.Ball
-		body.Size = Vector3.new(3, 3, 3)
-		body.Transparency = 1
-		body.CanCollide = false
-		body.CanTouch = false
-		body.CanQuery = false
-		body.CFrame = CFrame.new(pos)
-		local att = Instance.new("Attachment")
-		att.Parent = body
-		local lv = Instance.new("LinearVelocity")
-		lv.Attachment0 = att
-		lv.MaxForce = math.huge
-		lv.VelocityConstraintMode = Enum.VelocityConstraintMode.Vector
-		lv.RelativeTo = Enum.ActuatorRelativeTo.World
-		lv.VectorVelocity = Vector3.zero
-		lv.Parent = body
-		local ao = Instance.new("AlignOrientation")
-		ao.Mode = Enum.OrientationAlignmentMode.OneAttachment
-		ao.Attachment0 = att
-		ao.MaxTorque = math.huge
-		ao.Responsiveness = 40
-		ao.Parent = body
-		body:SetAttribute("Rarity", chase.rarity)
-		body:SetAttribute("Target", chase.player.UserId)
-		CollectionService:AddTag(body, "Chaser")
-		body.Parent = chasersFolder
-		pcall(function()
-			body:SetNetworkOwner(nil)
-		end)
-		G.fx("rise", pos, chase.rarity)
-		table.insert(chase.bodies, {
-			part = body,
-			lv = lv,
-			ao = ao,
-			nextDash = os.clock() + 2 + G.rand:NextNumber() * 2,
-			chargeUntil = 0,
-			dashUntil = 0,
+		local b = G.makeMover("StormSpirit", 3, "Chaser", pos, {
+			Rarity = chase.rarity,
+			Target = chase.player.UserId,
+			Stage = chase.stage,
 		})
+		G.fx("rise", pos, chase.rarity)
+		table.insert(chase.bodies, b)
 	end
-	G.notify(chase.player, "Storm spirits are chasing you! RUN!", "Howl")
-end
-
--- velocity toward the target, plus a push away from the other spirits
-function G.steer(pos: Vector3, target: Vector3, speed: number, others: { Vector3 }?): Vector3
-	local to = target - pos
-	local v = if to.Magnitude > 0.01 then to.Unit * speed else Vector3.zero
-	if others then
-		for _, o in others do
-			local d = pos - o
-			local m = d.Magnitude
-			if m > 0.01 and m < 6 then
-				v += d.Unit * (6 - m) * 2
-			end
-		end
-	end
-	return v
+	G.notify(chase.player, ("%d storm spirits are chasing you! RUN!"):format(chase.count), "Howl")
 end
 
 function G.pickUp(player, rec, fromPlot)
@@ -654,7 +702,16 @@ function G.returnToWild(rec, from: Vector3)
 	G.fx("return", from, rec.origin.Position, rec.rarity)
 end
 
--- reason: "caught" (spirits), "struck" (lightning), "tagged" (owner), "died", "left", "lost"
+-- what knocked the storm out of your hands
+HIT_TEXT = {
+	caught = "The storm spirits got you!",
+	struck = "Struck by lightning!",
+	iced = "Hit by an icicle!",
+	burned = "Burned!",
+	flung = "Flung by a tornado!",
+	boss = "The boss got you!",
+}
+-- reason: one of HIT_TEXT, "tagged" (owner), "died", "left", "lost"
 function G.drop(player, reason: string, dir: Vector3?)
 	local P = G.players[player]
 	if not P or not P.carrying then
@@ -676,7 +733,7 @@ function G.drop(player, reason: string, dir: Vector3?)
 	end
 	local hrp = hrpOf(player)
 	local from = if hrp then hrp.Position + Vector3.new(0, 6.5, 0) else root.Position
-	if reason == "caught" or reason == "tagged" or reason == "struck" then
+	if HIT_TEXT[reason] or reason == "tagged" then
 		G.knock(player, dir or Vector3.new(0, 0.5, 1))
 		G.fx("bonk", from - Vector3.new(0, 4, 0))
 	end
@@ -691,10 +748,8 @@ function G.drop(player, reason: string, dir: Vector3?)
 				G.notify(player, "Tagged! The " .. what .. " flew home.", "Bonk")
 			else
 				G.notify(home.owner, "Your " .. what .. " came back home!", "Place")
-				if reason == "caught" then
-					G.notify(player, "The storm spirits got you! The " .. what .. " flew home.", "Bonk")
-				elseif reason == "struck" then
-					G.notify(player, "Struck by lightning! The " .. what .. " flew home.", "Bonk")
+				if HIT_TEXT[reason] then
+					G.notify(player, HIT_TEXT[reason] .. " The " .. what .. " flew home.", "Bonk")
 				end
 			end
 			return
@@ -702,10 +757,8 @@ function G.drop(player, reason: string, dir: Vector3?)
 	end
 	-- otherwise it flies back to where it spawned in the wild
 	G.returnToWild(rec, from)
-	if reason == "caught" then
-		G.notify(player, "The storm spirits got you! The " .. what .. " flew back to where it was.", "Bonk")
-	elseif reason == "struck" then
-		G.notify(player, "Struck by lightning! The " .. what .. " flew back to where it was.", "Bonk")
+	if HIT_TEXT[reason] then
+		G.notify(player, HIT_TEXT[reason] .. " The " .. what .. " flew back to where it was.", "Bonk")
 	end
 end
 
@@ -814,16 +867,35 @@ function G.interact(player, root: BasePart, action: string): boolean
 end
 
 ---------------------------------------------------------------- lightning and meteors
--- a strike lands `delay` seconds from now (a warning circle shows where)
-function G.queueStrike(pos: Vector3, delay: number, radius: number?)
+-- something lands `delay` seconds from now where a warning circle shows: "bolt" (lightning), "icicle", "rock"
+function G.queueStrike(pos: Vector3, delay: number, radius: number?, kind: string?)
 	local ground = G.groundAt(pos)
 	local r = radius or Data.STRIKE.radius
-	table.insert(G.strikes, { pos = ground, at = os.clock() + delay, radius = r })
-	G.fx("warn", ground, r, delay)
+	local k = kind or "bolt"
+	table.insert(G.strikes, { pos = ground, at = os.clock() + delay, radius = r, kind = k })
+	G.fx("warn", ground, r, delay, k)
+end
+
+local STRIKE_REASON = { bolt = "struck", icicle = "iced", rock = "boss" }
+-- anything that hits a player: carriers drop their storm, everyone gets knocked down
+function G.hit(player, dir: Vector3, reason: string)
+	local P = G.players[player]
+	if not P then
+		return
+	end
+	if P.carrying then
+		G.drop(player, reason, dir)
+	else
+		G.knock(player, dir)
+		local hrp = hrpOf(player)
+		if hrp then
+			G.fx("bonk", hrp.Position)
+		end
+	end
 end
 
 function G.resolveStrike(s)
-	G.fx("bolt", s.pos, s.radius)
+	G.fx(s.kind, s.pos, s.radius)
 	for player in G.players do
 		local hrp = hrpOf(player)
 		if hrp then
@@ -831,11 +903,7 @@ function G.resolveStrike(s)
 			if Vector3.new(d.X, 0, d.Z).Magnitude < s.radius and d.Y < 12 then
 				local away = Vector3.new(d.X, 0, d.Z)
 				away = if away.Magnitude > 0.1 then away.Unit else Vector3.zAxis
-				if G.players[player].carrying then
-					G.drop(player, "struck", away + Vector3.new(0, 0.7, 0))
-				else
-					G.knock(player, away + Vector3.new(0, 0.7, 0))
-				end
+				G.hit(player, away + Vector3.new(0, 0.7, 0), STRIKE_REASON[s.kind] or "struck")
 			end
 		end
 	end
@@ -914,6 +982,298 @@ function G.launchMeteor()
 	end)
 end
 
+---------------------------------------------------------------- stage dangers: lurkers, hazards, tornadoes
+G.lurkers = {} :: { any }
+G.sweepers = {} :: { any }
+G.geysers = {} :: { any }
+G.lava = {} :: { BasePart }
+G.portals = {} :: { any }
+G.hazardAt = { bolts = 0, icicles = 0 }
+
+function G.randomPointIn(stage: number): Vector3
+	local S = Data.STAGES[stage]
+	return Vector3.new(G.rand:NextNumber(Data.FIELD_X[1], Data.FIELD_X[2]), 0, G.rand:NextNumber(S.zMin, S.zMax))
+end
+
+local function playersInStage(stage: number): { any }
+	local list = {}
+	for player in G.players do
+		local hrp = hrpOf(player)
+		if hrp and Data.stageAt(hrp.Position.Z) == stage and hrp.Position.Z > 12 then
+			table.insert(list, player)
+		end
+	end
+	return list
+end
+
+-- lurkers roam their stage and hunt anyone who comes close (carriers first)
+function G.spawnLurker(stage: number)
+	local spot = G.randomPointIn(stage)
+	local b = G.makeMover("Lurker", 3.4, "Chaser", spot + Vector3.new(0, 4, 0), {
+		Rarity = math.min(6, stage + 1),
+		Lurker = true,
+		Stage = stage,
+		Target = 0,
+	})
+	local L = { b = b, stage = stage, waypoint = spot, target = nil, restUntil = 0, nextLook = 0 }
+	table.insert(G.lurkers, L)
+	return L
+end
+
+function G.stepLurkers(t: number)
+	local ev = eventDef()
+	for _, L in G.lurkers do
+		if not L.b.part.Parent then
+			continue
+		end
+		local S = Data.STAGES[L.stage]
+		local pos = L.b.part.Position
+		if t >= L.nextLook then
+			L.nextLook = t + 0.25
+			local best, bestScore = nil, math.huge
+			if t >= L.restUntil then
+				for player, P in G.players do
+					local hrp = hrpOf(player)
+					if hrp and Data.stageAt(hrp.Position.Z) == L.stage and hrp.Position.Z > 12 then
+						local d = (hrp.Position - pos).Magnitude
+						local reach = Data.SPIRIT.lurkerAggro + (if P.carrying then 30 else 0)
+						local score = d - (if P.carrying then 30 else 0)
+						if d < reach and score < bestScore then
+							best, bestScore = player, score
+						end
+					end
+				end
+			end
+			if best ~= L.target then
+				L.target = best
+				L.b.part:SetAttribute("Target", if best then best.UserId else 0)
+			end
+		end
+		local speed = S.spiritSpeed * Data.SPIRIT.lurkerSpeed * ((ev and ev.chaserSpeed) or 1)
+		local hrp = L.target and hrpOf(L.target)
+		if hrp then
+			local dist = G.moveSpirit(L.b, hrp.Position, speed, nil, t, true)
+			if dist < 3.6 then
+				local away = Vector3.new(hrp.Position.X - pos.X, 0, hrp.Position.Z - pos.Z)
+				away = if away.Magnitude > 0.1 then away.Unit else Vector3.zAxis
+				G.hit(L.target, away + Vector3.new(0, 0.6, 0), "caught")
+				L.restUntil = t + 3
+				L.target = nil
+				L.b.part:SetAttribute("Target", 0)
+			end
+		else
+			if (Vector3.new(L.waypoint.X - pos.X, 0, L.waypoint.Z - pos.Z)).Magnitude < 6 then
+				L.waypoint = G.randomPointIn(L.stage)
+			end
+			G.moveSpirit(L.b, L.waypoint + Vector3.new(0, 4, 0), speed * 0.4, nil, t, false)
+		end
+	end
+end
+
+-- roaming tornadoes in the Eye fling anyone they touch
+function G.spawnSweeper(stage: number, mini: boolean?)
+	local spot = G.randomPointIn(stage)
+	local b = G.makeMover(if mini then "Twister" else "Sweeper", if mini then 4 else 6, "Sweeper", spot + Vector3.new(0, 4, 0),
+		{ Mini = mini == true })
+	local sw = { b = b, stage = stage, waypoint = spot, mini = mini == true, hitAt = {} }
+	table.insert(G.sweepers, sw)
+	return sw
+end
+
+local function stepSweeper(sw, t: number, target: Vector3?, speed: number)
+	local pos = sw.b.part.Position
+	local goal = target
+	if not goal then
+		if Vector3.new(sw.waypoint.X - pos.X, 0, sw.waypoint.Z - pos.Z).Magnitude < 8 then
+			sw.waypoint = G.randomPointIn(sw.stage)
+		end
+		goal = sw.waypoint
+	end
+	G.moveSpirit(sw.b, Vector3.new(goal.X, 4, goal.Z), speed, nil, t, false)
+	local radius = if sw.mini then 6 else Data.HAZARDS.sweeperRadius
+	for player in G.players do
+		local hrp = hrpOf(player)
+		if hrp and t - (sw.hitAt[player] or -100) > 1.5 then
+			local d = hrp.Position - pos
+			if Vector3.new(d.X, 0, d.Z).Magnitude < radius and math.abs(d.Y) < 14 then
+				sw.hitAt[player] = t
+				local away = Vector3.new(d.X, 0, d.Z)
+				away = if away.Magnitude > 0.1 then away.Unit else Vector3.zAxis
+				G.hit(player, away * 1.2 + Vector3.new(0, 1.4, 0), "flung")
+			end
+		end
+	end
+end
+G.stepSweeper = stepSweeper
+
+function G.stepHazards(t: number)
+	local H = Data.HAZARDS
+	-- Thunder Plains: lightning out of a clear sky
+	local S2 = Data.STAGES[2]
+	if S2.ambientBolts and t >= G.hazardAt.bolts then
+		G.hazardAt.bolts = t + S2.ambientBolts * G.rand:NextNumber(0.7, 1.3)
+		local inStage = playersInStage(2)
+		local pos = G.randomPointIn(2)
+		if #inStage > 0 and G.rand:NextNumber() < 0.5 then
+			local hrp = hrpOf(inStage[G.rand:NextInteger(1, #inStage)])
+			if hrp then
+				pos = hrp.Position + Vector3.new(G.rand:NextNumber(-8, 8), 0, G.rand:NextNumber(-8, 8))
+			end
+		end
+		G.queueStrike(pos, 1.1, 6)
+	end
+	-- Frostbite Peaks: icicles fall where you're heading
+	local S3 = Data.STAGES[3]
+	if S3.icicles and t >= G.hazardAt.icicles then
+		G.hazardAt.icicles = t + S3.icicles * G.rand:NextNumber(0.7, 1.3)
+		local inStage = playersInStage(3)
+		local pos = G.randomPointIn(3)
+		if #inStage > 0 and G.rand:NextNumber() < 0.8 then
+			local hrp = hrpOf(inStage[G.rand:NextInteger(1, #inStage)])
+			if hrp then
+				local v = hrp.AssemblyLinearVelocity
+				pos = hrp.Position + Vector3.new(v.X, 0, v.Z) * H.icicleWarn * 0.8
+					+ Vector3.new(G.rand:NextNumber(-3, 3), 0, G.rand:NextNumber(-3, 3))
+			end
+		end
+		G.queueStrike(pos, H.icicleWarn, H.icicleRadius, "icicle")
+	end
+	-- Cinder Wastes: geysers erupt (after a warning), lava burns
+	for _, g in G.geysers do
+		if not g.warned and t >= g.nextAt - H.geyserWarn then
+			g.warned = true
+			G.fx("warn", g.pos, H.geyserRadius, H.geyserWarn, "geyser")
+		end
+		if t >= g.nextAt then
+			g.warned = false
+			g.nextAt = t + G.rand:NextNumber(H.geyserEvery[1], H.geyserEvery[2])
+			G.fx("geyser", g.pos)
+			for player in G.players do
+				local hrp = hrpOf(player)
+				if hrp then
+					local d = hrp.Position - g.pos
+					if Vector3.new(d.X, 0, d.Z).Magnitude < H.geyserRadius and d.Y < 14 then
+						G.hit(player, Vector3.new(d.X, 0, d.Z).Unit * 0.5 + Vector3.new(0, 1.6, 0), "burned")
+					end
+				end
+			end
+		end
+	end
+	for player, P in G.players do
+		local hrp = hrpOf(player)
+		if hrp and Data.stageAt(hrp.Position.Z) == 4 and t - (P.lastBurn or -100) > 1.2 then
+			for _, lava in G.lava do
+				local rel = lava.CFrame:PointToObjectSpace(hrp.Position)
+				if math.abs(rel.X) < lava.Size.X / 2 and math.abs(rel.Z) < lava.Size.Z / 2 and rel.Y < H.lavaHeight then
+					P.lastBurn = t
+					G.fx("burn", hrp.Position)
+					-- thrown back out of the river, the way you came
+					local back = if (hrp.AssemblyLinearVelocity.Z) > 0 then -1 else 1
+					G.hit(player, Vector3.new(0, 1.2, back), "burned")
+					break
+				end
+			end
+		end
+	end
+	-- the Eye: roaming tornadoes
+	for _, sw in G.sweepers do
+		if not sw.mini and sw.b.part.Parent then
+			stepSweeper(sw, t, nil, H.sweeperSpeed)
+		end
+	end
+end
+
+-- portals: the boss portal by the road (while a boss is awake) and the exits in the arenas
+function G.stepPortals(t: number)
+	for player, P in G.players do
+		local hrp = hrpOf(player)
+		if hrp and not P.carrying and t - (P.lastPortal or -100) > 2 then
+			for _, portal in G.portals do
+				local d = hrp.Position - portal.pos
+				if Vector3.new(d.X, 0, d.Z).Magnitude < portal.radius and d.Y < 12 then
+					local dest
+					if portal.kind == "boss" and G.boss then
+						local def = Data.BOSSES[G.boss.id]
+						local entry = def.center + Vector3.new(0, 4, -def.radius + 12)
+						dest = CFrame.lookAt(entry, def.center + Vector3.new(0, 4, 0))
+					elseif portal.kind == "home" then
+						dest = G.spawnCFrame(player)
+					end
+					if dest then
+						P.lastPortal = t
+						player.Character:PivotTo(dest)
+						G.fx("portal", portal.pos, dest.Position)
+					end
+					break
+				end
+			end
+		end
+	end
+end
+
+-- your blast: auto-aims at whatever is closest to where you're looking (bosses take damage, spirits get stunned)
+function G.blast(player, aim: Vector3): boolean
+	local P = G.players[player]
+	local d = PD.profiles[player]
+	local hrp = hrpOf(player)
+	if not P or not d or not hrp or typeof(aim) ~= "Vector3" or aim.Magnitude < 0.01 then
+		return false
+	end
+	local t = os.clock()
+	if t - (P.lastBlast or -100) < Data.BLAST.cooldown * 0.85 then
+		return false
+	end
+	P.lastBlast = t
+	aim = aim.Unit
+	local origin = hrp.Position + Vector3.new(0, 1.5, 0)
+	local best, bestKind, bestScore = nil, nil, -math.huge
+	local function consider(pos: Vector3, kind: string, ref, range: number)
+		local to = pos - origin
+		local dist = to.Magnitude
+		if dist > range or dist < 0.1 then
+			return
+		end
+		local dot = to.Unit:Dot(aim)
+		if dot < Data.BLAST.cone then
+			return
+		end
+		local score = dot * 2 - dist / range
+		if score > bestScore then
+			best, bestKind, bestScore = ref, kind, score
+		end
+	end
+	if G.boss and G.boss.mover and G.boss.mover.part.Parent then
+		consider(G.boss.mover.part.Position, "boss", G.boss, Data.BLAST.range + 50)
+	end
+	for chase in G.chases do
+		for _, b in chase.bodies do
+			consider(b.part.Position, "spirit", b, Data.BLAST.range)
+		end
+	end
+	for _, L in G.lurkers do
+		consider(L.b.part.Position, "spirit", L.b, Data.BLAST.range)
+	end
+	if G.boss then
+		for _, m in G.boss.minions do
+			consider(m.b.part.Position, "spirit", m.b, Data.BLAST.range)
+		end
+	end
+	local hitPos = origin + aim * 80
+	if bestKind == "boss" then
+		hitPos = G.boss.mover.part.Position
+		G.damageBoss(player, Data.BLAST.damage * (1 + 0.25 * d.rebirths))
+	elseif bestKind == "spirit" then
+		hitPos = best.part.Position
+		if t >= best.immuneUntil then
+			best.stunUntil = t + Data.BLAST.stun
+			best.immuneUntil = t + Data.BLAST.stun + Data.BLAST.immune
+			best.part:SetAttribute("Stunned", t)
+		end
+	end
+	G.fx("blast", origin, hitPos, player.UserId, bestKind or "")
+	return true
+end
+
 ---------------------------------------------------------------- weather events
 function G.startEvent(id: string?)
 	local pick = id
@@ -977,6 +1337,11 @@ end
 function G.stepEvent(t: number)
 	if not G.event then
 		if now() >= G.nextEventAt then
+			if G.boss then
+				G.nextEventAt = now() + 30 -- no weather events during boss fights
+				workspace:SetAttribute("NextEvent", G.nextEventAt)
+				return
+			end
 			G.startEvent()
 		end
 		return
@@ -1131,48 +1496,28 @@ function G.stepChase(chase, t: number)
 		return
 	end
 	local ev = eventDef()
-	local speed = Data.RARITIES[chase.rarity].chaserSpeed * ((ev and ev.chaserSpeed) or 1)
-	local S = Data.SPIRIT
+	local speed = chase.speed * ((ev and ev.chaserSpeed) or 1)
 	local target = hrp.Position
 	local positions = {}
 	for i, b in chase.bodies do
 		positions[i] = b.part.Position
 	end
 	for i, b in chase.bodies do
-		local pos = positions[i]
-		local to = target - pos
-		local dist = to.Magnitude
-		if dist < 3.6 then
-			G.drop(player, "caught", Vector3.new(to.X, 0, to.Z).Unit + Vector3.new(0, 0.6, 0))
-			return
-		end
-		-- close enough: stop to charge up (eyes flare), then dash
-		if t >= b.nextDash and dist < S.range and t >= b.dashUntil then
-			b.chargeUntil = t + S.chargeTime
-			b.dashUntil = b.chargeUntil + S.dashTime
-			b.nextDash = b.dashUntil + G.rand:NextNumber(S.cooldown[1], S.cooldown[2])
-			b.part:SetAttribute("Charge", t)
-		end
-		local s = speed
-		if t < b.chargeUntil then
-			s *= S.chargeSlow
-		elseif t < b.dashUntil then
-			s *= S.dashMult
-		end
 		local others = {}
 		for j, p in positions do
 			if j ~= i then
 				table.insert(others, p)
 			end
 		end
-		b.lv.VectorVelocity = G.steer(pos, target, s, others)
-		local flat = Vector3.new(to.X, 0, to.Z)
-		if flat.Magnitude > 0.1 then
-			b.ao.CFrame = CFrame.lookAt(Vector3.zero, flat)
+		local dist = G.moveSpirit(b, target, speed, others, t, true)
+		if dist < 3.6 then
+			local to = target - positions[i]
+			G.drop(player, "caught", Vector3.new(to.X, 0, to.Z).Unit + Vector3.new(0, 0.6, 0))
+			return
 		end
 	end
-	-- lightning hunts whoever carries a Rare or better storm: it aims where you're running
-	local every = Data.STRIKE.every[chase.rarity]
+	-- lightning hunts whoever carries a storm from stage 2 or deeper: it aims where you're running
+	local every = Data.STAGES[chase.stage].strikeEvery
 	if every and t >= (P.nextStrike or 0) then
 		P.nextStrike = t + every
 		local v = hrp.AssemblyLinearVelocity
@@ -1214,7 +1559,13 @@ function G.step()
 		G.stepChase(chase, t)
 	end
 	G.stepStrikes(t)
+	G.stepLurkers(t)
+	G.stepHazards(t)
+	G.stepPortals(t)
 	G.stepEvent(t)
+	if G.stepBoss then
+		G.stepBoss(t)
+	end
 	-- locked bases push intruders back out to the road
 	for _, plot in G.plots do
 		local locked = G.isLocked(plot)
@@ -1321,14 +1672,50 @@ function G.init()
 	end)
 	local world = workspace:FindFirstChild("World")
 	if world then
-		for _, p in world:GetChildren() do
+		for _, p in world:GetDescendants() do
 			local text = p.Name == "ZoneSign" and p:FindFirstChild("Text")
 			if text and p:IsA("BasePart") then
 				surfaceText(p, Enum.NormalId.Front, text.Value)
 				surfaceText(p, Enum.NormalId.Back, text.Value)
 			end
 		end
+		local geysers = world:FindFirstChild("Geysers")
+		for _, g in (if geysers then geysers:GetChildren() else {}) do
+			if g.Name == "Geyser" and g:IsA("BasePart") then
+				table.insert(G.geysers, { pos = Vector3.new(g.Position.X, 0, g.Position.Z),
+					nextAt = os.clock() + G.rand:NextNumber(2, 9), warned = false })
+			end
+		end
+		local lava = world:FindFirstChild("Lava")
+		for _, l in (if lava then lava:GetChildren() else {}) do
+			if l:IsA("BasePart") then
+				table.insert(G.lava, l)
+			end
+		end
+		local function addPortal(model: Instance?, kind: string, radius: number)
+			local core = model and model:FindFirstChild("PortalCore")
+			if core and core:IsA("BasePart") then
+				table.insert(G.portals, { kind = kind, pos = Vector3.new(core.Position.X, 0, core.Position.Z), radius = radius })
+			end
+		end
+		addPortal(world:FindFirstChild("BossPortal"), "boss", 5)
+		for _, arenaName in { "ThunderArena", "TyrantArena" } do
+			local ar = world:FindFirstChild(arenaName)
+			addPortal(ar and ar:FindFirstChild("ArenaExit"), "home", 3.8)
+		end
 	end
+	-- the things that hunt you in each stage
+	for stage, S in Data.STAGES do
+		for _ = 1, S.lurkers or 0 do
+			G.spawnLurker(stage)
+		end
+		for _ = 1, S.sweepers or 0 do
+			G.spawnSweeper(stage)
+		end
+	end
+	G.nextBossAt = now() + Data.BOSS_FIRST
+	workspace:SetAttribute("Boss", "")
+	workspace:SetAttribute("NextBoss", G.nextBossAt)
 	for i, zone in Data.ZONES do
 		for _ = 1, zone.count do
 			G.spawnWild(i)
@@ -1339,5 +1726,7 @@ function G.init()
 	workspace:SetAttribute("EventEnds", 0)
 	workspace:SetAttribute("NextEvent", G.nextEventAt)
 end
+
+require(script.Parent:WaitForChild("StormBoss"))(G, PD, { hrpOf = hrpOf, now = now, newRoot = newRoot, newRec = newRec })
 
 return G

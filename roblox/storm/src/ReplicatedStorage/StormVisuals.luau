@@ -344,6 +344,177 @@ BUILD.MeteorShower = function(vis, rng)
 	light(vis.pieces[1].part, rgb(255, 120, 60), 2.5, 18)
 end
 
+BUILD.IceStorm = function(vis, rng)
+	cloud(vis, rng, 5.8, rgb(185, 220, 245), 7)
+	fall(vis, rng, 12, { radius = 2.1, speed = 9, tilt = 0.3, size = Vector3.new(0.18, 0.9, 0.18), color = rgb(190, 240, 255),
+		material = Enum.Material.Ice, transparency = 0 })
+	for i = 1, 5 do
+		local a = i / 5 * math.pi * 2
+		addPart(vis, {
+			cf = CFrame.new(math.cos(a) * 1.5, -1, math.sin(a) * 1.3) * CFrame.Angles(math.pi, 0, rng:NextNumber(-0.3, 0.3)),
+			size = Vector3.new(0.4, rng:NextNumber(1.2, 2.2), 0.4),
+			color = rgb(170, 230, 255),
+			material = Enum.Material.Neon,
+			transparency = 0.25,
+		})
+	end
+	light(vis.pieces[1].part, rgb(150, 220, 255), 2, 14)
+end
+BUILD.Sandstorm = function(vis, rng)
+	vis.bob = 0.2
+	for ring = 1, 4 do
+		local r = 1.6 + ring * 0.55
+		for k = 1, 6 do
+			local a0 = k / 6 * math.pi * 2
+			addPart(vis, {
+				size = Vector3.new(2.2, 1.1, 1.6),
+				color = rgb(215 - ring * 8, 180 - ring * 8, 120 - ring * 6),
+				transparency = 0.2,
+				ellipsoid = true,
+				anim = function(t)
+					local a = a0 + t * (2.4 - ring * 0.3)
+					return CFrame.new(math.cos(a) * r, -1.6 + ring * 0.9, math.sin(a) * r) * CFrame.Angles(0, -a, 0)
+				end,
+			})
+		end
+	end
+	local core = puff(vis, Vector3.new(0, 0, 0), Vector3.new(2.4, 3, 2.4), rgb(200, 165, 110), 0.3)
+	emitter(core, {
+		Texture = SMOKE,
+		Color = ColorSequence.new(rgb(210, 175, 120)),
+		Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.4), NumberSequenceKeypoint.new(1, 1) }),
+		Size = NumberSequence.new(2.5),
+		Rate = 8,
+		Lifetime = NumberRange.new(1, 1.6),
+		Speed = NumberRange.new(3, 6),
+		SpreadAngle = Vector2.new(180, 40),
+		RotSpeed = NumberRange.new(-150, 150),
+	})
+end
+BUILD.Firestorm = function(vis, rng)
+	cloud(vis, rng, 6.2, rgb(90, 40, 30), 7)
+	for _ = 1, 6 do
+		local x, z = rng:NextNumber(-2.2, 2.2), rng:NextNumber(-2, 2)
+		local phase = rng:NextNumber() * 5
+		local f = addPart(vis, {
+			size = Vector3.new(0.5, 0.5, 0.5),
+			color = rgb(255, 150, 50),
+			material = Enum.Material.Neon,
+			shape = Enum.PartType.Ball,
+			anim = function(t)
+				local d = (t * 5 + phase) % 5.5
+				return CFrame.new(x, -0.6 - d, z)
+			end,
+		})
+		emitter(f, {
+			Texture = FIRE,
+			Color = ColorSequence.new(rgb(255, 170, 60), rgb(255, 60, 20)),
+			LightEmission = 1,
+			Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.8), NumberSequenceKeypoint.new(1, 0) }),
+			Rate = 20,
+			Lifetime = NumberRange.new(0.25, 0.4),
+			Speed = NumberRange.new(0, 0),
+		})
+	end
+	local core = vis.pieces[1].part
+	emitter(core, {
+		Texture = FIRE,
+		Color = ColorSequence.new(rgb(255, 140, 50), rgb(200, 40, 20)),
+		LightEmission = 0.8,
+		Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 2.5), NumberSequenceKeypoint.new(1, 0.5) }),
+		Rate = 14,
+		Lifetime = NumberRange.new(0.5, 0.9),
+		Speed = NumberRange.new(2, 4),
+		SpreadAngle = Vector2.new(60, 60),
+	})
+	light(core, rgb(255, 120, 50), 3, 18)
+end
+BUILD.Supercell = function(vis, rng)
+	vis.spin = 0.5
+	for k = 1, 4 do
+		addPart(vis, {
+			cf = CFrame.new(0, 1.6 - k * 0.35, 0) * CFrame.Angles(0, 0, math.pi / 2),
+			size = Vector3.new(0.8, 8.4 - k * 1.2, 8.4 - k * 1.2),
+			color = rgb(70 + k * 8, 78 + k * 8, 92 + k * 8),
+			shape = Enum.PartType.Cylinder,
+		})
+	end
+	puff(vis, Vector3.new(0, 2.4, 0), Vector3.new(6, 2.4, 6), rgb(100, 104, 120))
+	puff(vis, Vector3.new(0, -0.4, 0), Vector3.new(3.2, 1.6, 3.2), rgb(60, 90, 80), 0.1)
+	fall(vis, rng, 16, { radius = 2.6, speed = 12, size = Vector3.new(0.08, 0.9, 0.08), color = rgb(120, 170, 255) })
+	fall(vis, rng, 6, { radius = 2.2, speed = 13, size = Vector3.new(0.3, 0.3, 0.3), color = rgb(235, 245, 255),
+		shape = Enum.PartType.Ball, transparency = 0 })
+	bolt(vis, rng, Vector3.new(1.5, -0.6, 0.6), 6, rgb(210, 230, 255), 1.7)
+	bolt(vis, rng, Vector3.new(-1.4, -0.6, -0.8), 6, rgb(190, 255, 200), 2.3)
+	bolt(vis, rng, Vector3.new(0.2, -0.6, 1.6), 6, rgb(210, 230, 255), 2.9)
+	light(vis.pieces[1].part, rgb(150, 220, 200), 2.5, 20)
+end
+local function crown(vis, y: number, size: number, gold: Color3, gem: Color3)
+	addPart(vis, { cf = CFrame.new(0, y, 0) * CFrame.Angles(0, 0, math.pi / 2), size = Vector3.new(size * 0.35, size, size),
+		color = gold, material = Enum.Material.SmoothPlastic, shape = Enum.PartType.Cylinder })
+	for k = 1, 6 do
+		local a = k / 6 * math.pi * 2
+		addPart(vis, {
+			cf = CFrame.new(math.cos(a) * size * 0.42, y + size * 0.35, math.sin(a) * size * 0.42) * CFrame.Angles(0, -a, 0),
+			size = Vector3.new(size * 0.16, size * 0.5, size * 0.16),
+			color = gold,
+		})
+		addPart(vis, {
+			cf = CFrame.new(math.cos(a) * size * 0.42, y + size * 0.66, math.sin(a) * size * 0.42),
+			size = Vector3.new(size * 0.15, size * 0.15, size * 0.15),
+			color = gem,
+			material = Enum.Material.Neon,
+			shape = Enum.PartType.Ball,
+		})
+	end
+	for _, piece in vis.pieces do
+		if piece.part.Color == gold then
+			piece.part.Reflectance = 0.3
+		end
+	end
+end
+BUILD.CrownedTempest = function(vis, rng)
+	cloud(vis, rng, 6.6, rgb(50, 46, 70), 8)
+	crown(vis, 2.6, 2.2, rgb(255, 200, 60), rgb(140, 200, 255))
+	fall(vis, rng, 14, { radius = 2.4, speed = 11, size = Vector3.new(0.09, 0.9, 0.09), color = rgb(150, 190, 255) })
+	bolt(vis, rng, Vector3.new(1.2, -0.4, 0), 6, rgb(255, 220, 120), 1.3)
+	bolt(vis, rng, Vector3.new(-1.2, -0.4, 0.4), 6, rgb(160, 210, 255), 1.9)
+	sparkles(vis.pieces[1].part, rgb(255, 230, 140), 14)
+	light(vis.pieces[1].part, rgb(255, 210, 120), 3, 20)
+end
+BUILD.TyrantTwister = function(vis, rng)
+	vis.bob = 0.2
+	for i = 1, 9 do
+		local y = 3 - i * 0.9
+		local w = 6 - i * 0.55
+		addPart(vis, {
+			size = Vector3.new(w, 0.85, w),
+			color = rgb(110 - i * 5, 60 - i * 3, 170 - i * 6),
+			transparency = 0.2,
+			ellipsoid = true,
+			anim = function(t)
+				local sway = math.sin(t * 2.4 + i * 0.6) * (0.14 * i)
+				return CFrame.new(sway, y, math.cos(t * 2 + i) * 0.1 * i) * CFrame.Angles(0, t * (7 + i), 0)
+			end,
+		})
+	end
+	local eye = addPart(vis, { cf = CFrame.new(0, 3.4, 0), size = Vector3.new(1.4, 1.4, 1.4), color = rgb(255, 120, 255),
+		material = Enum.Material.Neon, shape = Enum.PartType.Ball })
+	light(eye, rgb(220, 120, 255), 3, 20)
+	for k = 1, 4 do
+		addPart(vis, {
+			size = Vector3.new(0.6, 0.6, 0.6),
+			color = rgb(90, 70, 80),
+			material = Enum.Material.Slate,
+			anim = function(t)
+				local a = t * 3 + k * 1.6
+				return CFrame.new(math.cos(a) * 3.2, -1 + math.sin(t * 2 + k), math.sin(a) * 3.2) * CFrame.Angles(t, t * 2, 0)
+			end,
+		})
+	end
+	sparkles(eye, rgb(255, 180, 255), 14)
+end
+
 -- mutations change how a storm looks (and Rainbow ones cycle through colours every frame)
 local function tint(vis, color: Color3, amount: number, material: Enum.Material?)
 	for _, piece in vis.pieces do
@@ -442,7 +613,7 @@ function V.storm(kind: string, mutation: string?, seed: number?)
 end
 
 ---------------------------------------------------------------- storm spirits (the chasers)
-function V.spirit(rarity: number, seed: number?)
+function V.spirit(rarity: number, seed: number?, lurker: boolean?)
 	local rng = Random.new(seed or 3)
 	local vis = newVisual("StormSpirit")
 	vis.bob = 0.4
@@ -489,6 +660,207 @@ function V.spirit(rarity: number, seed: number?)
 	end
 	bolt(vis, rng, Vector3.new(0.8, 1, 0), 2.2, eyeColor, 0.9)
 	light(vis.pieces[6].part, eyeColor, 1.5, 10)
+	if lurker then
+		-- lurkers: horns and a ragged mane
+		for _, x in { -0.7, 0.7 } do
+			addPart(vis, {
+				cf = CFrame.new(x, 1.3, -0.3) * CFrame.Angles(-0.3, 0, -x * 0.6),
+				size = Vector3.new(0.35, 1.4, 0.35),
+				color = rgb(20, 16, 28),
+			})
+		end
+		for i = 1, 4 do
+			addPart(vis, {
+				size = Vector3.new(0.5, 1.1, 0.5),
+				color = eyeColor:Lerp(rgb(0, 0, 0), 0.4),
+				material = Enum.Material.Neon,
+				transparency = 0.3,
+				anim = function(t)
+					return CFrame.new((i - 2.5) * 0.45, 1.1 + math.sin(t * 8 + i) * 0.15, 0.5) * CFrame.Angles(0.5, 0, 0)
+				end,
+			})
+		end
+	end
+	for _, piece in vis.pieces do
+		table.insert(vis.parts, piece.part)
+		table.insert(vis.cfs, CFrame.identity)
+	end
+	return vis
+end
+
+---------------------------------------------------------------- tornadoes (roaming hazards, boss twisters)
+function V.tornado(height: number, color: Color3, seed: number?)
+	local rng = Random.new(seed or 9)
+	local vis = newVisual("Tornado")
+	vis.bob = 0.3
+	local rings = 10
+	for i = 1, rings do
+		local a = i / rings
+		local w = height * (0.12 + a * 0.5)
+		local y = -height * 0.35 + a * height
+		addPart(vis, {
+			size = Vector3.new(w, height / rings * 1.1, w),
+			color = color:Lerp(rgb(240, 240, 250), a * 0.3),
+			transparency = 0.25 + a * 0.15,
+			ellipsoid = true,
+			anim = function(t)
+				local sway = math.sin(t * 1.6 + i * 0.5) * height * 0.03 * i / rings * 3
+				return CFrame.new(sway, y, math.cos(t * 1.3 + i) * height * 0.02) * CFrame.Angles(0, t * (5 + i), 0)
+			end,
+		})
+	end
+	for k = 1, 6 do
+		addPart(vis, {
+			size = Vector3.new(1, 1, 1) * rng:NextNumber(0.6, 1.4),
+			color = rgb(110, 95, 85),
+			material = Enum.Material.Slate,
+			anim = function(t)
+				local a = t * 2.5 + k
+				local r = height * 0.3
+				return CFrame.new(math.cos(a) * r, -height * 0.2 + math.sin(t + k) * height * 0.15, math.sin(a) * r)
+					* CFrame.Angles(t * 2, t, 0)
+			end,
+		})
+	end
+	local base = addPart(vis, { cf = CFrame.new(0, -height * 0.38, 0), size = Vector3.new(2, 1, 2), transparency = 1 })
+	emitter(base, {
+		Texture = SMOKE,
+		Color = ColorSequence.new(rgb(160, 140, 120)),
+		Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.4), NumberSequenceKeypoint.new(1, 1) }),
+		Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, height * 0.15), NumberSequenceKeypoint.new(1, height * 0.3) }),
+		Rate = 14,
+		Lifetime = NumberRange.new(0.8, 1.4),
+		Speed = NumberRange.new(height * 0.3, height * 0.5),
+		SpreadAngle = Vector2.new(90, 15),
+		RotSpeed = NumberRange.new(-200, 200),
+	})
+	for _, piece in vis.pieces do
+		table.insert(vis.parts, piece.part)
+		table.insert(vis.cfs, CFrame.identity)
+	end
+	return vis
+end
+
+---------------------------------------------------------------- bosses
+function V.boss(id: string, seed: number?)
+	local rng = Random.new(seed or 13)
+	local vis = newVisual(id)
+	vis.eyes = {}
+	if id == "ThunderKing" then
+		vis.bob = 1.2
+		vis.bobSpeed = 0.9
+		local dark = rgb(52, 50, 72)
+		-- the body: a mountain of storm cloud
+		puff(vis, Vector3.new(0, 0, 0), Vector3.new(24, 14, 18), dark)
+		for i = 1, 14 do
+			local a = i / 14 * math.pi * 2
+			local r = rng:NextNumber(8, 12)
+			local sz = rng:NextNumber(7, 11)
+			addPart(vis, {
+				size = Vector3.new(sz, sz * 0.75, sz),
+				color = dark:Lerp(rgb(90, 90, 120), rng:NextNumber()),
+				ellipsoid = true,
+				anim = function(t)
+					local b = a + math.sin(t * 0.6 + i) * 0.05
+					return CFrame.new(math.cos(b) * r, math.sin(t * 1.2 + i) * 0.8, math.sin(b) * r * 0.8)
+				end,
+			})
+		end
+		-- face: huge glowing eyes and a jagged mouth
+		for _, x in { -3.2, 3.2 } do
+			local e = addPart(vis, {
+				cf = CFrame.new(x, 2, -8.6) * CFrame.Angles(0, 0, -x * 0.08),
+				size = Vector3.new(3.6, 1.8, 1),
+				color = rgb(140, 200, 255),
+				material = Enum.Material.Neon,
+				ellipsoid = true,
+			})
+			e.Name = "Eye"
+			table.insert(vis.eyes, e)
+		end
+		for k = -3, 3 do
+			addPart(vis, {
+				cf = CFrame.new(k * 1.2, -2.4 + (k % 2) * 0.5, -8.4) * CFrame.Angles(0, 0, math.pi / 4),
+				size = Vector3.new(1, 1, 0.6),
+				color = rgb(200, 230, 255),
+				material = Enum.Material.Neon,
+			})
+		end
+		crown(vis, 8.5, 9, rgb(255, 200, 60), rgb(120, 190, 255))
+		-- arms of cloud with lightning crackling down from the hands
+		for _, x in { -1, 1 } do
+			for k = 1, 3 do
+				addPart(vis, {
+					size = Vector3.new(5 - k, 4 - k * 0.6, 5 - k),
+					color = dark,
+					ellipsoid = true,
+					anim = function(t)
+						local swing = math.sin(t * 1.1 + x) * 1.5
+						return CFrame.new(x * (12 + k * 3), -2 - k * 2 + swing, -2)
+					end,
+				})
+			end
+			bolt(vis, rng, Vector3.new(x * 20, -8, -2), 18, rgb(170, 210, 255), 1.3 + (x + 1) * 0.4)
+		end
+		bolt(vis, rng, Vector3.new(0, -6, 0), 20, rgb(200, 225, 255), 1.7)
+		fall(vis, rng, 26, { radius = 9, top = -6, bottom = -26, speed = 22, size = Vector3.new(0.18, 2.2, 0.18),
+			color = rgb(140, 180, 255) })
+		light(vis.pieces[1].part, rgb(140, 190, 255), 4, 60)
+	else
+		vis.bob = 0.5
+		vis.bobSpeed = 0.7
+		-- a giant funnel from the ground into the sky
+		local rings = 14
+		for i = 1, rings do
+			local a = i / rings
+			local w = 6 + a * 46
+			local y = -7 + a * 62
+			addPart(vis, {
+				size = Vector3.new(w, 62 / rings * 1.2, w),
+				color = rgb(80, 50, 120):Lerp(rgb(170, 150, 200), a),
+				transparency = 0.18 + a * 0.2,
+				ellipsoid = true,
+				anim = function(t)
+					local sway = math.sin(t * 1.1 + i * 0.4) * a * 5
+					return CFrame.new(sway, y, math.cos(t * 0.9 + i * 0.3) * a * 3) * CFrame.Angles(0, t * (3 + i * 0.4), 0)
+				end,
+			})
+		end
+		-- the glowing eye at its heart
+		local eye = addPart(vis, { cf = CFrame.new(0, 3, 0), size = Vector3.new(5, 5, 5), color = rgb(255, 110, 255),
+			material = Enum.Material.Neon, shape = Enum.PartType.Ball })
+		eye.Name = "Eye"
+		table.insert(vis.eyes, eye)
+		light(eye, rgb(220, 120, 255), 5, 70)
+		-- debris whirling around it
+		for k = 1, 12 do
+			local r = rng:NextNumber(14, 26)
+			local h = rng:NextNumber(0, 40)
+			addPart(vis, {
+				size = Vector3.new(1, 1, 1) * rng:NextNumber(1.2, 3),
+				color = rgb(100, 88, 80),
+				material = Enum.Material.Slate,
+				anim = function(t)
+					local a = t * (1.2 + k * 0.05) + k
+					return CFrame.new(math.cos(a) * r, h + math.sin(t + k) * 2, math.sin(a) * r) * CFrame.Angles(t, t * 1.5, 0)
+				end,
+			})
+		end
+		bolt(vis, rng, Vector3.new(8, 50, 0), 30, rgb(220, 150, 255), 1.4)
+		bolt(vis, rng, Vector3.new(-10, 48, 4), 30, rgb(200, 170, 255), 2.1)
+		local base = addPart(vis, { cf = CFrame.new(0, -6.5, 0), size = Vector3.new(4, 1, 4), transparency = 1 })
+		emitter(base, {
+			Texture = SMOKE,
+			Color = ColorSequence.new(rgb(140, 120, 130)),
+			Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(1, 1) }),
+			Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 8), NumberSequenceKeypoint.new(1, 18) }),
+			Rate = 18,
+			Lifetime = NumberRange.new(1, 2),
+			Speed = NumberRange.new(18, 30),
+			SpreadAngle = Vector2.new(90, 10),
+			RotSpeed = NumberRange.new(-150, 150),
+		})
+	end
 	for _, piece in vis.pieces do
 		table.insert(vis.parts, piece.part)
 		table.insert(vis.cfs, CFrame.identity)

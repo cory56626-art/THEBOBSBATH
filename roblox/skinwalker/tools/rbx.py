@@ -105,7 +105,8 @@ MATERIAL = {
     "Marble": 784, "Basalt": 788, "Slate": 800, "Concrete": 816, "Granite": 832,
     "Brick": 848, "Pebble": 864, "Rock": 896, "CorrodedMetal": 1040, "DiamondPlate": 1056,
     "Metal": 1088, "Grass": 1280, "Sand": 1296, "Fabric": 1312, "Mud": 1344, "Ground": 1360,
-    "Glass": 1568,
+    "Glass": 1568, "Snow": 1328, "Ice": 1536, "Glacier": 1552, "CrackedLava": 804, "Cobblestone": 880,
+    "Sandstone": 912, "LeafyGrass": 1284, "Asphalt": 1376, "Pavement": 836, "Limestone": 820,
 }
 SHAPE = {"Ball": 0, "Block": 1, "Cylinder": 2}
 NORMAL_ID = {"Right": 0, "Top": 1, "Back": 2, "Left": 3, "Bottom": 4, "Front": 5}

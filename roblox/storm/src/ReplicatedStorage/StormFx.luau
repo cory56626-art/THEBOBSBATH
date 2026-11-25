@@ -240,6 +240,147 @@ function Fx.impact(pos: Vector3)
 	Debris:AddItem(crater, 6.1)
 end
 
+-- a ring of energy that rolls outward along the ground (jump over it!)
+function Fx.shockwave(center: Vector3, speed: number, maxR: number, delay: number, color: Color3?)
+	local c = color or Color3.fromRGB(140, 200, 255)
+	local n = 40
+	local segs = {}
+	for i = 1, n do
+		segs[i] = part({ Color = c, Transparency = 1, Size = Vector3.new(1.2, 3, 3) })
+	end
+	local start = os.clock() + delay
+	local conn
+	conn = RunService.Heartbeat:Connect(function()
+		local t = os.clock()
+		if t < start then
+			return
+		end
+		local r = (t - start) * speed
+		if r > maxR then
+			conn:Disconnect()
+			for _, sgm in segs do
+				sgm:Destroy()
+			end
+			return
+		end
+		local len = 2 * math.pi * math.max(r, 1) / n + 0.3
+		for i, sgm in segs do
+			local a = i / n * math.pi * 2
+			sgm.Size = Vector3.new(1.2, 3, len)
+			sgm.CFrame = CFrame.new(center + Vector3.new(math.cos(a) * r, 1.5, math.sin(a) * r)) * CFrame.Angles(0, -a, 0)
+			sgm.Transparency = 0.15 + 0.6 * (r / maxR)
+		end
+	end)
+end
+
+-- an icicle drops out of the sky and shatters
+function Fx.icicle(pos: Vector3)
+	local spike = part({ Color = Color3.fromRGB(190, 240, 255), Material = Enum.Material.Ice, Size = Vector3.new(1.4, 6, 1.4),
+		CFrame = CFrame.new(pos + Vector3.new(0, 40, 0)), Transparency = 0.1 })
+	tween(spike, 0.25, { CFrame = CFrame.new(pos + Vector3.new(0, 3, 0)) }, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+	task.delay(0.25, function()
+		spike:Destroy()
+		Fx.burst(pos + Vector3.new(0, 1, 0), Color3.fromRGB(210, 245, 255), 40, 24, 1)
+		Fx.ring(pos, Color3.fromRGB(170, 230, 255), 6, 0.4)
+		for _ = 1, 6 do
+			local shard = Instance.new("Part")
+			shard.Size = Vector3.new(0.4, 1, 0.4)
+			shard.Color = Color3.fromRGB(200, 240, 255)
+			shard.Material = Enum.Material.Ice
+			shard.CanQuery, shard.CanTouch = false, false
+			shard.CFrame = CFrame.new(pos + Vector3.new(0, 1.5, 0))
+			shard.Parent = folder
+			shard.AssemblyLinearVelocity = Vector3.new(math.random(-20, 20), math.random(15, 30), math.random(-20, 20))
+			Debris:AddItem(shard, 1.5)
+		end
+	end)
+end
+
+-- a geyser blasts a column of fire
+function Fx.geyser(pos: Vector3)
+	Fx.pillar(pos, Color3.fromRGB(255, 120, 40), 34, 7, 1)
+	Fx.burst(pos + Vector3.new(0, 4, 0), Color3.fromRGB(255, 150, 60), 50, 36, 1.6)
+	local p = part({ Position = pos + Vector3.new(0, 2, 0), Transparency = 1 })
+	emitter(p, {
+		Texture = FIRE,
+		Color = ColorSequence.new(Color3.fromRGB(255, 180, 70), Color3.fromRGB(255, 60, 20)),
+		LightEmission = 1,
+		Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 5), NumberSequenceKeypoint.new(1, 1) }),
+		Lifetime = NumberRange.new(0.6, 1),
+		Speed = NumberRange.new(30, 45),
+		SpreadAngle = Vector2.new(10, 10),
+		EmissionDirection = Enum.NormalId.Top,
+	}):Emit(40)
+	emitter(p, {
+		Texture = SMOKE,
+		Color = ColorSequence.new(Color3.fromRGB(70, 60, 60)),
+		Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(1, 1) }),
+		Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 4), NumberSequenceKeypoint.new(1, 10) }),
+		Lifetime = NumberRange.new(1.5, 2.5),
+		Speed = NumberRange.new(15, 25),
+		SpreadAngle = Vector2.new(15, 15),
+		EmissionDirection = Enum.NormalId.Top,
+	}):Emit(15)
+	Debris:AddItem(p, 3)
+end
+
+-- a hand-sized blast of fire (lava, burns)
+function Fx.burn(pos: Vector3)
+	Fx.burst(pos, Color3.fromRGB(255, 140, 50), 30, 18, 1.2)
+	local p = part({ Position = pos, Transparency = 1 })
+	emitter(p, {
+		Texture = FIRE,
+		Color = ColorSequence.new(Color3.fromRGB(255, 160, 60), Color3.fromRGB(255, 50, 20)),
+		LightEmission = 1,
+		Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 3), NumberSequenceKeypoint.new(1, 0) }),
+		Lifetime = NumberRange.new(0.4, 0.7),
+		Speed = NumberRange.new(6, 12),
+		SpreadAngle = Vector2.new(40, 40),
+		EmissionDirection = Enum.NormalId.Top,
+	}):Emit(30)
+	Debris:AddItem(p, 1.5)
+end
+
+-- a boulder hurled through the air
+function Fx.throw(from: Vector3, to: Vector3, time: number)
+	local rock = part({ Shape = Enum.PartType.Ball, Color = Color3.fromRGB(110, 90, 80), Material = Enum.Material.Slate,
+		Size = Vector3.new(3, 3, 3), CFrame = CFrame.new(from) })
+	Fx.trail(rock, Color3.fromRGB(160, 140, 130), 2.5)
+	local t0 = os.clock()
+	local conn
+	conn = RunService.Heartbeat:Connect(function()
+		local a = math.clamp((os.clock() - t0) / time, 0, 1)
+		local p = from:Lerp(to, a) + Vector3.new(0, math.sin(a * math.pi) * 25, 0)
+		rock.CFrame = CFrame.new(p) * CFrame.Angles(a * 8, a * 5, 0)
+		if a >= 1 then
+			conn:Disconnect()
+			rock:Destroy()
+		end
+	end)
+end
+
+-- a small impact (debris landing)
+function Fx.thud(pos: Vector3, color: Color3?)
+	local c = color or Color3.fromRGB(150, 130, 110)
+	Fx.burst(pos + Vector3.new(0, 1, 0), c, 30, 20, 1.2)
+	Fx.ring(pos, c, 8, 0.4)
+end
+
+-- your blast: a bright orb that streaks to its target
+function Fx.projectile(from: Vector3, to: Vector3, color: Color3, hit: boolean)
+	local orb = part({ Shape = Enum.PartType.Ball, Color = color, Size = Vector3.new(1.4, 1.4, 1.4), CFrame = CFrame.new(from) })
+	Fx.trail(orb, color, 1.2)
+	local time = math.clamp((to - from).Magnitude / 220, 0.06, 0.4)
+	tween(orb, time, { CFrame = CFrame.new(to) }, Enum.EasingStyle.Linear)
+	Debris:AddItem(orb, time + 0.05)
+	task.delay(time, function()
+		Fx.burst(to, color, if hit then 30 else 10, if hit then 20 else 8, 1)
+		if hit then
+			Fx.ring(to, color, 4, 0.3)
+		end
+	end)
+end
+
 -- coins that pop out and bounce
 function Fx.coins(pos: Vector3, n: number?)
 	for _ = 1, n or 10 do

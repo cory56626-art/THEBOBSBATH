@@ -245,13 +245,110 @@ def coin():
     return S.norm(mix([(0, bell(3200, 0.3)), (0.05, bell(4300, 0.35) * 0.8)], 0.45), 0.6)
 
 
+def blast():
+    t = tt(0.35)
+    zap = sweep(1800, 400, 0.35, "square") * np.exp(-t / 0.08) * 0.5
+    hiss = S.hp(rng.standard_normal(len(t)), 3000) * np.exp(-t / 0.05) * 0.5
+    return S.norm(zap + hiss + sweep(900, 200, 0.35) * np.exp(-t / 0.12), 0.7)
+
+
+def stun():
+    t = tt(0.6)
+    x = sum(np.sin(2 * np.pi * f * t) * np.exp(-t / 0.25) for f in (1800, 2400, 3100)) * (0.6 + 0.4 * np.sin(2 * np.pi * 18 * t))
+    return S.norm(x, 0.55)
+
+
+def crack():
+    t = tt(1.2)
+    creak = S.bp(rng.standard_normal(len(t)), 1500, 5000) * (rng.random(len(t)) < 0.01) * 4
+    tone_ = sweep(300, 900, 1.2) * 0.2 * np.minimum(1, t / 0.3)
+    return S.norm(creak * np.minimum(1, t / 1.2) + tone_, 0.5)
+
+
+def shatter():
+    t = tt(0.8)
+    x = S.hp(rng.standard_normal(len(t)), 2500) * np.exp(-t / 0.12)
+    chimes = mix([(0.02 * k, bell(rng.uniform(2500, 6000), 0.5) * 0.15) for k in range(6)], 0.8)
+    return S.norm(x + chimes[: len(x)], 0.8)
+
+
+def rumble():
+    t = tt(1.3)
+    x = S.lp(rng.standard_normal(len(t)), 120) * np.minimum(1, t / 1.0) * (1 + 0.3 * np.sin(2 * np.pi * 7 * t))
+    return S.norm(x, 0.7)
+
+
+def geyser_():
+    t = tt(1.6)
+    roar = S.bp(rng.standard_normal(len(t)), 200, 2500) * np.exp(-t / 0.7) * np.minimum(1, t / 0.05)
+    low = S.lp(rng.standard_normal(len(t)), 90) * np.exp(-t / 0.5)
+    return S.norm(S.norm(roar) + S.norm(low) * 0.7, 0.9)
+
+
+def burn():
+    t = tt(0.8)
+    sizzle = S.hp(rng.standard_normal(len(t)), 4000) * np.exp(-t / 0.3) * (0.5 + 0.5 * (rng.random(len(t)) < 0.3))
+    whoomp = S.lp(rng.standard_normal(len(t)), 400) * np.exp(-t / 0.15)
+    return S.norm(sizzle + whoomp, 0.75)
+
+
+def clap():
+    t = tt(2.0)
+    crack_ = S.hp(rng.standard_normal(len(t)), 1500) * np.exp(-t / 0.04)
+    boom_ = np.sin(2 * np.pi * (60 * np.exp(-t / 0.4) + 25) * t) * np.exp(-t / 0.6)
+    roll = S.lp(rng.standard_normal(len(t)), 200) * np.exp(-t / 0.9)
+    return S.norm(S.reverb(S.norm(crack_) * 0.8 + boom_ + S.norm(roll) * 0.6, 1.4, 0.3, 1800), 0.95)
+
+
+def roar():
+    sec = 1.4
+    t = tt(sec)
+    f = 70 + 30 * np.sin(np.pi * t / sec)
+    growl = S.saw(f * (1 + 0.04 * np.sin(2 * np.pi * 23 * t)))
+    breath = S.bp(rng.standard_normal(len(t)), 300, 1500)
+    env = np.sin(np.pi * t / sec) ** 0.8
+    return S.norm(S.reverb(S.lp(S.tanh_drive(growl * 0.7 + breath * 0.5, 2), 1800) * env, 1.0, 0.3), 0.85)
+
+
+def pull():
+    return S.norm(mix([(0, whoosh(2.6, 1200, 200, 0.8)), (0, rumble()[: int(2.6 * SR)] * 0.5)], 2.7), 0.8)
+
+
+def portal_():
+    t = tt(0.9)
+    x = sweep(200, 1600, 0.9) * (0.6 + 0.4 * np.sin(2 * np.pi * 30 * t)) * np.sin(np.pi * t / 0.9)
+    return S.norm(S.reverb(x + whoosh(0.9, 400, 3000, 0.5), 0.8, 0.3), 0.75)
+
+
+def boss_horn():
+    def horn(f, sec):
+        t = tt(sec)
+        x = S.saw(np.full(len(t), f)) + 0.6 * S.saw(np.full(len(t), f * 1.5)) + 0.4 * S.saw(np.full(len(t), f * 0.5))
+        return S.lp(x, 1400) * np.minimum(1, t / 0.15) * np.exp(-np.maximum(0, t - sec * 0.6) / 0.3)
+    return S.norm(S.reverb(mix([(0, horn(110, 1.0)), (0.9, horn(104, 1.4)), (0, rumble() * 0.6)], 2.6), 1.6, 0.3), 0.9)
+
+
+def victory():
+    seq = [(0, "C5"), (0.15, "E5"), (0.3, "G5"), (0.45, "C6"), (0.7, "G5"), (0.85, "C6")]
+    parts = [(st, bell(note(n), 0.9)) for st, n in seq]
+    chord = [(1.0, bell(note("C6"), 2.0)), (1.0, bell(note("E6"), 2.0) * 0.8), (1.0, bell(note("G6"), 2.0) * 0.7)]
+    return S.norm(S.reverb(mix(parts + chord, 3.2), 1.4, 0.25), 0.9)
+
+
+def stage():
+    return S.norm(mix([(0, whoosh(1.2, 200, 1500, 0.6)), (0.3, bell(note("G5"), 1.2) * 0.6), (0.45, bell(note("D6"), 1.2) * 0.5)], 1.8), 0.75)
+
+
 def main():
     items = [("Catch", catch()), ("Place", place()), ("Steal", steal()), ("Alarm", alarm()), ("Bonk", bonk()),
              ("Howl", howl()), ("Upgrade", upgrade()), ("Announce", announce()), ("Lock", lock()), ("Zap", zap()),
              ("Sell", sell()), ("Error", error()), ("Thunder", thunder()), ("Dash", dash()), ("Launch", launch()),
              ("Warn", warn()), ("Charge", charge()), ("Mutate", mutate()), ("Discover", discover()), ("Tick", tick()),
              ("CrateWin", crate_win()), ("Rebirth", rebirth()), ("Event", event()), ("Boom", boom()),
-             ("Whistle", whistle()), ("Coin", coin())]
+             ("Whistle", whistle()), ("Coin", coin()), ("Blast", blast()), ("Stun", stun()), ("Crack", crack()),
+             ("Shatter", shatter()), ("Rumble", rumble()), ("Geyser", geyser_()), ("Burn", burn()), ("Clap", clap()),
+             ("Roar", roar()), ("Pull", pull()), ("Portal", portal_()), ("Boss", boss_horn()), ("Victory", victory()),
+             ("Stage", stage())]
     regions = S.sheet("storm", items)
     with open(os.path.join(S.OUT, "regions.json"), "w") as fh:
         json.dump({"Storm": regions}, fh, indent=1)

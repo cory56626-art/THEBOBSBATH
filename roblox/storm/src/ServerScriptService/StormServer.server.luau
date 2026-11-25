@@ -27,6 +27,7 @@ local Tell = remote("Tell") -- one player's UI moments
 local OpenCrate = remote("OpenCrate")
 local Rebirth = remote("Rebirth")
 local Move = remote("Move") -- a player dashed / launched (so others see the effect)
+local Blast = remote("Blast") -- a player blasted (aim direction); the server picks the target
 
 G.notify = function(player, text, sound)
 	if PD.isPlayer(player) then
@@ -49,6 +50,15 @@ G.tell = function(player, kind, ...)
 		Tell:FireClient(player, kind, ...)
 	end
 end
+
+-- real clouds in the sky (clients thicken them in the deeper stages)
+pcall(function()
+	local clouds = Instance.new("Clouds")
+	clouds.Cover = 0.55
+	clouds.Density = 0.45
+	clouds.Color = Color3.fromRGB(240, 242, 248)
+	clouds.Parent = workspace.Terrain
+end)
 
 remotes.Parent = ReplicatedStorage -- before init: spawning storms already sends effects
 G.init()
@@ -139,6 +149,11 @@ end)
 Rebirth.OnServerEvent:Connect(function(player)
 	if throttle(player, 1) then
 		G.rebirth(player)
+	end
+end)
+Blast.OnServerEvent:Connect(function(player, aim)
+	if typeof(aim) == "Vector3" then
+		G.blast(player, aim)
 	end
 end)
 local lastMove: { [Player]: number } = {}

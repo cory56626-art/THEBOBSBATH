@@ -29,6 +29,7 @@ local Tell = remotes:WaitForChild("Tell") :: RemoteEvent
 local OpenCrate = remotes:WaitForChild("OpenCrate") :: RemoteEvent
 local RebirthRemote = remotes:WaitForChild("Rebirth") :: RemoteEvent
 local Move = remotes:WaitForChild("Move") :: RemoteEvent
+local BlastRemote = remotes:WaitForChild("Blast") :: RemoteEvent
 
 local visFolder = Instance.new("Folder")
 visFolder.Name = "StormVisuals"
@@ -176,8 +177,42 @@ local dashFill = make("Frame", { AnchorPoint = Vector2.new(0.5, 1), Position = U
 	BackgroundColor3 = Color3.fromRGB(20, 20, 40), BackgroundTransparency = 0.45, ZIndex = 2 }, dashButton)
 corner(dashFill, 42)
 
+-- blast button (also F or left-click on a computer): aims where your camera looks
+local blastButton = make("TextButton", { AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -296, 1, -40),
+	Size = UDim2.new(0, 84, 0, 84), BackgroundColor3 = Color3.fromRGB(255, 110, 70), Font = Enum.Font.FredokaOne,
+	TextSize = 19, TextColor3 = Color3.new(1, 1, 1), Text = "BLAST", AutoButtonColor = true }, gui)
+corner(blastButton, 42)
+stroke(blastButton, Color3.fromRGB(20, 20, 40), 3)
+textStroke(blastButton)
+local blastFill = make("Frame", { AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.fromScale(0.5, 1), Size = UDim2.fromScale(1, 0),
+	BackgroundColor3 = Color3.fromRGB(20, 20, 40), BackgroundTransparency = 0.45, ZIndex = 2 }, blastButton)
+corner(blastFill, 42)
+
+-- the boss bar
+local bossBar = make("Frame", { AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 94), Size = UDim2.new(0, 440, 0, 52),
+	BackgroundColor3 = Color3.fromRGB(25, 20, 35), BackgroundTransparency = 0.1, Visible = false }, gui)
+make("UISizeConstraint", { MaxSize = Vector2.new(440, 52) }, bossBar)
+corner(bossBar, 12)
+local bossStroke = make("UIStroke", { Color = Color3.fromRGB(255, 80, 80), Thickness = 2 }, bossBar)
+local bossName = make("TextLabel", { Position = UDim2.new(0, 10, 0, 2), Size = UDim2.new(1, -20, 0, 22), BackgroundTransparency = 1,
+	Font = Enum.Font.FredokaOne, TextSize = 19, TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.new(1, 1, 1),
+	Text = "" }, bossBar)
+textStroke(bossName)
+local bossTime = make("TextLabel", { Position = UDim2.new(0, 10, 0, 2), Size = UDim2.new(1, -20, 0, 22), BackgroundTransparency = 1,
+	Font = Enum.Font.GothamBold, TextSize = 15, TextXAlignment = Enum.TextXAlignment.Right, TextColor3 = Color3.fromRGB(255, 220, 160),
+	Text = "" }, bossBar)
+local bossBack = make("Frame", { Position = UDim2.new(0, 10, 0, 28), Size = UDim2.new(1, -20, 0, 16),
+	BackgroundColor3 = Color3.fromRGB(60, 20, 30) }, bossBar)
+corner(bossBack, 8)
+local bossFill = make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.fromRGB(255, 70, 70) }, bossBack)
+corner(bossFill, 8)
+local bossHpText = make("TextLabel", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Font = Enum.Font.GothamBold,
+	TextSize = 13, TextColor3 = Color3.new(1, 1, 1), Text = "", ZIndex = 3 }, bossBack)
+textStroke(bossHpText)
+local shownBossHp = 1
+
 -- toasts
-local toastHolder = make("Frame", { AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 94),
+local toastHolder = make("Frame", { AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 152),
 	Size = UDim2.new(0, 560, 0, 200), BackgroundTransparency = 1 }, gui)
 make("UIListLayout", { Padding = UDim.new(0, 6), HorizontalAlignment = Enum.HorizontalAlignment.Center }, toastHolder)
 local function toast(text: string, color: Color3?)
@@ -657,9 +692,15 @@ local function addSpirit(body: Instance)
 		return
 	end
 	seedCounter += 1
-	local vis = Visuals.spirit(body:GetAttribute("Rarity") or 1, seedCounter)
+	local vis = Visuals.spirit(body:GetAttribute("Rarity") or 1, seedCounter, body:GetAttribute("Lurker") == true)
 	vis.model.Parent = visFolder
 	vis.chargeAt = -10
+	vis.stunAt = -10
+	body:GetAttributeChangedSignal("Stunned"):Connect(function()
+		vis.stunAt = os.clock()
+		Fx.burst(body.Position, Color3.fromRGB(150, 230, 255), 25, 10)
+		playSound("Stun", 0.7, body.Position)
+	end)
 	spirits[body] = vis
 	playSound("Howl", 0.6, body.Position)
 	body:GetAttributeChangedSignal("Charge"):Connect(function()
@@ -678,6 +719,51 @@ CollectionService:GetInstanceAddedSignal("Chaser"):Connect(addSpirit)
 CollectionService:GetInstanceRemovedSignal("Chaser"):Connect(removeSpirit)
 for _, b in CollectionService:GetTagged("Chaser") do
 	addSpirit(b)
+end
+
+-- roaming tornadoes and boss twisters
+local tornadoes: { [BasePart]: any } = {}
+local function addTornado(body: Instance)
+	if body:IsA("BasePart") and not tornadoes[body] then
+		seedCounter += 1
+		local mini = body:GetAttribute("Mini") == true
+		local vis = Visuals.tornado(if mini then 10 else 18, if mini then Color3.fromRGB(150, 90, 210) else Color3.fromRGB(120, 110, 125),
+			seedCounter)
+		vis.model.Parent = visFolder
+		tornadoes[body] = vis
+	end
+end
+CollectionService:GetInstanceAddedSignal("Sweeper"):Connect(addTornado)
+CollectionService:GetInstanceRemovedSignal("Sweeper"):Connect(function(body)
+	local vis = tornadoes[body :: BasePart]
+	if vis then
+		tornadoes[body :: BasePart] = nil
+		vis.model:Destroy()
+	end
+end)
+for _, b in CollectionService:GetTagged("Sweeper") do
+	addTornado(b)
+end
+-- bosses
+local bosses: { [BasePart]: any } = {}
+local function addBoss(body: Instance)
+	if not body:IsA("BasePart") or bosses[body] then
+		return
+	end
+	local vis = Visuals.boss(body:GetAttribute("BossId") or "ThunderKing", 7)
+	vis.model.Parent = visFolder
+	bosses[body] = vis
+end
+CollectionService:GetInstanceAddedSignal("Boss"):Connect(addBoss)
+CollectionService:GetInstanceRemovedSignal("Boss"):Connect(function(body)
+	local vis = bosses[body :: BasePart]
+	if vis then
+		bosses[body :: BasePart] = nil
+		vis.model:Destroy()
+	end
+end)
+for _, b in CollectionService:GetTagged("Boss") do
+	addBoss(b)
 end
 
 ---------------------------------------------------------------- world effects from the server
@@ -759,11 +845,131 @@ end
 FX.vanish = function(pos: Vector3)
 	Fx.burst(pos, Color3.fromRGB(90, 70, 130), 18, 10)
 end
-FX.warn = function(pos: Vector3, radius: number, delay: number)
-	Fx.warn(pos, radius, delay)
+local WARN_COLOR = {
+	bolt = Color3.fromRGB(255, 50, 60),
+	icicle = Color3.fromRGB(110, 210, 255),
+	geyser = Color3.fromRGB(255, 140, 40),
+	rock = Color3.fromRGB(210, 150, 90),
+}
+local WARN_SOUND = { bolt = "Warn", icicle = "Crack", geyser = "Rumble", rock = "Warn" }
+FX.warn = function(pos: Vector3, radius: number, delay: number, kind: string?)
+	local k = kind or "bolt"
+	Fx.warn(pos, radius, delay, WARN_COLOR[k])
 	if nearMe(pos, 50) > 0 then
-		playSound("Warn", 0.55, pos)
+		playSound(WARN_SOUND[k] or "Warn", 0.55, pos)
 	end
+end
+FX.icicle = function(pos: Vector3)
+	Fx.icicle(pos)
+	task.delay(0.25, function()
+		playSound("Shatter", 0.8, pos)
+		local n = nearMe(pos, 40)
+		if n > 0 then
+			Fx.shake(n)
+		end
+	end)
+end
+FX.rock = function(pos: Vector3)
+	Fx.thud(pos)
+	playSound("Boom", 0.6, pos)
+	local n = nearMe(pos, 50)
+	if n > 0 then
+		Fx.shake(n * 1.2)
+	end
+end
+FX.geyser = function(pos: Vector3)
+	Fx.geyser(pos)
+	playSound("Geyser", 0.9, pos)
+	local n = nearMe(pos, 45)
+	if n > 0 then
+		Fx.shake(n * 1.3)
+	end
+end
+FX.burn = function(pos: Vector3)
+	Fx.burn(pos)
+	playSound("Burn", 0.8, pos)
+end
+FX.clap = function(center: Vector3, speed: number, maxR: number, delay: number)
+	Fx.shockwave(center, speed, maxR, delay, Color3.fromRGB(140, 200, 255))
+	local n = nearMe(center, maxR + 10)
+	if n > 0 then
+		Fx.popup("JUMP!", Color3.fromRGB(150, 210, 255), nil, 0.9)
+	end
+	task.delay(delay, function()
+		playSound("Clap", 1, center)
+		if n > 0 then
+			Fx.shake(1.5)
+		end
+	end)
+end
+FX.throw = function(from: Vector3, to: Vector3, time: number)
+	Fx.throw(from, to, time)
+end
+local BLAST_COLOR = Color3.fromRGB(120, 230, 255)
+FX.blast = function(origin: Vector3, hit: Vector3, uid: number, kind: string)
+	if uid ~= player.UserId then
+		Fx.projectile(origin, hit, BLAST_COLOR, kind ~= "")
+		playSound("Blast", 0.4, origin)
+	elseif kind == "boss" then
+		local dmg = Data.BLAST.damage * (1 + 0.25 * (player:GetAttribute("Rebirths") or 0))
+		Fx.float(hit + Vector3.new(math.random() * 6 - 3, 6, 0), "-" .. math.floor(dmg), Color3.fromRGB(255, 120, 100), 28, 6)
+	end
+end
+FX.portal = function(from: Vector3, to: Vector3)
+	Fx.burst(from + Vector3.new(0, 5, 0), Color3.fromRGB(255, 120, 120), 40, 20)
+	Fx.burst(to, Color3.fromRGB(255, 120, 120), 40, 20)
+	if nearMe(from, 20) > 0 or nearMe(to, 20) > 0 then
+		playSound("Portal", 0.8)
+		Fx.flash(Color3.fromRGB(255, 200, 220), 0.3, 0.4)
+	end
+end
+FX.pull = function(pos: Vector3)
+	playSound("Pull", 1, pos)
+end
+FX.bossSpawn = function(center: Vector3, id: string)
+	local def = Data.BOSSES[id]
+	local c = if def then def.color else Color3.new(1, 1, 1)
+	Fx.pillar(center, c, 220, 30, 2.5)
+	Fx.ring(center, c, 60, 1.2)
+	if nearMe(center, 120) > 0 then
+		Fx.shake(2)
+	end
+end
+FX.bossAttack = function(pos: Vector3)
+	playSound("Roar", 0.8, pos)
+	local n = nearMe(pos, 90)
+	if n > 0 then
+		Fx.shake(n * 0.6)
+	end
+end
+FX.bossPhase = function(pos: Vector3)
+	Fx.burst(pos, Color3.fromRGB(255, 60, 60), 80, 40, 3)
+	Fx.ring(pos - Vector3.new(0, 20, 0), Color3.fromRGB(255, 60, 60), 50, 1)
+	playSound("Roar", 1, pos)
+	if nearMe(pos, 120) > 0 then
+		Fx.flash(Color3.fromRGB(255, 40, 40), 0.35, 0.6)
+		Fx.shake(1.5)
+	end
+end
+FX.bossDefeated = function(pos: Vector3, id: string)
+	local def = Data.BOSSES[id]
+	local c = if def then def.color else Color3.fromRGB(255, 220, 100)
+	Fx.impact(pos)
+	Fx.pillar(pos - Vector3.new(0, 20, 0), Color3.fromRGB(255, 220, 100), 220, 24, 2.5)
+	Fx.confetti(pos, 220)
+	Fx.coins(pos, 30)
+	for k = 1, 4 do
+		task.delay(k * 0.35, function()
+			Fx.burst(pos + Vector3.new(math.random(-15, 15), math.random(-8, 8), math.random(-15, 15)), c, 60, 40, 2.5)
+		end)
+	end
+	if nearMe(pos, 150) > 0 then
+		Fx.shake(2.5)
+		Fx.flash(Color3.fromRGB(255, 240, 200), 0.5, 1)
+	end
+end
+FX.bossEscape = function(pos: Vector3)
+	Fx.burst(pos, Color3.fromRGB(160, 160, 180), 60, 30, 3)
 end
 FX.bolt = function(pos: Vector3, radius: number)
 	Fx.bolt(pos, Color3.fromRGB(200, 225, 255), 140, 1)
@@ -876,8 +1082,9 @@ local function spinCrate(result)
 	end
 	local count, target = 44, 38
 	for i = 1, count do
-		local r = if i == target then result.rarity else Data.pickRarity(Data.CRATE.weights)
-		local kinds = Data.kindsOfRarity(r)
+		local weights = if result.boss then Data.BOSS_DROPS else Data.CRATE.weights
+		local r = if i == target then result.rarity else Data.pickRarity(weights)
+		local kinds = if r == 7 and result.boss then { Data.BOSSES[result.boss].secret } else Data.kindsOfRarity(r)
 		local kind = if i == target then result.kind else kinds[math.random(#kinds)]
 		local card = make("Frame", { Position = UDim2.new(0, (i - 1) * CARD_W + 4, 0, 10), Size = UDim2.new(0, CARD_W - 8, 1, -20),
 			BackgroundColor3 = rarityColor(r):Lerp(Color3.new(0, 0, 0), 0.35), ZIndex = 21 }, crateStrip)
@@ -914,7 +1121,7 @@ local function spinCrate(result)
 	local m = Data.MUTATIONS[result.mutation]
 	local c = if m then m.color else rarityColor(result.rarity)
 	crateResult.TextColor3 = c
-	crateResult.Text = Data.displayName(result.kind, result.mutation):upper() .. "!  "
+	crateResult.Text = (if result.boss then "BOSS LOOT: " else "") .. Data.displayName(result.kind, result.mutation):upper() .. "!  "
 		.. (if result.placed then "Added to your base" else "Base full: +" .. Data.money(result.cash))
 	bounce(crateResult, 1.5)
 	Fx.flash(c, 0.35, 0.6)
@@ -1084,12 +1291,60 @@ local function dash()
 	Move:FireServer("dash")
 end
 dashButton.Activated:Connect(dash)
+
+local blastReady = 0
+local function predictTarget(origin: Vector3, aim: Vector3): Vector3?
+	local best, bestScore = nil, -math.huge
+	local function consider(pos: Vector3, range: number)
+		local to = pos - origin
+		local dist = to.Magnitude
+		if dist > range or dist < 0.1 then
+			return
+		end
+		local dot = to.Unit:Dot(aim)
+		if dot < Data.BLAST.cone then
+			return
+		end
+		local score = dot * 2 - dist / range
+		if score > bestScore then
+			best, bestScore = pos, score
+		end
+	end
+	for body in bosses do
+		consider(body.Position, Data.BLAST.range + 50)
+	end
+	for body in spirits do
+		consider(body.Position, Data.BLAST.range)
+	end
+	return best
+end
+local function blast()
+	local char = player.Character
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	local hrp = myHrp()
+	local t = os.clock()
+	if not hum or not hrp or hum.Health <= 0 or t < blastReady then
+		return
+	end
+	blastReady = t + Data.BLAST.cooldown
+	local aim = workspace.CurrentCamera.CFrame.LookVector
+	local origin = hrp.Position + Vector3.new(0, 1.5, 0)
+	local target = predictTarget(origin, aim)
+	Fx.projectile(origin, target or (origin + aim * 80), BLAST_COLOR, target ~= nil)
+	bounce(blastButton, 0.85)
+	playSound("Blast", 0.7)
+	BlastRemote:FireServer(aim)
+end
+blastButton.Activated:Connect(blast)
 UserInputService.InputBegan:Connect(function(input, processed)
 	if processed then
 		return
 	end
 	if input.KeyCode == Enum.KeyCode.Q or input.KeyCode == Enum.KeyCode.ButtonX then
 		dash()
+	elseif input.KeyCode == Enum.KeyCode.F or input.KeyCode == Enum.KeyCode.ButtonR2
+		or input.UserInputType == Enum.UserInputType.MouseButton1 then
+		blast()
 	end
 end)
 
@@ -1152,6 +1407,20 @@ end
 local SUNNY = look(Lighting.Brightness, Lighting.OutdoorAmbient, atmosphere and atmosphere.Density or 0.3,
 	atmosphere and atmosphere.Color or Color3.new(1, 1, 1), grade and grade.TintColor or Color3.new(1, 1, 1), Lighting.ClockTime)
 local EYE = look(1.1, Color3.fromRGB(80, 74, 100), 0.45, Color3.fromRGB(110, 96, 140), Color3.fromRGB(220, 210, 255), SUNNY.Clock)
+local STAGE_LOOK = {
+	SUNNY,
+	look(2.7, Color3.fromRGB(150, 130, 100), 0.32, Color3.fromRGB(235, 215, 170), Color3.fromRGB(255, 240, 215), 15.5),
+	look(2.5, Color3.fromRGB(160, 175, 205), 0.42, Color3.fromRGB(225, 238, 255), Color3.fromRGB(228, 242, 255), 13),
+	look(1.1, Color3.fromRGB(120, 64, 54), 0.5, Color3.fromRGB(130, 64, 52), Color3.fromRGB(255, 205, 185), 17.8),
+	EYE,
+}
+local STAGE_CLOUDS = {
+	{ 0.5, Color3.fromRGB(245, 245, 250) },
+	{ 0.55, Color3.fromRGB(250, 240, 225) },
+	{ 0.65, Color3.fromRGB(235, 240, 250) },
+	{ 0.8, Color3.fromRGB(90, 80, 80) },
+	{ 0.92, Color3.fromRGB(95, 85, 120) },
+}
 local EVENT_LOOK = {
 	LightningStorm = look(0.9, Color3.fromRGB(70, 76, 105), 0.5, Color3.fromRGB(90, 100, 135), Color3.fromRGB(200, 212, 255), 15),
 	RainbowSky = look(2.8, Color3.fromRGB(160, 150, 180), 0.25, Color3.fromRGB(255, 215, 245), Color3.fromRGB(255, 240, 252), 13),
@@ -1251,8 +1520,17 @@ local function refreshGoal()
 	local count = #myStorms()
 	local carrying = (player:GetAttribute("Carrying") or "") ~= ""
 	local text
+	local bossId = workspace:GetAttribute("Boss") or ""
+	local hrpNow = myHrp()
+	local bossDef = Data.BOSSES[bossId]
+	local inArena = bossDef and hrpNow and (Vector3.new(hrpNow.Position.X, 0, hrpNow.Position.Z) - bossDef.center).Magnitude
+		< bossDef.radius + 20
 	if carrying then
 		text = "Follow the green line home! Press DASH to dodge spirits and lightning"
+	elseif bossDef and inArena then
+		text = "BLAST the boss! Dodge the red circles, JUMP over the shockwave"
+	elseif bossDef then
+		text = "A BOSS is awake! Jump into the red BOSS PORTAL by the road to fight it"
 	elseif crates > 0 then
 		text = "You have a FREE CRATE! Tap the green button"
 	elseif count == 0 then
@@ -1288,6 +1566,10 @@ local world = workspace:WaitForChild("World")
 local vortex = world:FindFirstChild("Vortex") :: Model?
 local vortexPivot = vortex and vortex:GetPivot()
 local zoneMix, eventMix = 0, 0
+local stageSky = SUNNY
+local myStage = 1
+local pullForce: LinearVelocity? = nil
+local portalCore = world:FindFirstChild("BossPortal") and (world :: any).BossPortal:FindFirstChild("PortalCore")
 local nextFlash = 0
 local flashUntil = 0
 local nextPopup = 0
@@ -1334,16 +1616,18 @@ RunService.RenderStepped:Connect(function(dt)
 	local nearest = math.huge
 	for body, vis in spirits do
 		if body.Parent then
-			Visuals.update(vis, body.CFrame, t)
-			-- charging: the eyes flare white-hot
+			local stunned = t - (vis.stunAt or -10) < Data.BLAST.stun
+			Visuals.update(vis, if stunned then body.CFrame * CFrame.new(math.sin(t * 50) * 0.25, 0, 0) else body.CFrame, t)
+			-- charging: the eyes flare white-hot; stunned: they go dim
 			local charge = math.clamp(1 - (t - vis.chargeAt) / Data.SPIRIT.chargeTime, 0, 1)
 			for _, piece in vis.pieces do
 				if piece.part.Name == "Eye" then
 					piece.part.Size = Vector3.new(0.7, 0.36, 0.25) * (1 + charge * 0.8)
-					piece.part.Color = rarityColor(body:GetAttribute("Rarity") or 1):Lerp(Color3.new(1, 1, 1), charge)
+					piece.part.Color = if stunned then Color3.fromRGB(90, 100, 120)
+						else rarityColor(body:GetAttribute("Rarity") or 1):Lerp(Color3.new(1, 1, 1), charge)
 				end
 			end
-			if hrp and body:GetAttribute("Target") == player.UserId then
+			if hrp and body:GetAttribute("Target") == player.UserId and not stunned then
 				nearest = math.min(nearest, (body.Position - hrp.Position).Magnitude)
 			end
 		end
@@ -1360,16 +1644,88 @@ RunService.RenderStepped:Connect(function(dt)
 	-- dash cooldown
 	local left = math.max(0, dashReady - t)
 	dashFill.Size = UDim2.fromScale(1, left / Data.DASH.cooldown)
+	blastFill.Size = UDim2.fromScale(1, math.max(0, blastReady - t) / Data.BLAST.cooldown)
 	checkPads(t)
+	-- tornadoes and bosses
+	for body, vis in tornadoes do
+		if body.Parent then
+			Visuals.update(vis, CFrame.new(body.Position), t)
+		end
+	end
+	local phase = workspace:GetAttribute("BossPhase") or 1
+	local serverNow = workspace:GetServerTimeNow()
+	local pulling = false
+	for body, vis in bosses do
+		if body.Parent then
+			Visuals.update(vis, body.CFrame, t * (if phase == 2 then 1.6 else 1))
+			for _, e in vis.eyes do
+				e.Color = if phase == 2 then Color3.fromRGB(255, 60, 60)
+					elseif body:GetAttribute("BossId") == "TornadoTyrant" then Color3.fromRGB(255, 110, 255)
+					else Color3.fromRGB(140, 200, 255)
+			end
+			-- the tyrant's pull drags you toward its funnel
+			if hrp and serverNow < (body:GetAttribute("PullUntil") or 0) then
+				local d = body.Position - hrp.Position
+				local flat = Vector3.new(d.X, 0, d.Z)
+				if flat.Magnitude < 90 and flat.Magnitude > 2 then
+					pulling = true
+					if not pullForce then
+						local att = Instance.new("Attachment")
+						att.Name = "PullAttachment"
+						att.Parent = hrp
+						local lv = Instance.new("LinearVelocity")
+						lv.Attachment0 = att
+						lv.ForceLimitsEnabled = true
+						lv.ForceLimitMode = Enum.ForceLimitMode.PerAxis
+						lv.MaxAxesForce = Vector3.new(1, 0, 1) * hrp.AssemblyMass * 110
+						lv.VelocityConstraintMode = Enum.VelocityConstraintMode.Vector
+						lv.RelativeTo = Enum.ActuatorRelativeTo.World
+						lv.Parent = hrp
+						pullForce = lv
+					end
+					(pullForce :: LinearVelocity).VectorVelocity = flat.Unit * (body:GetAttribute("PullPower") or 18)
+				end
+			end
+		end
+	end
+	if not pulling and pullForce then
+		local att = pullForce.Attachment0
+		pullForce:Destroy()
+		if att then
+			att:Destroy()
+		end
+		pullForce = nil
+	end
 	-- the vortex turns
 	if vortex and vortexPivot then
-		vortex:PivotTo(CFrame.new(0, 0, 290) * CFrame.Angles(0, t * 0.05, 0) * CFrame.new(0, 0, -290) * vortexPivot)
+		vortex:PivotTo(CFrame.new(0, 0, 512) * CFrame.Angles(0, t * 0.05, 0) * CFrame.new(0, 0, -512) * vortexPivot)
+	end
+	-- the boss portal glows while a boss is awake
+	if portalCore then
+		local active = (workspace:GetAttribute("Boss") or "") ~= ""
+		portalCore.Transparency = if active then 0.15 + 0.15 * math.sin(t * 6) else 0.85
 	end
 	-- the sky: zone darkening toward the Eye, then the weather event on top
 	if hrp then
-		local zoneTarget = math.clamp((hrp.Position.Z - 140) / 120, 0, 1)
-		zoneMix += (zoneTarget - zoneMix) * math.min(1, dt * 2)
+		local stage = Data.stageAt(hrp.Position.Z)
+		zoneMix = if stage >= 5 then 1 else 0
 		weatherPart.CFrame = CFrame.new(camPos + Vector3.new(0, 25, 0))
+		stageSky = blend(stageSky, STAGE_LOOK[stage], math.min(1, dt * 1.5))
+		if stage ~= myStage then
+			if stage > myStage and hrp.Position.Z > 12 then
+				local S = Data.STAGES[stage]
+				Fx.popup("STAGE " .. stage .. ": " .. S.name:upper(), S.color, ("Spirits are faster here (speed %d) and more things hunt you!"):format(
+					S.spiritSpeed), 2)
+				playSound("Stage", 0.8)
+			end
+			myStage = stage
+		end
+		local clouds = workspace.Terrain:FindFirstChildOfClass("Clouds")
+		if clouds then
+			local want = STAGE_CLOUDS[stage]
+			clouds.Cover += (want[1] - clouds.Cover) * math.min(1, dt)
+			clouds.Color = clouds.Color:Lerp(want[2], math.min(1, dt))
+		end
 	end
 	local ev = EVENT_LOOK[currentEvent]
 	if currentEvent ~= wasEvent then
@@ -1379,7 +1735,7 @@ RunService.RenderStepped:Connect(function(dt)
 		wasEvent = currentEvent
 	end
 	eventMix += ((if ev then 1 else 0) - eventMix) * math.min(1, dt * 1.2)
-	local sky = blend(SUNNY, EYE, zoneMix)
+	local sky = stageSky
 	if ev then
 		sky = blend(sky, ev, eventMix)
 	end
@@ -1432,12 +1788,32 @@ RunService.RenderStepped:Connect(function(dt)
 			eventSub.Text = evDef.desc
 		else
 			local nextIn = math.max(0, math.floor((workspace:GetAttribute("NextEvent") or 0) - now))
+			local bossIn = math.max(0, math.floor((workspace:GetAttribute("NextBoss") or 0) - now))
 			eventTitle.Text = "Clear skies"
 			eventTitle.TextColor3 = Color3.new(1, 1, 1)
-			eventSub.Text = ("Next weather event in %d:%02d"):format(nextIn // 60, nextIn % 60)
+			eventSub.Text = ("Weather in %d:%02d  |  Boss in %d:%02d"):format(nextIn // 60, nextIn % 60, bossIn // 60, bossIn % 60)
 		end
 	end
 	lockButton.Text = lockText()
+	-- boss health bar
+	local bossId = workspace:GetAttribute("Boss") or ""
+	local bdef = Data.BOSSES[bossId]
+	bossBar.Visible = bdef ~= nil
+	if bdef then
+		local hp = workspace:GetAttribute("BossHP") or 0
+		local maxHp = math.max(1, workspace:GetAttribute("BossMaxHP") or 1)
+		shownBossHp += (hp / maxHp - shownBossHp) * math.min(1, dt * 6)
+		bossFill.Size = UDim2.fromScale(math.clamp(shownBossHp, 0, 1), 1)
+		bossHpText.Text = ("%d / %d"):format(math.ceil(hp), maxHp)
+		local enraged = (workspace:GetAttribute("BossPhase") or 1) == 2
+		bossName.Text = bdef.name:upper() .. (if enraged then "  ENRAGED!" else "")
+		bossName.TextColor3 = if enraged then Color3.fromRGB(255, 90, 90) else bdef.color
+		bossStroke.Color = if enraged then Color3.fromRGB(255, 60, 60) else bdef.color
+		local leftB = math.max(0, math.floor((workspace:GetAttribute("BossEnds") or 0) - workspace:GetServerTimeNow()))
+		bossTime.Text = ("%d:%02d"):format(leftB // 60, leftB % 60)
+	else
+		shownBossHp = 1
+	end
 	local vp = cam.ViewportSize
 	local fit = math.clamp(math.min((vp.X - 20) / 790, (vp.Y - 90) / 290), 0.4, 1)
 	shopScale.Scale = fit
