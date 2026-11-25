@@ -33,7 +33,7 @@ end
 local sps = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
 local anim = sps and sps:FindFirstChild("SkinwalkerAnimator")
 log("animator:", anim and anim.ClassName or "missing")
-log("lighting:", tostring(game.Lighting.Technology), "time:", game.Lighting.TimeOfDay,
+log("lighting time:", game.Lighting.TimeOfDay,
 	"atmosphere:", tostring(game.Lighting:FindFirstChildOfClass("Atmosphere") ~= nil))
 local showcase = workspace:FindFirstChild("Showcase")
 log("showcase children:", showcase and #showcase:GetChildren() or 0,
