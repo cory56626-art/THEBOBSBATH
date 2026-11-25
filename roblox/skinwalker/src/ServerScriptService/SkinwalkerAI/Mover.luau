@@ -29,6 +29,8 @@ function Mover.new(model: Model, hum: Humanoid, root: BasePart)
 	self.vaulting = false
 	self.lastVault = 0
 	self.onLand = nil :: (() -> ())?
+	self.colliders = {} :: { BasePart }
+	self.squeezing = false
 	self.path = PathfindingService:CreatePath({
 		AgentRadius = 3,
 		AgentHeight = 10,
@@ -266,13 +268,47 @@ function Mover:step(dt: number)
 		self.stuckTime += dt
 		if self.stuckTime > 1.5 then
 			if not self:tryVault() then
-				hum.Jump = true
+				if self.stuckTime > 2.0 then
+					self:squeeze()
+				else
+					hum.Jump = true
+				end
 			end
 			self.pathGoal = nil
 		end
 	else
 		self.stuckTime = 0
 	end
+end
+
+-- wedged on a door frame or furniture: slip through like a cat (body collisions off for a moment)
+function Mover:squeeze()
+	if self.squeezing then
+		return
+	end
+	self.squeezing = true
+	for _, c in self.colliders do
+		c.CanCollide = false
+	end
+	local root = self.root
+	local target = self.goal
+	local wps = self.waypoints
+	if wps and wps[self.wpIndex] then
+		target = wps[self.wpIndex].Position
+	end
+	if target then
+		local d = Vector3.new(target.X - root.Position.X, 0, target.Z - root.Position.Z)
+		if d.Magnitude > 0.5 then
+			root.CFrame += d.Unit * math.min(2, d.Magnitude)
+		end
+	end
+	task.delay(1.2, function()
+		for _, c in self.colliders do
+			c.CanCollide = true
+		end
+		self.squeezing = false
+		self.stuckTime = 0
+	end)
 end
 
 function Mover:isStuck(): boolean

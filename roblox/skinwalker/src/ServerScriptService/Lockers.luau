@@ -23,9 +23,25 @@ local function doorSwing(spot: Model, angle: number, time: number)
 		door:SetAttribute("ClosedCFrame", closed)
 	end
 	local hinge = (closed :: CFrame) * CFrame.new(-door.Size.X / 2, 0, 0)
+	-- the slats, top panel and handle ride along with the door
+	local riders: { { part: BasePart, offset: CFrame } } = {}
+	for _, d in door:GetChildren() do
+		if d:IsA("BasePart") then
+			local rest = d:GetAttribute("ClosedOffset") :: CFrame?
+			if not rest then
+				rest = (closed :: CFrame):ToObjectSpace(d.CFrame)
+				d:SetAttribute("ClosedOffset", rest)
+			end
+			table.insert(riders, { part = d, offset = rest :: CFrame })
+		end
+	end
 	local v = Instance.new("NumberValue")
 	v.Changed:Connect(function(a)
-		door.CFrame = hinge * CFrame.Angles(0, math.rad(a), 0) * CFrame.new(door.Size.X / 2, 0, 0)
+		local cf = hinge * CFrame.Angles(0, math.rad(a), 0) * CFrame.new(door.Size.X / 2, 0, 0)
+		door.CFrame = cf
+		for _, r in riders do
+			r.part.CFrame = cf * r.offset
+		end
 	end)
 	local open = TweenService:Create(v, TweenInfo.new(time * 0.4, Enum.EasingStyle.Quad), { Value = angle })
 	open:Play()
@@ -140,6 +156,13 @@ function Lockers.init()
 		if not door then
 			return
 		end
+		local anchor = door
+		for _, d in door:GetChildren() do
+			if d:IsA("BasePart") and d.Name == "Slat" then
+				anchor = d -- eye level: visible from inside the locker
+				break
+			end
+		end
 		local p = Instance.new("ProximityPrompt")
 		p.Name = "HidePrompt"
 		p.ActionText = "Hide"
@@ -147,7 +170,7 @@ function Lockers.init()
 		p.HoldDuration = 0.25
 		p.MaxActivationDistance = 7
 		p.RequiresLineOfSight = false
-		p.Parent = door
+		p.Parent = anchor
 		p.Triggered:Connect(function(player)
 			local character = player.Character
 			if not character then

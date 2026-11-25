@@ -174,14 +174,16 @@ def wall(b: Builder, x, z, d, door, fy_a, fy_b):
         column(0, length)
         return
     side = (length - DOOR_W) / 2
+    top = min(WALL_H - 0.6, max(fy_a, fy_b) + DOOR_H)  # taller openings into raised rooms (it climbs the steps)
     column(-(DOOR_W / 2 + side / 2), side)
     column(DOOR_W / 2 + side / 2, side)
-    seg(0, DOOR_W, base + DOOR_H, WALL_H, PLASTER, "Concrete")
+    seg(0, DOOR_W, top, WALL_H, PLASTER, "Concrete")
     # a dark door frame
     for o in (-DOOR_W / 2, DOOR_W / 2):
         cx, cz = (wx, wz + o) if along == "z" else (wx + o, wz)
-        b.box("Walls", "DoorFrame", CF(v(cx, base + DOOR_H / 2, cz)), (1.3, DOOR_H, 0.4) if along == "z" else
-              (0.4, DOOR_H, 1.3), (60, 56, 50), "Wood", collide=False)
+        fh = top - base
+        b.box("Walls", "DoorFrame", CF(v(cx, base + fh / 2, cz)), (1.3, fh, 0.4) if along == "z" else
+              (0.4, fh, 1.3), (60, 56, 50), "Wood", collide=False)
 
 
 # ----------------------------------------------------------------------------------------- lights

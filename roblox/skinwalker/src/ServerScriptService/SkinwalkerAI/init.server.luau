@@ -58,7 +58,7 @@ local root = model:WaitForChild("HumanoidRootPart") :: BasePart
 local headBone = model:WaitForChild("Head") :: BasePart
 local spawnCFrame = root.CFrame
 
-root.Size = Vector3.new(3, 2, 3)
+root.Size = Vector3.new(2.6, 2, 2.6)
 root.Transparency = 1
 root.CanCollide = true
 root.Massless = false
@@ -79,7 +79,13 @@ for _, s in { Enum.HumanoidStateType.FallingDown, Enum.HumanoidStateType.Ragdoll
 	Enum.HumanoidStateType.Seated, Enum.HumanoidStateType.Swimming, Enum.HumanoidStateType.Dead } do
 	hum:SetStateEnabled(s, false)
 end
--- Invisible colliders around the torso and head, so its body can't pass through walls, roofs or players.
+root.Anchored = false
+pcall(function()
+	root:SetNetworkOwner(nil)
+end)
+
+local mover = Mover.new(model, hum, root)
+-- An invisible collider around the torso, so its body can't pass through walls, roofs or players.
 local function collider(name: string, offset: CFrame, size: Vector3)
 	local c = Instance.new("Part")
 	c.Name = name
@@ -96,15 +102,9 @@ local function collider(name: string, offset: CFrame, size: Vector3)
 	w.Parent = c
 	c.Parent = model
 end
-collider("BodyCollider", CFrame.new(0, 2.6, -0.9), Vector3.new(3.6, 4.4, 4.4))
-collider("HeadCollider", CFrame.new(0, 3.6, -4.2), Vector3.new(1.8, 1.8, 3.2))
+collider("BodyCollider", CFrame.new(0, 2.4, -0.7), Vector3.new(3, 3.6, 3.6))
+mover.colliders = { model:FindFirstChild("BodyCollider") :: BasePart }
 
-root.Anchored = false
-pcall(function()
-	root:SetNetworkOwner(nil)
-end)
-
-local mover = Mover.new(model, hum, root)
 local memory = Memory.new(Config.PERSIST_MEMORY)
 task.spawn(function()
 	memory:load()

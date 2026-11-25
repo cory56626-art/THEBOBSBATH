@@ -2,6 +2,8 @@
 --   walk, sprint (lean in, pumping arms, long strides), crouch-walk (low, careful), idle breathing, jump/fall.
 -- Footstep sounds fire exactly when each foot lands, chosen by gait: soft crouch steps, walking, running.
 -- (The default Animate script and default footsteps are replaced in StarterCharacterScripts/StarterPlayerScripts.)
+-- We pose joints through Motor6D.C0 (rest C0 * pose) rather than .Transform: the Humanoid's Animator owns
+-- .Transform on player characters and resets it every frame, which froze the first version.
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -10,8 +12,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Sfx = require(ReplicatedStorage:WaitForChild("Sfx"))
 
 type Rig = {
-	char: Model, hum: Humanoid, root: BasePart,
+	char: Model, hum: Humanoid, root: BasePart, r6: boolean,
 	j: { [string]: Motor6D },
+	c0: { [Motor6D]: CFrame },
+	last: { [Motor6D]: CFrame },
 	phase: number, speed: number, crouch: number, sprint: number, air: number, t: number, lastStep: number,
 }
 local rigs: { [Model]: Rig } = {}
@@ -24,22 +28,30 @@ local JOINTS = {
 	RightHip = "RightUpperLeg", RightKnee = "RightLowerLeg", RightAnkle = "RightFoot",
 }
 
+-- classic 6-part avatars (R6) have no elbows/knees; their limbs swing about each joint's Z axis
+local JOINTS_R6 = {
+	["Right Shoulder"] = "Torso", ["Left Shoulder"] = "Torso", ["Right Hip"] = "Torso", ["Left Hip"] = "Torso",
+	Neck = "Torso", RootJoint = "HumanoidRootPart",
+}
+
 local function attach(char: Model)
 	local hum = char:WaitForChild("Humanoid", 10) :: Humanoid?
 	local root = char:WaitForChild("HumanoidRootPart", 10) :: BasePart?
-	if not hum or not root or hum.RigType ~= Enum.HumanoidRigType.R15 then
+	if not hum or not root then
 		return
 	end
-	local j = {}
-	for jointName, partName in JOINTS do
+	local r6 = hum.RigType == Enum.HumanoidRigType.R6
+	local j, c0 = {}, {}
+	for jointName, partName in (if r6 then JOINTS_R6 else JOINTS) do
 		local p = char:WaitForChild(partName, 5)
 		local m = p and p:FindFirstChild(jointName)
 		if m and m:IsA("Motor6D") then
 			j[jointName] = m
+			c0[m] = m.C0
 		end
 	end
-	rigs[char] = { char = char, hum = hum, root = root, j = j, phase = 0, speed = 0, crouch = 0, sprint = 0, air = 0,
-		t = math.random() * 10, lastStep = 0 }
+	rigs[char] = { char = char, hum = hum, root = root, r6 = r6, j = j, c0 = c0, last = {}, phase = 0, speed = 0, crouch = 0, sprint = 0,
+		air = 0, t = math.random() * 10, lastStep = 0 }
 	char.AncestryChanged:Connect(function(_, parent)
 		if not parent then
 			rigs[char] = nil
@@ -67,6 +79,21 @@ local STEPS = {
 	walk = { "Walk1", "Walk2", "Walk3", "Walk4" },
 	run = { "Run1", "Run2", "Run3", "Run4" },
 }
+
+local function pose(R: Rig, m: Motor6D?, cf: CFrame)
+	if m then
+		local last = R.last[m]
+		if last and m.C0 ~= last then
+			R.c0[m] = m.C0 -- something else (avatar scaling) changed the rest pose: adopt it
+		end
+		local base = R.c0[m]
+		if base then
+			local new = base * cf
+			m.C0 = new
+			R.last[m] = new
+		end
+	end
+end
 
 local function animate(R: Rig, dt: number)
 	local j = R.j
@@ -112,6 +139,22 @@ local function animate(R: Rig, dt: number)
 
 	local s = math.sin(R.phase)
 	local c = math.cos(R.phase)
+
+	if R.r6 then
+		-- R6: right-side joints swing forward with +Z, left-side with -Z
+		local legAmp = (0.6 + R.sprint * 0.35) * moving + 0.25 * R.air
+		local armAmp = (0.55 + R.sprint * 0.45) * moving
+		local legL = legAmp * s + 0.35 * R.crouch
+		local legR = -legAmp * s + 0.35 * R.crouch
+		local armL = -armAmp * s + 0.3 * R.crouch + 0.6 * R.air
+		local armR = armAmp * s + 0.3 * R.crouch + 0.6 * R.air
+		pose(R, j["Left Hip"], CFrame.Angles(0, 0, -legL))
+		pose(R, j["Right Hip"], CFrame.Angles(0, 0, legR))
+		pose(R, j["Left Shoulder"], CFrame.Angles(0, 0, -armL))
+		pose(R, j["Right Shoulder"], CFrame.Angles(0, 0, armR))
+		pose(R, j.RootJoint, CFrame.new(0, 0, -math.abs(s) * 0.1 * moving)) -- R6 RootJoint's Z axis points up
+		return
+	end
 	local amp = (0.55 + R.sprint * 0.4 - R.crouch * 0.18) * moving
 	local lean = 0.05 * moving + R.sprint * 0.2 + R.crouch * 0.3
 	local bob = -math.abs(s) * (0.12 + R.sprint * 0.12) * moving
@@ -130,15 +173,9 @@ local function animate(R: Rig, dt: number)
 			knee = knee * (1 - R.air) - (if side == "Left" then 0.9 else 0.5) * R.air
 		end
 		local hj, kj, aj = j[side .. "Hip"], j[side .. "Knee"], j[side .. "Ankle"]
-		if hj then
-			hj.Transform = CFrame.Angles(hip, 0, 0)
-		end
-		if kj then
-			kj.Transform = CFrame.Angles(knee, 0, 0)
-		end
-		if aj then
-			aj.Transform = CFrame.Angles(ankle, 0, 0)
-		end
+		pose(R, hj, CFrame.Angles(hip, 0, 0))
+		pose(R, kj, CFrame.Angles(knee, 0, 0))
+		pose(R, aj, CFrame.Angles(ankle, 0, 0))
 	end
 	legs("Left", R.phase)
 	legs("Right", R.phase + math.pi)
@@ -153,26 +190,16 @@ local function animate(R: Rig, dt: number)
 			elbow = elbow * (1 - R.air) + 0.6 * R.air
 		end
 		local sj, ej = j[side .. "Shoulder"], j[side .. "Elbow"]
-		if sj then
-			sj.Transform = CFrame.Angles(swing + forward, 0, sgn * (0.06 + 0.04 * R.air))
-		end
-		if ej then
-			ej.Transform = CFrame.Angles(elbow, 0, 0)
-		end
+		pose(R, sj, CFrame.Angles(swing + forward, 0, sgn * (0.06 + 0.04 * R.air)))
+		pose(R, ej, CFrame.Angles(elbow, 0, 0))
 	end
 	arm("Left", R.phase + math.pi)
 	arm("Right", R.phase)
 
 	-- lean happens at the waist so the legs stay planted under the hips
-	if j.Root then
-		j.Root.Transform = CFrame.new(0, bob, 0) * CFrame.Angles(0, 0.06 * s * moving, 0)
-	end
-	if j.Waist then
-		j.Waist.Transform = CFrame.Angles(breathe - lean, -0.12 * s * moving * (1 + R.sprint), 0)
-	end
-	if j.Neck then
-		j.Neck.Transform = CFrame.Angles(lean * 0.8, 0.05 * s * moving, 0)
-	end
+	pose(R, j.Root, CFrame.new(0, bob, 0) * CFrame.Angles(0, 0.06 * s * moving, 0))
+	pose(R, j.Waist, CFrame.Angles(breathe - lean, -0.12 * s * moving * (1 + R.sprint), 0))
+	pose(R, j.Neck, CFrame.Angles(lean * 0.8, 0.05 * s * moving, 0))
 end
 
 RunService.PreSimulation:Connect(function(dt)

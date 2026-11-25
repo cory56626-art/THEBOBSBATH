@@ -5,8 +5,8 @@ local Config = {
 	-- movement (studs per second)
 	PROWL_SPEED = 12,
 	STALK_SPEED = 10,
-	CHASE_SPEED = 24, -- much faster than walking (16), a bit slower than sprinting (27): break line of sight or hide
-	DESPERATE_SPEED = 27.5, -- starving: faster than your sprint
+	CHASE_SPEED = 22, -- a bit faster than walking (18), slower than sprinting (28): sprint, break line of sight, hide
+	DESPERATE_SPEED = 26, -- starving: nearly as fast as your sprint
 
 	-- senses
 	SIGHT_RANGE = 170,

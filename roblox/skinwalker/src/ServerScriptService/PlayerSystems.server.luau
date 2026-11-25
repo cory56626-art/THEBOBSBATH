@@ -19,8 +19,17 @@ moveState.OnServerEvent:Connect(function(player, crouching)
 	end
 end)
 
--- lockers and closets
-require(script.Parent:WaitForChild("Lockers")).init()
+-- lockers and closets (the LEAVE button / jump button also gets you out)
+local Lockers = require(script.Parent:WaitForChild("Lockers"))
+Lockers.init()
+local leaveHide = Instance.new("RemoteEvent")
+leaveHide.Name = "LeaveHide"
+leaveHide.Parent = ReplicatedStorage
+leaveHide.OnServerEvent:Connect(function(player)
+	if player.Character then
+		Lockers.leave(player.Character)
+	end
+end)
 
 local function setup(character: Model)
 	local head = character:WaitForChild("Head", 10)

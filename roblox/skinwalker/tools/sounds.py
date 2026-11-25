@@ -103,7 +103,7 @@ def breath(kind="in", length=1.4, depth=1.0):
     n = int(length * SR)
     base = noise(length)
     if kind == "in":
-        x = bp(base, 500, 3800) * 0.7 + peak(base, 900, 4) * 0.5 + peak(base, 2600, 6) * 0.35
+        x = bp(base, 450, 2600) * 0.6 + peak(base, 850, 4) * 0.6 + peak(base, 1900, 6) * 0.3
         e = env(n, length * 0.55, True, 1.6)
     else:
         x = bp(base, 160, 1800) * 0.8 + peak(base, 420, 3) * 0.6
@@ -117,8 +117,8 @@ def breath(kind="in", length=1.4, depth=1.0):
     crackles = np.zeros(n)
     for i in rng.integers(0, n - 400, int(length * 40)):
         crackles[i] = rng.uniform(-1, 1)
-    x += bp(crackles, 2500, 7000) * 3.0
-    return norm(reverb(x * e, 0.7, 0.2))
+    x += bp(crackles, 2000, 5000) * 2.0
+    return norm(reverb(lp(x * e, 3500), 0.7, 0.2))
 
 
 def click(pitch=1.0):
@@ -241,17 +241,19 @@ def stinger():
 
 # ----------------------------------------------------------------------------- player + world sounds
 def footstep(kind="walk"):
-    n = int(0.3 * SR)
-    loud = {"walk": 0.8, "run": 1.0, "crouch": 0.35}[kind]
-    x = bp(noise(0.3), 2500, 9000) * decay(n, 0.004) * (0.8 if kind != "crouch" else 0.2)
-    x += bp(noise(0.3), rng.uniform(180, 260), rng.uniform(900, 1400)) * decay(n, 0.03 if kind == "run" else 0.045)
-    tt = t(0.3)
-    x += np.sin(2 * np.pi * rng.uniform(80, 110) * tt) * decay(n, 0.03) * (0.9 if kind == "run" else 0.5)
-    if kind == "run":  # second slap of the toe
-        s = int(0.03 * SR)
-        x[s:] += bp(noise(0.3), 1500, 6000)[: n - s] * decay(n - s, 0.006) * 0.5
-    return norm(reverb(x, 0.5, 0.16), 0.9 * loud)
-
+    """Rubber sole on old linoleum: a soft heel thud, a little scuff, a short room tail (no harsh click)."""
+    n = int(0.32 * SR)
+    loud = {"walk": 0.75, "run": 1.0, "crouch": 0.32}[kind]
+    tt = t(0.32)
+    thud = np.sin(2 * np.pi * np.cumsum(rng.uniform(85, 110) * np.exp(-tt * 9) + 45) / SR) * decay(n, 0.035)
+    body = lp(bp(noise(0.32), rng.uniform(150, 220), rng.uniform(700, 1000)), 1400) * decay(n, 0.028)
+    scuff = lp(bp(noise(0.32), 1200, 4000), 3500) * decay(n, 0.012) * (0.18 if kind != "crouch" else 0.06)
+    x = thud * (1.0 if kind == "run" else 0.8) + body * 0.9 + scuff
+    if kind == "run":  # toe follows the heel quickly
+        sft = int(0.045 * SR)
+        x[sft:] += (body[: n - sft] * 0.6 + thud[: n - sft] * 0.4)
+    x = lp(x, 3200)
+    return norm(reverb(x, 0.45, 0.14, 2500), 0.9 * loud)
 
 def panting(length=2.4):
     out = np.zeros(int(length * SR))
@@ -282,36 +284,48 @@ def heartbeat():
     return norm(lp(out, 300))
 
 
-def metal_clank(base=220):
-    n = int(1.2 * SR)
-    tt = t(1.2)
-    x = np.zeros(n)
-    for ratio, amp, tau in ((1, 1, 0.25), (2.56, 0.6, 0.18), (4.76, 0.4, 0.12), (8.1, 0.25, 0.07)):
-        x += np.sin(2 * np.pi * base * ratio * tt) * amp * decay(n, tau)
-    x += bp(noise(1.2), 1500, 7000) * decay(n, 0.01)
-    return norm(reverb(x, 0.6, 0.2))
+def metal_clank(base=160, bright=0.5):
+    """A muffled sheet-metal thunk (a locker door), not a bell: low body, quick decaying inharmonic partials."""
+    n = int(0.9 * SR)
+    tt = t(0.9)
+    x = np.sin(2 * np.pi * np.cumsum(95 * np.exp(-tt * 10) + 60) / SR) * decay(n, 0.07) * 1.2
+    for ratio, amp, tau in ((1, 0.6, 0.16), (2.31, 0.35, 0.09), (3.87, 0.22, 0.06), (5.9, 0.12, 0.04)):
+        x += np.sin(2 * np.pi * base * ratio * tt + rng.uniform(0, 6)) * amp * decay(n, tau)
+    x += lp(noise(0.9), 1800) * decay(n, 0.02) * 0.5
+    x = lp(x, 1800 + 2500 * bright)
+    return norm(reverb(x, 0.5, 0.18, 2500))
 
-
-def creak(length=0.9):
+def creak(length=0.45):
+    """A short, soft hinge squeak: a gliding tone with a little friction, filtered so it doesn't buzz."""
     n = int(length * SR)
-    f = np.linspace(380, 560, n) * jitter(n, 30, 0.08)
-    stick = (np.sin(2 * np.pi * np.cumsum(f) / SR) > 0.6).astype(float)
-    x = bp(stick, 300, 3000) * env(n, 0.1, True, 1.0)
-    return norm(reverb(x, 0.5, 0.2))
-
+    f = np.linspace(820, 1180, n) * jitter(n, 9, 0.025)
+    tone = np.sin(2 * np.pi * np.cumsum(f) / SR) * 0.7 + np.sin(2 * np.pi * np.cumsum(f * 2.01) / SR) * 0.2
+    friction = bp(noise(length), 900, 2600) * 0.25
+    x = (tone + friction) * np.sin(np.pi * np.linspace(0, 1, n)) ** 1.5
+    return norm(reverb(lp(x, 3000), 0.4, 0.15), 0.6)
 
 def locker_open():
-    c = creak(0.8)
-    clank = metal_clank(260)[: int(0.3 * SR)] * 0.5
-    out = np.zeros(max(len(c), len(clank)) + int(0.05 * SR))
-    out[: len(c)] += c
-    out[: len(clank)] += clank
-    return norm(out)
-
+    """Latch click, then the door eases open on a soft squeak."""
+    latch = np.zeros(int(0.08 * SR))
+    latch[0] = 1
+    latch = (peak(latch, 1900, 14) * 2 + peak(latch, 700, 6)) * decay(len(latch), 0.012)
+    sq = creak(0.45)
+    thunk = metal_clank(190, 0.2)[: int(0.25 * SR)] * 0.25
+    out = np.zeros(int(0.06 * SR) + len(sq) + int(0.05 * SR))
+    out[: len(latch)] += latch * 0.6
+    out[int(0.06 * SR): int(0.06 * SR) + len(sq)] += sq
+    out[: len(thunk)] += thunk
+    return norm(out, 0.8)
 
 def locker_close():
-    return metal_clank(205)
-
+    """The door swings shut: muffled thunk plus the latch catching."""
+    x = metal_clank(150, 0.35)
+    latch = np.zeros(int(0.06 * SR))
+    latch[0] = 1
+    latch = peak(latch, 2300, 16) * decay(len(latch), 0.008) * 0.5
+    s0 = int(0.02 * SR)
+    x[s0: s0 + len(latch)] += latch
+    return norm(x, 0.9)
 
 def flashlight_click():
     n = int(0.1 * SR)

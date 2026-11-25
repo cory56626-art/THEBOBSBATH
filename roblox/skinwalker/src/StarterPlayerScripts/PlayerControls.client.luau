@@ -15,11 +15,12 @@ local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local FlashlightToggle = ReplicatedStorage:WaitForChild("FlashlightToggle") :: RemoteEvent
 local MoveState = ReplicatedStorage:WaitForChild("MoveState") :: RemoteEvent
+local LeaveHide = ReplicatedStorage:WaitForChild("LeaveHide") :: RemoteEvent
 local Sfx = require(ReplicatedStorage:WaitForChild("Sfx"))
 
-local WALK, SPRINT, WINDED, CROUCH = 16, 27, 12, 8
+local WALK, SPRINT, WINDED, CROUCH = 18, 28, 13, 9
 local CROUCH_HIP = 0.7
-local STAMINA_DRAIN, STAMINA_REGEN, REGEN_DELAY = 15, 17, 1.0
+local STAMINA_DRAIN, STAMINA_REGEN, REGEN_DELAY = 12, 18, 0.9
 local RECOVER_AT = 35
 local BATTERY_DRAIN, BATTERY_RECHARGE = 0.55, 0.3
 
@@ -164,6 +165,41 @@ if UserInputService.KeyboardEnabled and not UserInputService.TouchEnabled then
 	hint.Parent = gui
 end
 
+-- LEAVE button while hiding (also: jump button / Space / E)
+local leaveBtn = Instance.new("TextButton")
+leaveBtn.Name = "Leave"
+leaveBtn.AnchorPoint = Vector2.new(0.5, 1)
+leaveBtn.Position = UDim2.new(0.5, 0, 1, -80)
+leaveBtn.Size = UDim2.fromOffset(200, 56)
+leaveBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 20)
+leaveBtn.BackgroundTransparency = 0.15
+leaveBtn.TextColor3 = Color3.fromRGB(235, 225, 215)
+leaveBtn.Font = Enum.Font.GothamBold
+leaveBtn.TextSize = 22
+leaveBtn.Text = "LEAVE"
+leaveBtn.Visible = false
+leaveBtn.ZIndex = 10
+leaveBtn.Parent = gui
+Instance.new("UICorner", leaveBtn).CornerRadius = UDim.new(0, 10)
+local leaveStroke = Instance.new("UIStroke")
+leaveStroke.Color = Color3.fromRGB(150, 40, 35)
+leaveStroke.Thickness = 2
+leaveStroke.Parent = leaveBtn
+local lastLeave = 0
+local function requestLeave()
+	if os.clock() - lastLeave > 0.4 then
+		lastLeave = os.clock()
+		LeaveHide:FireServer()
+	end
+end
+leaveBtn.Activated:Connect(requestLeave)
+UserInputService.JumpRequest:Connect(function()
+	local c = player.Character
+	if c and c:GetAttribute("Hidden") == true then
+		requestLeave()
+	end
+end)
+
 -- heartbeat vignette: four edge frames with gradients
 local edges = {}
 for _, spec in { { "Top", UDim2.new(1, 0, 0.35, 0), UDim2.new(0, 0, 0, 0), 90 },
@@ -290,9 +326,11 @@ RunService.RenderStepped:Connect(function(dt)
 			end
 		end
 		wasHidden = true
+		leaveBtn.Visible = true
 		closeness = math.min(1, closeness * 1.3)
 	elseif wasHidden and cam then
 		wasHidden = false
+		leaveBtn.Visible = false
 		cam.CameraType = Enum.CameraType.Custom
 		if char then
 			for _, d in char:GetDescendants() do

@@ -177,6 +177,17 @@ if spot then
 			end
 		end
 	end
+	do
+		local hp = (hider:FindFirstChild("Head") :: BasePart).Position
+		local e = (sw:FindFirstChild("Head") :: BasePart).Position
+		local rp2 = RaycastParams.new()
+		rp2.FilterType = Enum.RaycastFilterType.Exclude
+		rp2.FilterDescendantsInstances = { sw, hider }
+		local hit = workspace:Raycast(e, hp - e, rp2)
+		log(("locker diag: state=%s target=%s dist=%.1f facingDot=%.2f losBlockedBy=%s"):format(
+			tostring(sw:GetAttribute("State")), tostring(sw:GetAttribute("Target")), (hp - e).Magnitude,
+			root.CFrame.LookVector:Dot((hp - e).Unit), hit and hit.Instance:GetFullName() or "nothing"))
+	end
 	Lockers.hide(hider, spot)
 	task.wait(0.4)
 	local sawState = sw:GetAttribute("State")
@@ -196,6 +207,25 @@ if spot then
 	hider:Destroy()
 else
 	log("locker: no hiding spot near the creature")
+end
+
+-- 3a. leaving a locker puts you back outside, free to move
+do
+	local s = CollectionService:GetTagged("HideSpot")[3]
+	local front = s:FindFirstChild("Front") :: BasePart
+	local d = makeDummy(Vector3.new(front.Position.X, 0, front.Position.Z), "Leaver")
+	local dh = d:FindFirstChildOfClass("Humanoid") :: Humanoid
+	dh.WalkSpeed = 0
+	Lockers.hide(d, s)
+	task.wait(0.5)
+	local inside = d:GetAttribute("Hidden") == true and d.PrimaryPart.Anchored
+	Lockers.leave(d)
+	task.wait(0.2)
+	local out = d:GetAttribute("Hidden") == false and not d.PrimaryPart.Anchored
+		and (d.PrimaryPart.Position - front.Position).Magnitude < 1
+		and d:FindFirstChild("HidingSpot") == nil
+	log(("leave locker: wasInside=%s outFree=%s"):format(tostring(inside), tostring(out)))
+	d:Destroy()
 end
 
 -- 3b. vaulting: prey on the far side of a hospital bed
@@ -236,7 +266,19 @@ do
 	end
 end
 
--- 4. starvation
+-- 4. starvation (after it finishes any meal)
+for _, m in workspace:GetChildren() do
+	if CollectionService:HasTag(m, "SkinwalkerPrey") then
+		m:Destroy()
+	end
+end
+for _ = 1, 60 do
+	local st = sw:GetAttribute("State")
+	if st ~= "Feed" and st ~= "Attack" and st ~= "Pounce" and st ~= "Toy" then
+		break
+	end
+	task.wait(0.2)
+end
 ai:SetAttribute("SetHunger", 0.15)
 local died = false
 for _ = 1, 60 do
