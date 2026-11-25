@@ -102,7 +102,8 @@ def main():
     rs = Inst("ReplicatedStorage", "ReplicatedStorage")
     rs.add(script("ModuleScript", "SkinwalkerConfig", read("ReplicatedStorage/SkinwalkerConfig.luau")),
            script("ModuleScript", "SoundBank", read("ReplicatedStorage/SoundBank.luau")),
-           script("ModuleScript", "Sfx", read("ReplicatedStorage/Sfx.luau")))
+           script("ModuleScript", "Sfx", read("ReplicatedStorage/Sfx.luau")),
+           script("ModuleScript", "CharacterPoser", read("ReplicatedStorage/CharacterPoser.luau")))
 
     sss = Inst("ServerScriptService", "ServerScriptService")
     ai_src = read("ServerScriptService/SkinwalkerAI/init.server.luau")
@@ -113,7 +114,8 @@ def main():
             script("ModuleScript", "Lockers", read("ServerScriptService/Lockers.luau")),
             script("Script", "PlayerSystems", read("ServerScriptService/PlayerSystems.server.luau")),
             script("Script", "MapSetup", read("ServerScriptService/MapSetup.server.luau")),
-            script("Script", "Diagnostics", read("ServerScriptService/Diagnostics.server.luau")))
+            script("Script", "Diagnostics", read("ServerScriptService/Diagnostics.server.luau")),
+            script("Script", "R6Characters", read("ServerScriptService/R6Characters.server.luau")))
 
     starter_player = Inst("StarterPlayer", "StarterPlayer")
     starter_player.set("GameSettingsAvatar", "token", 0)  # R6 (the universe's Avatar setting has the final say)
@@ -137,6 +139,7 @@ def main():
         ss.add(wrapped("PlayerSystemsCheck", read("ServerScriptService/PlayerSystems.server.luau")))
         ss.add(wrapped("MapSetupCheck", read("ServerScriptService/MapSetup.server.luau")))
         ss.add(wrapped("DiagnosticsServerCheck", read("ServerScriptService/Diagnostics.server.luau")))
+        ss.add(wrapped("R6CharactersCheck", read("ServerScriptService/R6Characters.server.luau")))
         # the test runner doesn't start place scripts, so ship a startable copy of the AI
         ai_run = wrapped("SkinwalkerAIRun", ai_src)
         ai_run.add(script("ModuleScript", "Memory", read("ServerScriptService/SkinwalkerAI/Memory.luau")),
