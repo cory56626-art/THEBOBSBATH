@@ -112,12 +112,14 @@ def main():
     sss.add(ai,
             script("ModuleScript", "Lockers", read("ServerScriptService/Lockers.luau")),
             script("Script", "PlayerSystems", read("ServerScriptService/PlayerSystems.server.luau")),
-            script("Script", "MapSetup", read("ServerScriptService/MapSetup.server.luau")))
+            script("Script", "MapSetup", read("ServerScriptService/MapSetup.server.luau")),
+            script("Script", "Diagnostics", read("ServerScriptService/Diagnostics.server.luau")))
 
     starter_player = Inst("StarterPlayer", "StarterPlayer")
     starter_player.set("GameSettingsAvatar", "token", 1)  # R15 (the procedural animations use R15 joints)
     sps = Inst("StarterPlayerScripts", "StarterPlayerScripts")
-    client = ["SkinwalkerAnimator", "SkinwalkerClient", "PlayerControls", "CharacterAnimator", "MapClient"]
+    client = ["SkinwalkerAnimator", "SkinwalkerClient", "PlayerControls", "CharacterAnimator", "MapClient",
+              "Diagnostics"]
     for name in client:
         sps.add(script("LocalScript", name, read(f"StarterPlayerScripts/{name}.client.luau")))
     # replace Roblox's default footstep sounds with ours (matched to the animation)
@@ -134,6 +136,7 @@ def main():
             ss.add(wrapped(name + "Check", read(f"StarterPlayerScripts/{name}.client.luau")))
         ss.add(wrapped("PlayerSystemsCheck", read("ServerScriptService/PlayerSystems.server.luau")))
         ss.add(wrapped("MapSetupCheck", read("ServerScriptService/MapSetup.server.luau")))
+        ss.add(wrapped("DiagnosticsServerCheck", read("ServerScriptService/Diagnostics.server.luau")))
         # the test runner doesn't start place scripts, so ship a startable copy of the AI
         ai_run = wrapped("SkinwalkerAIRun", ai_src)
         ai_run.add(script("ModuleScript", "Memory", read("ServerScriptService/SkinwalkerAI/Memory.luau")),

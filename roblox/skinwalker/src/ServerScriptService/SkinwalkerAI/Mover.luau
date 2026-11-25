@@ -31,8 +31,13 @@ function Mover.new(model: Model, hum: Humanoid, root: BasePart)
 	self.onLand = nil :: (() -> ())?
 	self.colliders = {} :: { BasePart }
 	self.squeezing = false
+	-- progress tracking: "stuck" means not getting closer, even if it's sliding along a wall
+	self.progressTarget = nil :: Vector3?
+	self.progressBest = math.huge
+	self.progressTime = os.clock()
+	self.noProgress = 0
 	self.path = PathfindingService:CreatePath({
-		AgentRadius = 3,
+		AgentRadius = 2.5,
 		AgentHeight = 10,
 		AgentCanJump = true,
 		AgentCanClimb = false,
@@ -52,6 +57,9 @@ function Mover:moveTo(goal: Vector3, speed: number, face: Vector3?)
 	if not self.goal or (self.goal - goal).Magnitude > 4 then
 		self.failed = false -- a new destination gets a fresh chance
 		self.stuckTime = 0
+		self.noProgress = 0
+		self.samples = {}
+		self.progressTarget = nil
 	end
 	self.goal = goal
 	self.speed = speed
@@ -261,23 +269,52 @@ function Mover:step(dt: number)
 		end
 	end
 
-	-- stuck detection
-	local moved = (root.Position - self.lastPos).Magnitude
-	self.lastPos = root.Position
-	if self.speed > 2 and moved < self.speed * dt * 0.15 then
-		self.stuckTime += dt
-		if self.stuckTime > 1.5 then
-			if not self:tryVault() then
-				if self.stuckTime > 2.0 then
-					self:squeeze()
-				else
-					hum.Jump = true
-				end
-			end
-			self.pathGoal = nil
+	-- stuck detection, two ways:
+	--  (a) its body hasn't really moved in the last 1.5 s (wedged), or
+	--  (b) it isn't getting closer to where it's heading (sliding along a wall)
+	local now = os.clock()
+	local tgt = self.goal :: Vector3
+	local wps = self.waypoints
+	if wps and wps[self.wpIndex] then
+		tgt = wps[self.wpIndex].Position
+	end
+	if not self.progressTarget or (self.progressTarget - tgt).Magnitude > 12 then
+		self.progressTarget, self.progressBest, self.progressTime = tgt, math.huge, now
+	end
+	local dd = Vector3.new(tgt.X - root.Position.X, 0, tgt.Z - root.Position.Z).Magnitude
+	if dd < self.progressBest - 0.75 then
+		self.progressBest, self.progressTime = dd, now
+	end
+	if now - (self.sampleTime or 0) > 0.5 then
+		self.sampleTime = now
+		self.samples = self.samples or {}
+		table.insert(self.samples, root.Position)
+		if #self.samples > 4 then
+			table.remove(self.samples, 1)
 		end
-	else
-		self.stuckTime = 0
+	end
+	local wedged = self.samples and #self.samples == 4 and (self.samples[4] - self.samples[1]).Magnitude < 1.5
+	local sliding = now - self.progressTime > 2.5
+	self.stuckTime = if wedged or sliding then (self.stuckTime or 0) + dt else 0
+	if (wedged or sliding) and self.speed > 2 and now - (self.lastUnstick or 0) > 1.0 then
+		self.lastUnstick = now
+		self.pathGoal = nil -- recompute the route
+		self.unsticks = (self.unsticks or 0) + 1
+		if not self:tryVault() then
+			if self.unsticks >= 2 then
+				self:squeeze()
+			else
+				hum.Jump = true
+			end
+		end
+		if self.unsticks >= 3 then
+			self.noProgress += 1
+			self.unsticks = 0
+			self.progressTime = now
+			self.samples = {}
+		end
+	elseif not wedged and not sliding then
+		self.unsticks = 0
 	end
 end
 
@@ -299,7 +336,24 @@ function Mover:squeeze()
 	if target then
 		local d = Vector3.new(target.X - root.Position.X, 0, target.Z - root.Position.Z)
 		if d.Magnitude > 0.5 then
-			root.CFrame += d.Unit * math.min(2, d.Magnitude)
+			-- only slip past furniture/door frames, never through a wall
+			local step = d.Unit * math.min(2, d.Magnitude)
+			local blocked = false
+			for _, h in { -2.5, 0, 3 } do
+				local hit = workspace:Raycast(root.Position + Vector3.new(0, h, 0), step * 1.6, self.params)
+				if hit and (hit.Instance.Name == "Wall" or hit.Instance.Size.Y > 9) then
+					blocked = true
+				end
+			end
+			if not blocked then
+				root.CFrame += step
+			else
+				-- sidestep along the wall instead
+				local side = Vector3.new(-d.Unit.Z, 0, d.Unit.X) * (if math.random() < 0.5 then 1.5 else -1.5)
+				if not workspace:Raycast(root.Position, side * 1.5, self.params) then
+					root.CFrame += side
+				end
+			end
 		end
 	end
 	task.delay(1.2, function()
@@ -312,7 +366,7 @@ function Mover:squeeze()
 end
 
 function Mover:isStuck(): boolean
-	return self.stuckTime > 4 or (self.failed and not self:clearLine(self.goal or self.root.Position))
+	return self.noProgress >= 2 or (self.failed and not self:clearLine(self.goal or self.root.Position))
 end
 
 return Mover

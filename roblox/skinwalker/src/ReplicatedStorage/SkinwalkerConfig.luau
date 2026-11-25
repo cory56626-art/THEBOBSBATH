@@ -3,10 +3,10 @@ local Config = {
 	DEBUG = false, -- show its brain state above its head (handy when testing)
 
 	-- movement (studs per second)
-	PROWL_SPEED = 12,
+	PROWL_SPEED = 13,
 	STALK_SPEED = 10,
-	CHASE_SPEED = 22, -- a bit faster than walking (18), slower than sprinting (28): sprint, break line of sight, hide
-	DESPERATE_SPEED = 26, -- starving: nearly as fast as your sprint
+	CHASE_SPEED = 26, -- faster than your sprint (24): you escape by breaking line of sight and hiding, not running
+	DESPERATE_SPEED = 30, -- starving: much faster, but every second of chasing burns its last hunger
 
 	-- senses
 	SIGHT_RANGE = 170,

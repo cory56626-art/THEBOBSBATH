@@ -18,7 +18,7 @@ local MoveState = ReplicatedStorage:WaitForChild("MoveState") :: RemoteEvent
 local LeaveHide = ReplicatedStorage:WaitForChild("LeaveHide") :: RemoteEvent
 local Sfx = require(ReplicatedStorage:WaitForChild("Sfx"))
 
-local WALK, SPRINT, WINDED, CROUCH = 18, 28, 13, 9
+local WALK, SPRINT, WINDED, CROUCH = 16, 24, 12, 8 -- it chases at 26: you can't simply outrun it
 local CROUCH_HIP = 0.7
 local STAMINA_DRAIN, STAMINA_REGEN, REGEN_DELAY = 12, 18, 0.9
 local RECOVER_AT = 35
@@ -31,6 +31,7 @@ local sinceSprint = 99
 local lightOn = false
 local crouching = false
 local baseHip: number? = nil
+local lastHipSet: number? = nil
 local panting: Sound? = nil
 local wasHidden = false
 
@@ -255,13 +256,15 @@ RunService.RenderStepped:Connect(function(dt)
 	end
 	if hum and hum.Health > 0 then
 		hum.WalkSpeed = if wantSprint then SPRINT elseif crouching then CROUCH elseif winded then WINDED else WALK
-		if baseHip == nil then
-			baseHip = hum.HipHeight
+		-- the avatar loading/scaling changes HipHeight: adopt anything we didn't set ourselves
+		if baseHip == nil or (lastHipSet ~= nil and math.abs(hum.HipHeight - lastHipSet) > 1e-3) then
+			baseHip = if crouching then hum.HipHeight / CROUCH_HIP else hum.HipHeight
 		end
 		local wantHip = (baseHip :: number) * (if crouching then CROUCH_HIP else 1)
 		if math.abs(hum.HipHeight - wantHip) > 0.01 then
 			hum.HipHeight = hum.HipHeight + (wantHip - hum.HipHeight) * math.min(1, dt * 10)
 		end
+		lastHipSet = hum.HipHeight
 	end
 	-- out of breath
 	if winded and not panting then
@@ -362,4 +365,5 @@ player.CharacterAdded:Connect(function()
 	sprintToggled = false
 	crouching = false
 	baseHip = nil
+	lastHipSet = nil
 end)

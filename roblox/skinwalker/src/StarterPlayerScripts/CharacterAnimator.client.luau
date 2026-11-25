@@ -3,7 +3,9 @@
 -- Footstep sounds fire exactly when each foot lands, chosen by gait: soft crouch steps, walking, running.
 -- (The default Animate script and default footsteps are replaced in StarterCharacterScripts/StarterPlayerScripts.)
 -- We pose joints through Motor6D.C0 (rest C0 * pose) rather than .Transform: the Humanoid's Animator owns
--- .Transform on player characters and resets it every frame, which froze the first version.
+-- .Transform on player characters and resets it every frame.
+-- Joints are looked up again whenever they change: when your avatar loads, Roblox swaps in your avatar's body
+-- parts with brand-new joints, and an animator holding on to the old ones moves nothing (the "stiff" bug).
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -12,7 +14,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Sfx = require(ReplicatedStorage:WaitForChild("Sfx"))
 
 type Rig = {
-	char: Model, hum: Humanoid, root: BasePart, r6: boolean,
+	char: Model, hum: Humanoid, root: BasePart, r6: boolean, errored: boolean?,
 	j: { [string]: Motor6D },
 	c0: { [Motor6D]: CFrame },
 	last: { [Motor6D]: CFrame },
@@ -42,14 +44,6 @@ local function attach(char: Model)
 	end
 	local r6 = hum.RigType == Enum.HumanoidRigType.R6
 	local j, c0 = {}, {}
-	for jointName, partName in (if r6 then JOINTS_R6 else JOINTS) do
-		local p = char:WaitForChild(partName, 5)
-		local m = p and p:FindFirstChild(jointName)
-		if m and m:IsA("Motor6D") then
-			j[jointName] = m
-			c0[m] = m.C0
-		end
-	end
 	rigs[char] = { char = char, hum = hum, root = root, r6 = r6, j = j, c0 = c0, last = {}, phase = 0, speed = 0, crouch = 0, sprint = 0,
 		air = 0, t = math.random() * 10, lastStep = 0 }
 	char.AncestryChanged:Connect(function(_, parent)
@@ -80,6 +74,25 @@ local STEPS = {
 	run = { "Run1", "Run2", "Run3", "Run4" },
 }
 
+-- current joint by name (re-found if the avatar swapped body parts)
+local function joint(R: Rig, name: string): Motor6D?
+	local m = R.j[name]
+	if m and m.Parent and m:IsDescendantOf(R.char) then
+		return m
+	end
+	local partName = (if R.r6 then JOINTS_R6 else JOINTS)[name]
+	local part = partName and R.char:FindFirstChild(partName)
+	local found = part and part:FindFirstChild(name)
+	if found and found:IsA("Motor6D") then
+		R.j[name] = found
+		R.c0[found] = found.C0
+		R.last[found] = nil
+		return found
+	end
+	R.j[name] = nil
+	return nil
+end
+
 local function pose(R: Rig, m: Motor6D?, cf: CFrame)
 	if m then
 		local last = R.last[m]
@@ -96,7 +109,9 @@ local function pose(R: Rig, m: Motor6D?, cf: CFrame)
 end
 
 local function animate(R: Rig, dt: number)
-	local j = R.j
+	local j = setmetatable({}, { __index = function(_, name)
+		return joint(R, name)
+	end }) :: any
 	local hum, root = R.hum, R.root
 	local v = root.AssemblyLinearVelocity
 	local speed = Vector3.new(v.X, 0, v.Z).Magnitude
@@ -202,11 +217,38 @@ local function animate(R: Rig, dt: number)
 	pose(R, j.Neck, CFrame.Angles(lean * 0.8, 0.05 * s * moving, 0))
 end
 
+-- status for the diagnostics reporter
+local framesAnimated = 0
+_G.AnimatorStatus = function(): string
+	local me = Players.LocalPlayer.Character
+	local R = me and rigs[me]
+	if not R then
+		local count = 0
+		for _ in rigs do
+			count += 1
+		end
+		return ("no rig for my character (rigs=%d, hasCharacter=%s)"):format(count, tostring(me ~= nil))
+	end
+	local n = 0
+	for name in (if R.r6 then JOINTS_R6 else JOINTS) do
+		if joint(R, name) then
+			n += 1
+		end
+	end
+	return ("rig=%s joints=%d frames=%d speed=%.1f phase=%.1f crouch=%.2f"):format(if R.r6 then "R6" else "R15", n,
+		framesAnimated, R.speed, R.phase, R.crouch)
+end
+
 RunService.PreSimulation:Connect(function(dt)
 	dt = math.min(dt, 0.1)
 	for _, R in rigs do
 		if R.char.Parent then
-			animate(R, dt)
+			local ok, err = pcall(animate, R, dt)
+			if not ok and not R.errored then
+				R.errored = true
+				warn("[CharacterAnimator] " .. tostring(err))
+			end
+			framesAnimated += 1
 		end
 	end
 end)

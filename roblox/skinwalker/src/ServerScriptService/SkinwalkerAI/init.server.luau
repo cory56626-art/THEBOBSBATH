@@ -730,6 +730,10 @@ local function think()
 				doPounce(t)
 			else
 				local aim = intercept(root.Position, chaseSpeed(), t.root.Position, t.root.AssemblyLinearVelocity, 1.6)
+				if mover:isStuck() then
+					aim = t.root.Position -- prediction led into a wall: path straight to the prey instead
+					mover.noProgress = 0
+				end
 				mover:moveTo(aim, chaseSpeed())
 				note = if hunger <= Config.DESPERATE_AT then "STARVING - desperate" else "predicting your path"
 			end
