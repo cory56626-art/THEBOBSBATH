@@ -19,6 +19,8 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("SkinwalkerConfig"))
+local Lockers = require(game:GetService("ServerScriptService"):WaitForChild("Lockers"))
+Lockers.init()
 local Memory = require(script.Memory)
 local Mover = require(script.Mover)
 
@@ -111,7 +113,7 @@ end)
 local rng = Random.new()
 
 -------------------------------------------------------------------------------- prey
-type Prey = { id: string, model: Model, hum: Humanoid, root: BasePart, head: BasePart, player: Player? }
+type Prey = { id: string, model: Model, hum: Humanoid, root: BasePart, head: BasePart, player: Player?, hidden: boolean }
 
 local function getPrey(): { Prey }
 	local list = {}
@@ -130,6 +132,7 @@ local function getPrey(): { Prey }
 				root = r,
 				head = hd,
 				player = player,
+				hidden = m:GetAttribute("Hidden") == true,
 			})
 		end
 	end
@@ -188,6 +191,12 @@ local function noiseRadius(p: Prey): number
 	local r = speed * Config.HEARING_PER_SPEED
 	if math.abs(v.Y) > 20 then
 		r = math.max(r, 45) -- jumping / landing is loud
+	end
+	if p.model:GetAttribute("Crouching") == true then
+		r *= Config.CROUCH_NOISE
+	end
+	if not lineClear(root.Position, p.root.Position) then
+		r *= Config.WALL_MUFFLE -- walls muffle footsteps
 	end
 	return r
 end
@@ -254,7 +263,7 @@ end
 
 -------------------------------------------------------------------------------- world helpers
 local function groundAt(pos: Vector3): Vector3?
-	local hit = workspace:Raycast(pos + Vector3.new(0, 60, 0), Vector3.new(0, -140, 0), rayParams)
+	local hit = workspace:Raycast(pos + Vector3.new(0, 7, 0), Vector3.new(0, -40, 0), rayParams)
 	if not hit then
 		return nil
 	end
@@ -289,6 +298,18 @@ local function nearSpawn(pos: Vector3): boolean
 end
 
 local function randomWanderPoint(): Vector3?
+	local nav = CollectionService:GetTagged("NavPoint")
+	if #nav > 0 then
+		for _ = 1, 8 do
+			local n = nav[rng:NextInteger(1, #nav)]
+			if n:IsA("BasePart") then
+				local g = groundAt(n.Position)
+				if g then
+					return g
+				end
+			end
+		end
+	end
 	for _ = 1, 12 do
 		local a = rng:NextNumber(0, math.pi * 2)
 		local r = math.sqrt(rng:NextNumber()) * Config.ARENA_RADIUS
@@ -353,6 +374,10 @@ local hitDuringPounce = false
 local lastDist: { [string]: number } = {}
 local kills = 0
 local note = ""
+local lockerQueue: { Model } = {}
+local lockerSure = false
+local lockerPrey: Prey? = nil
+local sniffStart = 0
 
 local function setState(s: string, why: string?)
 	if State ~= s then
@@ -407,6 +432,10 @@ end
 local function strike(p: Prey): boolean
 	if (p.root.Position - root.Position).Magnitude > Config.ATTACK_RANGE + 1.5 then
 		return false
+	end
+	local chest = root.Position + Vector3.new(0, 2.5, 0)
+	if not (lineClear(chest, p.root.Position) or lineClear(eye(), p.head.Position)) then
+		return false -- a wall is in the way
 	end
 	p.hum:TakeDamage(Config.ATTACK_DAMAGE)
 	bloodSpray(p)
@@ -511,9 +540,16 @@ local function think()
 	-- perceive
 	local visible: { Prey } = {}
 	local heard: Prey? = nil
+	local sawHide: Prey? = nil
 	for _, p in prey do
 		local n = memory:note(p.id)
-		if canSee(p) or (p.root.Position - root.Position).Magnitude < Config.FEEL_RANGE then
+		if p.hidden then
+			-- it watched you climb in: it knows exactly where you are
+			if now - n.lastSeenTime < 0.8 and (p.root.Position - root.Position).Magnitude < 70 then
+				sawHide = p
+			end
+		elseif canSee(p) or ((p.root.Position - root.Position).Magnitude < Config.FEEL_RANGE
+			and lineClear(root.Position, p.root.Position)) then
 			table.insert(visible, p)
 			if not n.lastSeenPos or now - n.lastSeenTime > 3 then
 				n.seen += 1
@@ -549,7 +585,7 @@ local function think()
 	local dist = if t then (t.root.Position - root.Position).Magnitude else math.huge
 	local watched = t ~= nil and tVisible and isWatching(t)
 	watchedFor = if watched then watchedFor + BRAIN_DT else math.max(0, watchedFor - BRAIN_DT * 2)
-	local hungry = hunger < 50
+	local hungry = hunger < Config.HUNGRY_AT
 	local airborne = hum:GetState() == Enum.HumanoidStateType.Freefall
 		or hum:GetState() == Enum.HumanoidStateType.Jumping
 
@@ -566,14 +602,69 @@ local function think()
 	end
 
 	------------------------------------------------------------------ states
-	if State == "Pounce" then
+	if sawHide and State ~= "Locker" and State ~= "Pounce" and State ~= "Attack" then
+		local spot = Lockers.spotOf(sawHide.model)
+		if spot then
+			lockerQueue, lockerSure, lockerPrey = { spot }, true, sawHide
+			memory:note(sawHide.id).lastSeenTime = -math.huge
+			setState("Locker", "I saw you get in there")
+		end
+	end
+
+	if State == "Locker" then
+		local spot = lockerQueue[1]
+		local front = spot and spot:FindFirstChild("Front") :: BasePart?
+		if not spot or not front then
+			local focus = (tNote and tNote.lastSeenPos) or root.Position
+			local w = Config.MOUSEHOLE_WAIT
+			if not startAmbush(focus, patienceFor(rng:NextNumber(w[1], w[2])), "waiting for you to come out") then
+				setState("Prowl", "")
+			end
+		elseif (front.Position - root.Position).Magnitude > 6.5 then
+			mover:moveTo(front.Position, if lockerSure then chaseSpeed() else Config.PROWL_SPEED + 2)
+			lookAt = front.Position + Vector3.new(0, 3, 0)
+			sniffStart = now
+			if mover:isStuck() and timeIn() > 6 then
+				table.remove(lockerQueue, 1)
+			end
+		else
+			mover:stop(front.Position)
+			lookAt = front.Position + Vector3.new(0, 2.5, 0)
+			local inside = Lockers.occupantOf(spot)
+			if lockerSure then
+				if inside then
+					Lockers.forceOut(inside)
+					for _, p in prey do
+						if p.model == inside then
+							p.hidden = false
+							target, targetId = p, p.id
+							startAttack(p)
+						end
+					end
+				end
+				table.clear(lockerQueue)
+			else
+				note = "sniffing..."
+				if now - sniffStart > Config.SNIFF_TIME then
+					local chance = Config.SNIFF_FIND + (if hungry then 0.25 else 0)
+					if inside and rng:NextNumber() < chance then
+						lockerSure = true -- found you
+						note = "it smells you"
+					else
+						table.remove(lockerQueue, 1)
+						sniffStart = now
+					end
+				end
+			end
+		end
+	elseif State == "Pounce" then
 		if t and not hitDuringPounce and (t.root.Position - (root.Position + root.CFrame.LookVector * 2)).Magnitude < 6 then
 			hitDuringPounce = strike(t)
 		end
 		if (timeIn() > 0.35 and not airborne) or timeIn() > 1.6 then
 			if hitDuringPounce and t and t.hum.Health > 0 then
-				if hunger > 60 then
-					toyUntil = now + rng:NextNumber(2, 4)
+				if hunger > Config.TOY_ABOVE and rng:NextNumber() < 0.4 then
+					toyUntil = now + rng:NextNumber(1.5, 3)
 					setState("Toy", "playing with its food")
 				else
 					setState("Chase", "")
@@ -589,8 +680,8 @@ local function think()
 		if timeIn() > 0.6 then
 			if t and t.hum.Health <= 0 then
 				setState("Feed", "")
-			elseif t and hunger > 60 and rng:NextNumber() < 0.6 then
-				toyUntil = now + rng:NextNumber(2, 4.5)
+			elseif t and hunger > Config.TOY_ABOVE and rng:NextNumber() < 0.35 then
+				toyUntil = now + rng:NextNumber(1.5, 3)
 				setState("Toy", "playing with its food")
 			else
 				setState("Chase", "")
@@ -626,7 +717,7 @@ local function think()
 			end
 		elseif State == "Wiggle" then
 			mover:stop(t.root.Position)
-			if watched and hunger > 50 then
+			if watched and hunger > Config.TOY_ABOVE and dist > 15 then
 				setState("Stalk", "spotted mid-wiggle, freezing")
 			elseif timeIn() > 0.55 then
 				doPounce(t)
@@ -635,7 +726,7 @@ local function think()
 			if dist <= Config.ATTACK_RANGE then
 				startAttack(t)
 			elseif dist <= Config.POUNCE_RANGE and dist > Config.POUNCE_MIN and not airborne
-				and rng:NextNumber() < 0.08 and lineClear(eye(), t.head.Position) then
+				and rng:NextNumber() < 0.15 and lineClear(eye(), t.head.Position) then
 				doPounce(t)
 			else
 				local aim = intercept(root.Position, chaseSpeed(), t.root.Position, t.root.AssemblyLinearVelocity, 1.6)
@@ -667,11 +758,11 @@ local function think()
 			end
 		else
 			-- it has been noticed
-			if hungry or watchedFor > 4 then
-				if dist <= Config.POUNCE_RANGE and dist > Config.POUNCE_MIN and hungry then
+			if hungry or dist < Config.CHARGE_WHEN_SEEN or watchedFor > 1.5 then
+				if dist <= Config.POUNCE_RANGE and dist > Config.POUNCE_MIN then
 					setState("Wiggle", "")
 				else
-					setState("Chase", if hungry then "too hungry to wait" else "tired of being stared at")
+					setState("Chase", if hungry then "too hungry to wait" else "you saw it. it's coming")
 				end
 			else
 				mover:stop(t.head.Position)
@@ -714,8 +805,20 @@ local function think()
 			-- sniff around
 			lookAt = root.Position + root.CFrame.LookVector * 10 + Vector3.new(math.sin(now * 1.3) * 10, -4, 0)
 			if timeIn() > rng:NextNumber(4, 7) then
-				-- the mouse-hole wait: sit where they vanished
 				local focus = (tNote and tNote.lastSeenPos) or searchPoint or root.Position
+				-- check the lockers around where you vanished
+				local spots = Lockers.near(focus, Config.LOCKER_SEARCH_RADIUS)
+				if #spots > 0 and rng:NextNumber() < 0.85 then
+					lockerQueue = {}
+					for i = 1, math.min(3, #spots) do
+						lockerQueue[i] = spots[i]
+					end
+					lockerSure = false
+					sniffStart = now
+					setState("Locker", "checking the hiding spots")
+					return
+				end
+				-- the mouse-hole wait: sit where they vanished
 				local w = Config.MOUSEHOLE_WAIT
 				if not startAmbush(focus, patienceFor(rng:NextNumber(w[1], w[2])), "waiting where you vanished") then
 					setState("Prowl", "")
@@ -774,6 +877,7 @@ local function think()
 	model:SetAttribute("Note", note)
 	model:SetAttribute("Frozen", State == "Stalk" and watched)
 	model:SetAttribute("Target", if t then t.model.Name else "")
+	model:SetAttribute("Climbing", mover.vaulting == true)
 	if lookAt then
 		model:SetAttribute("LookAt", lookAt)
 	end
@@ -789,6 +893,11 @@ RunService.Heartbeat:Connect(function(dt)
 		mover:step(dt)
 	end
 end)
+mover.onLand = function()
+	pcall(function()
+		root:SetNetworkOwner(nil)
+	end)
+end
 
 task.spawn(function()
 	while true do

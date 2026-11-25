@@ -16,13 +16,13 @@ SERVICES = {"Workspace", "Lighting", "StarterPlayer", "ReplicatedStorage", "Serv
             "ServerStorage", "StarterGui", "StarterPack", "SoundService", "Players", "Teams"}
 
 TYPE_ID = {
-    "string": 0x01, "ProtectedString": 0x01, "bool": 0x02, "int": 0x03, "float": 0x04, "double": 0x05,
+    "string": 0x01, "ProtectedString": 0x01, "BinaryString": 0x01, "bool": 0x02, "int": 0x03, "float": 0x04, "double": 0x05,
     "Color3": 0x0C, "Vector3": 0x0E, "CoordinateFrame": 0x10, "token": 0x12, "Ref": 0x13,
     "NumberSequence": 0x15, "NumberRange": 0x17, "ColorSequence": 0x19, "Color3uint8": 0x1A,
 }
 
 DEFAULTS = {
-    "string": "", "ProtectedString": "", "bool": False, "int": 0, "float": 0.0, "double": 0.0,
+    "string": "", "ProtectedString": "", "BinaryString": "", "bool": False, "int": 0, "float": 0.0, "double": 0.0,
     "Color3": (0, 0, 0), "Vector3": (0.0, 0.0, 0.0), "CoordinateFrame": None, "token": 0, "Ref": None,
     "NumberSequence": [(0, 0, 0), (1, 0, 0)], "NumberRange": (0, 0), "ColorSequence": [(0, (0, 0, 0)), (1, (0, 0, 0))],
     "Color3uint8": (0, 0, 0),
@@ -141,7 +141,7 @@ def _chunk(name: str, data: bytes, compress=True) -> bytes:
 
 
 def encode_values(typ, values, ref_id) -> bytes:
-    if typ in ("string", "ProtectedString"):
+    if typ in ("string", "ProtectedString", "BinaryString"):
         return b"".join(string(str(v)) for v in values)
     if typ == "bool":
         return bytes(1 if v else 0 for v in values)

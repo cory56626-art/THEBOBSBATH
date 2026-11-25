@@ -9,6 +9,19 @@ local toggle = Instance.new("RemoteEvent")
 toggle.Name = "FlashlightToggle"
 toggle.Parent = ReplicatedStorage
 
+-- crouching is shown to everyone (animation) and makes you quieter to the skinwalker
+local moveState = Instance.new("RemoteEvent")
+moveState.Name = "MoveState"
+moveState.Parent = ReplicatedStorage
+moveState.OnServerEvent:Connect(function(player, crouching)
+	if type(crouching) == "boolean" and player.Character then
+		player.Character:SetAttribute("Crouching", crouching)
+	end
+end)
+
+-- lockers and closets
+require(script.Parent:WaitForChild("Lockers")).init()
+
 local function setup(character: Model)
 	local head = character:WaitForChild("Head", 10)
 	if not head or not head:IsA("BasePart") then
@@ -25,6 +38,8 @@ local function setup(character: Model)
 	light.Enabled = false
 	light.Parent = head
 	character:SetAttribute("Flashlight", false)
+	character:SetAttribute("Crouching", false)
+	character:SetAttribute("Hidden", false)
 end
 
 Players.PlayerAdded:Connect(function(player)

@@ -1,5 +1,7 @@
 -- Survival controls for the player:
---   * Sprint (hold Shift on keyboard, tap RUN on mobile) uses stamina; run dry and you're winded for a while
+--   * Sprint (hold Shift on keyboard, tap RUN on mobile) uses stamina; run dry and you're winded (and panting)
+--   * Crouch (C on keyboard, tap CROUCH on mobile): slow, low and much quieter
+--   * inside a locker/closet the camera looks out through the vent slats
 --   * Flashlight (F on keyboard, tap LIGHT on mobile) drains a battery that slowly recharges while off
 --   * the flashlight flickers when the skinwalker is hunting close by
 --   * a heartbeat pulse darkens the screen edges as it gets closer
@@ -12,8 +14,11 @@ local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local FlashlightToggle = ReplicatedStorage:WaitForChild("FlashlightToggle") :: RemoteEvent
+local MoveState = ReplicatedStorage:WaitForChild("MoveState") :: RemoteEvent
+local Sfx = require(ReplicatedStorage:WaitForChild("Sfx"))
 
-local WALK, SPRINT, WINDED = 16, 26, 12
+local WALK, SPRINT, WINDED, CROUCH = 16, 27, 12, 8
+local CROUCH_HIP = 0.7
 local STAMINA_DRAIN, STAMINA_REGEN, REGEN_DELAY = 15, 17, 1.0
 local RECOVER_AT = 35
 local BATTERY_DRAIN, BATTERY_RECHARGE = 0.55, 0.3
@@ -23,6 +28,10 @@ local sprintHeld, sprintToggled = false, false
 local winded = false
 local sinceSprint = 99
 local lightOn = false
+local crouching = false
+local baseHip: number? = nil
+local panting: Sound? = nil
+local wasHidden = false
 
 -------------------------------------------------------------------------------- flashlight (local beam follows the camera)
 local beamPart = Instance.new("Part")
@@ -53,6 +62,18 @@ local function setLight(on: boolean)
 	lightOn = on
 	beam.Enabled = on
 	FlashlightToggle:FireServer(on)
+	Sfx.play("Player", "FlashClick", nil, { volume = 0.5 })
+end
+
+local function setCrouch(on: boolean)
+	if crouching == on then
+		return
+	end
+	crouching = on
+	MoveState:FireServer(on)
+	if on then
+		sprintToggled = false
+	end
 end
 
 -------------------------------------------------------------------------------- input
@@ -63,6 +84,15 @@ local function onSprint(_, inputState: Enum.UserInputState, input: InputObject)
 		end
 	else
 		sprintHeld = inputState == Enum.UserInputState.Begin
+	end
+	if sprintHeld or sprintToggled then
+		setCrouch(false)
+	end
+	return Enum.ContextActionResult.Sink
+end
+local function onCrouch(_, inputState: Enum.UserInputState)
+	if inputState == Enum.UserInputState.Begin then
+		setCrouch(not crouching)
 	end
 	return Enum.ContextActionResult.Sink
 end
@@ -76,6 +106,8 @@ ContextActionService:BindAction("Sprint", onSprint, true, Enum.KeyCode.LeftShift
 ContextActionService:BindAction("Flashlight", onLight, true, Enum.KeyCode.F, Enum.KeyCode.ButtonY)
 ContextActionService:SetTitle("Sprint", "RUN")
 ContextActionService:SetTitle("Flashlight", "LIGHT")
+ContextActionService:BindAction("Crouch", onCrouch, true, Enum.KeyCode.C, Enum.KeyCode.ButtonB)
+ContextActionService:SetTitle("Crouch", "CROUCH")
 
 -------------------------------------------------------------------------------- HUD
 local gui = Instance.new("ScreenGui")
@@ -128,7 +160,7 @@ if UserInputService.KeyboardEnabled and not UserInputService.TouchEnabled then
 	hint.TextSize = 12
 	hint.TextColor3 = Color3.fromRGB(220, 215, 210)
 	hint.TextTransparency = 0.3
-	hint.Text = "Shift: run    F: flashlight"
+	hint.Text = "Shift: run    C: crouch    F: flashlight    E: hide in lockers"
 	hint.Parent = gui
 end
 
@@ -186,7 +218,21 @@ RunService.RenderStepped:Connect(function(dt)
 		end
 	end
 	if hum and hum.Health > 0 then
-		hum.WalkSpeed = if wantSprint then SPRINT elseif winded then WINDED else WALK
+		hum.WalkSpeed = if wantSprint then SPRINT elseif crouching then CROUCH elseif winded then WINDED else WALK
+		if baseHip == nil then
+			baseHip = hum.HipHeight
+		end
+		local wantHip = (baseHip :: number) * (if crouching then CROUCH_HIP else 1)
+		if math.abs(hum.HipHeight - wantHip) > 0.01 then
+			hum.HipHeight = hum.HipHeight + (wantHip - hum.HipHeight) * math.min(1, dt * 10)
+		end
+	end
+	-- out of breath
+	if winded and not panting then
+		panting = Sfx.loop("Player", "Panting", nil, { volume = 0.45 })
+	elseif not winded and panting then
+		panting:Destroy()
+		panting = nil
 	end
 	staminaFill.Size = UDim2.new(math.max(0.02, stamina / 100), -6, 1, -6)
 	staminaFill.BackgroundColor3 = if winded then Color3.fromRGB(170, 60, 50) else Color3.fromRGB(200, 200, 190)
@@ -229,8 +275,40 @@ RunService.RenderStepped:Connect(function(dt)
 	local flicker = os.clock() < flickerUntil or (battery < 15 and math.random() < 0.08)
 	beam.Brightness = if flicker then (if math.random() < 0.5 then 0 else 0.6) else 3.2
 
+	-- hiding: look out through the vent slats
+	local hidden = char ~= nil and char:GetAttribute("Hidden") == true
+	local ref = char and char:FindFirstChild("HidingSpot")
+	local spot = ref and ref:IsA("ObjectValue") and ref.Value
+	local inside = spot and spot:FindFirstChild("Inside")
+	if hidden and inside and inside:IsA("BasePart") and cam then
+		cam.CameraType = Enum.CameraType.Scriptable
+		local sway = CFrame.Angles(math.sin(os.clock() * 0.9) * 0.01, math.sin(os.clock() * 0.6) * 0.015, 0)
+		cam.CFrame = inside.CFrame * CFrame.new(0, 1.6, -0.45) * sway
+		for _, d in (char :: Model):GetDescendants() do
+			if d:IsA("BasePart") then
+				d.LocalTransparencyModifier = 1
+			end
+		end
+		wasHidden = true
+		closeness = math.min(1, closeness * 1.3)
+	elseif wasHidden and cam then
+		wasHidden = false
+		cam.CameraType = Enum.CameraType.Custom
+		if char then
+			for _, d in char:GetDescendants() do
+				if d:IsA("BasePart") then
+					d.LocalTransparencyModifier = 0
+				end
+			end
+		end
+	end
+
 	local bpm = 60 + closeness * 90
+	local lastBeat = math.floor(beat)
 	beat += dt * bpm / 60
+	if math.floor(beat) ~= lastBeat and closeness > 0.2 then
+		Sfx.play("Player", "Heartbeat", nil, { volume = 0.25 + closeness * 0.75 })
+	end
 	local pulse = math.max(0, math.sin(beat * math.pi * 2)) ^ 6
 	local alpha = closeness * (0.45 + pulse * 0.4)
 	for _, f in edges do
@@ -244,4 +322,6 @@ player.CharacterAdded:Connect(function()
 	stamina = 100
 	winded = false
 	sprintToggled = false
+	crouching = false
+	baseHip = nil
 end)

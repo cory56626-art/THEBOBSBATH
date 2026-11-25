@@ -3,24 +3,26 @@ local Config = {
 	DEBUG = false, -- show its brain state above its head (handy when testing)
 
 	-- movement (studs per second)
-	PROWL_SPEED = 10,
-	STALK_SPEED = 7,
-	CHASE_SPEED = 19.5, -- faster than walking (16), slower than sprinting (26): you have to spend stamina
-	DESPERATE_SPEED = 23, -- starving: nearly as fast as your sprint
+	PROWL_SPEED = 12,
+	STALK_SPEED = 10,
+	CHASE_SPEED = 24, -- much faster than walking (16), a bit slower than sprinting (27): break line of sight or hide
+	DESPERATE_SPEED = 27.5, -- starving: faster than your sprint
 
 	-- senses
 	SIGHT_RANGE = 170,
 	SIGHT_FOV = 210, -- degrees, cats see wide
-	HEARING_PER_SPEED = 2.6, -- you are heard within (your speed x this) studs; standing still is silent
+	HEARING_PER_SPEED = 2.2, -- you are heard within (your speed x this) studs; standing still is silent
+	CROUCH_NOISE = 0.35, -- crouch-walking is this much quieter
+	WALL_MUFFLE = 0.45, -- walls between you cut how far it hears you
 	WATCHED_ANGLE = 26, -- degrees: if your camera points this close to it, it knows you are looking
 	WATCH_RANGE = 170,
 	FEEL_RANGE = 9, -- it always senses prey this close, even behind it
 	FLASHLIGHT_SIGHT = 280, -- a lit flashlight can be seen from this far, from any angle within 70 studs
 
 	-- attacks
-	POUNCE_RANGE = 22,
+	POUNCE_RANGE = 26,
 	POUNCE_MIN = 7,
-	POUNCE_SPEED = 52,
+	POUNCE_SPEED = 60,
 	POUNCE_UP = 18,
 	ATTACK_RANGE = 8, -- measured from its hips; its head/claws reach this far
 	ATTACK_DAMAGE = 28,
@@ -30,6 +32,9 @@ local Config = {
 	HUNGER_START = 75,
 	HUNGER_MAX = 100,
 	DESPERATE_AT = 25, -- below this it gets faster and stops toying with prey
+	HUNGRY_AT = 70, -- below this it chases instead of stalking patiently
+	TOY_ABOVE = 85, -- only plays with its food when nearly full
+	CHARGE_WHEN_SEEN = 40, -- stare at it closer than this and it charges
 	HUNGER_DRAIN = { -- per second, by state
 		Ambush = 0.009, -- ~3 hours of waiting on a full stomach
 		Prowl = 0.03,
@@ -41,6 +46,7 @@ local Config = {
 		Chase = 0.75, -- ~100 s of chasing from a full stomach: run long enough and it dies
 		Pounce = 0,
 		Wiggle = 0.05,
+		Locker = 0.05,
 		Dead = 0,
 	},
 	POUNCE_COST = 3,
@@ -51,6 +57,11 @@ local Config = {
 	AMBUSH_MIN_HUNGER = 32, -- gives up an ambush when hunger falls to this
 	MOUSEHOLE_WAIT = { 45, 240 }, -- seconds it waits where you vanished (scaled by hunger)
 	SPAWN_SAFE_RADIUS = 35, -- never ambushes right on top of a spawn point
+
+	-- hiding spots
+	LOCKER_SEARCH_RADIUS = 28, -- after losing you, it checks lockers this close to where you vanished
+	SNIFF_TIME = 2.2,
+	SNIFF_FIND = 0.3, -- chance it smells you out of a locker it sniffs (+0.25 when hungry)
 
 	-- memory
 	PERSIST_MEMORY = true, -- remembers where players like to go, across servers (DataStore)

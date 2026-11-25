@@ -12,6 +12,7 @@ local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 local Config = require(ReplicatedStorage:WaitForChild("SkinwalkerConfig"))
+local Sfx = require(ReplicatedStorage:WaitForChild("Sfx"))
 local LookRemote = ReplicatedStorage:WaitForChild("SkinwalkerLook") :: RemoteEvent
 local FxRemote = ReplicatedStorage:WaitForChild("SkinwalkerFX") :: RemoteEvent
 
@@ -90,6 +91,11 @@ end)
 FxRemote.OnClientEvent:Connect(function(kind, a, b)
 	if kind == "blood" and typeof(a) == "Vector3" and typeof(b) == "Vector3" then
 		spray(a, b)
+		local at = Instance.new("Attachment")
+		at.WorldPosition = a
+		at.Parent = workspace.Terrain
+		Sfx.play("Creature", "Hit", at, { volume = 1, range = 60 })
+		Debris:AddItem(at, 2)
 	elseif kind == "hurt" then
 		hurt()
 	end

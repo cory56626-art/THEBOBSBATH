@@ -9,6 +9,8 @@
 
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Sfx = require(ReplicatedStorage:WaitForChild("Sfx"))
 
 local found = workspace:WaitForChild("Skinwalker", 60)
 if not found or not found:IsA("Model") then
@@ -155,6 +157,7 @@ type Params = {
 	wig: number, sway: number, breath: number, yaw: number, pitch: number, tilt: number, jaw: number,
 	air: number, atk: number, atkSide: number, dead: number, curl: number, t: number,
 	tspd: number, tamp: number, tflat: number,
+	liftL: number, liftR: number, -- ground height under each foot vs. under the body (steps, stairs)
 }
 
 local function set(name: string, cf: CFrame)
@@ -199,7 +202,8 @@ local function applyPose(P: Params)
 			local footZ = -P.stride * (1 - 0.25 * P.quad) * math.sin(ph) + P.quad * 0.2
 			local footY = P.lift * math.max(0, math.cos(ph))
 			local rest = L.K0 + L.H0 + L.A0
-			solveLeg(L, rest + Vector2.new(drop - bob + footY, footZ))
+			local ground = if side == "Left" then P.liftL else P.liftR
+			solveLeg(L, rest + Vector2.new(drop - bob + footY + ground, footZ))
 			a, b = L.a, L.b
 		end
 		local c = -K_META * b
@@ -292,18 +296,30 @@ local function approach(cur: number, target: number, rate: number, dt: number): 
 	return cur + (target - cur) * math.min(1, dt * rate)
 end
 
-local CROUCH = { Ambush = 1, Wiggle = 1, Stalk = 0.7, Toy = 0.4, Feed = 0.85, Search = 0.35, Attack = 0.25,
+local CROUCH = { Ambush = 1, Wiggle = 1, Stalk = 0.7, Toy = 0.4, Feed = 0.85, Search = 0.35, Attack = 0.25, Locker = 0.45,
 	Prowl = 0.08, Chase = 0.1, Pounce = 0, Dead = 0 }
-local LEAN = { Ambush = 0.55, Wiggle = 0.6, Stalk = 0.5, Toy = 0.35, Feed = 0.75, Search = 0.55, Attack = 0.4,
+local LEAN = { Ambush = 0.55, Wiggle = 0.6, Stalk = 0.5, Toy = 0.35, Feed = 0.75, Search = 0.55, Attack = 0.4, Locker = 0.6,
 	Prowl = 0.25, Chase = 0.35, Pounce = 0.5, Dead = 0 }
-local QUAD = { Ambush = 0.65, Wiggle = 0.75, Stalk = 0.35, Toy = 0.3, Feed = 0.5, Search = 0.3, Attack = 0,
+local QUAD = { Ambush = 0.65, Wiggle = 0.75, Stalk = 0.35, Toy = 0.3, Feed = 0.5, Search = 0.3, Attack = 0, Locker = 0.25,
 	Prowl = 0, Chase = 1, Pounce = 0, Dead = 0 }
 
 local P: Params = {
 	crouch = 0, lean = 0.2, quad = 0, phase = 0, gait = 0, stride = 0, lift = 0, wig = 0, sway = 0, breath = 0,
 	yaw = 0, pitch = 0, tilt = 0, jaw = 0.08, air = 0, atk = -1, atkSide = 1, dead = 0, curl = 0.15, t = 0,
-	tspd = 1.3, tamp = 1, tflat = 0,
+	tspd = 1.3, tamp = 1, tflat = 0, liftL = 0, liftR = 0,
 }
+local footRay = RaycastParams.new()
+footRay.FilterType = Enum.RaycastFilterType.Exclude
+
+-- creature sound state
+local headPart = model:FindFirstChild("Head") :: BasePart?
+local lastState = ""
+local breathIn = true
+local nextBreath = 1
+local nextClick = 4
+local nextGrowl = 0
+local lastStinger = -99
+local stepIdx = 0
 local rng = Random.new()
 local clock = 0
 local realT = 0
@@ -357,7 +373,7 @@ RunService.RenderStepped:Connect(function(dt)
 	end
 	pounceT += dt
 	deadT = if dead then deadT + dt else 0
-	local airborne = state == "Pounce" and pounceT < 1.4
+	local airborne = (state == "Pounce" and pounceT < 1.4) or model:GetAttribute("Climbing") == true
 
 	-- posture blends
 	local quadTarget = QUAD[state] or 0
@@ -376,6 +392,7 @@ RunService.RenderStepped:Connect(function(dt)
 	P.stride = math.min(2.2, 0.9 + speed * 0.065)
 	P.lift = math.min(1.2, speed * 0.07)
 	P.gait = approach(P.gait, math.clamp(speed / 6, 0, 1), 6, dt)
+	local phaseBefore = P.phase
 	if speed > 0.5 then
 		P.phase += dt * math.pi * speed / (2 * P.stride)
 	else
@@ -447,7 +464,99 @@ RunService.RenderStepped:Connect(function(dt)
 		P.tspd, P.tamp, P.tflat = 1.3, 1, 0
 	end
 
+	-- feet find the floor under them (steps, stairs, debris)
+	local ignore = { model }
+	for _, plr in Players:GetPlayers() do
+		if plr.Character then
+			table.insert(ignore, plr.Character)
+		end
+	end
+	footRay.FilterDescendantsInstances = ignore
+	local nominal = root.Position.Y - 6
+	for _, side in SIDES do
+		local foot = model:FindFirstChild(side .. "Foot") :: BasePart?
+		local lift = 0
+		if foot and not airborne and not dead then
+			local from = Vector3.new(foot.Position.X, root.Position.Y, foot.Position.Z)
+			local hit = workspace:Raycast(from, Vector3.new(0, -12, 0), footRay)
+			if hit then
+				lift = math.clamp(hit.Position.Y - nominal, -1.5, 3)
+			end
+		end
+		if side == "Left" then
+			P.liftL = approach(P.liftL, lift, 12, dt)
+		else
+			P.liftR = approach(P.liftR, lift, 12, dt)
+		end
+	end
+
 	applyPose(P)
+
+	------------------------------------------------------------------ sounds
+	if headPart and not dead then
+		local me = Players.LocalPlayer.Character
+		if state ~= lastState then
+			if state == "Chase" then
+				Sfx.any("Creature", { "Growl1", "Growl2" }, headPart, { volume = 1.2, range = 120 })
+				nextGrowl = realT + rng:NextNumber(3, 6)
+				if me and model:GetAttribute("Target") == me.Name and realT - lastStinger > 25 then
+					lastStinger = realT
+					Sfx.play("Creature", "Stinger", nil, { volume = 0.55 })
+				end
+				if rng:NextNumber() < 0.5 then
+					Sfx.play("Creature", "Screech", headPart, { volume = 1.1, range = 140 })
+				end
+			elseif state == "Wiggle" then
+				Sfx.play("Creature", "Chatter", headPart, { volume = 0.9, range = 60 })
+			elseif state == "Toy" then
+				Sfx.play("Creature", "Growl3", headPart, { volume = 0.9, range = 70, pitch = 0.9 })
+			end
+			lastState = state
+		end
+		-- breathing: slow and wet when lurking, ragged when it runs
+		if realT > nextBreath then
+			local fast = state == "Chase" or airborne
+			local quiet = state == "Ambush" or state == "Stalk" or frozen
+			Sfx.play("Creature", if breathIn then (if rng:NextNumber() < 0.5 then "BreathIn1" else "BreathIn2")
+				else (if rng:NextNumber() < 0.5 then "BreathOut1" else "BreathOut2"), headPart, {
+				volume = if quiet then 0.45 elseif fast then 0.95 else 0.7,
+				pitch = if fast then 1.25 else 0.95 + rng:NextNumber() * 0.1,
+				range = if quiet then 40 else 70,
+			})
+			breathIn = not breathIn
+			nextBreath = realT + (if fast then 0.7 elseif quiet then 2.4 else 1.8) * rng:NextNumber(0.85, 1.15)
+		end
+		-- throat clicks while it lurks
+		if realT > nextClick then
+			nextClick = realT + rng:NextNumber(4, 10)
+			if state ~= "Chase" and state ~= "Pounce" then
+				Sfx.any("Creature", { "Clicks1", "Clicks2" }, headPart, { volume = 0.75, range = 55 })
+			end
+		end
+		if state == "Chase" and realT > nextGrowl then
+			nextGrowl = realT + rng:NextNumber(4, 7)
+			Sfx.any("Creature", { "Growl1", "Growl2", "Growl3" }, headPart, { volume = 1.1, range = 110 })
+		end
+		-- footsteps on each footfall (and claws when it gallops on all fours)
+		local function k(ph: number): number
+			return math.floor((ph - math.pi / 2) / math.pi)
+		end
+		if speed > 2 and not airborne and k(P.phase) ~= k(phaseBefore) then
+			stepIdx += 1
+			local foot = model:FindFirstChild(if stepIdx % 2 == 0 then "LeftFoot" else "RightFoot") or headPart
+			Sfx.any("Creature", { "Step1", "Step2", "Step3" }, foot, {
+				volume = 0.45 + math.min(speed, 24) / 30, pitch = 0.9 + rng:NextNumber() * 0.2, range = 90 })
+			if P.quad > 0.5 or rng:NextNumber() < 0.35 then
+				Sfx.play("Creature", "Claws", foot, { volume = 0.5, range = 45 })
+			end
+		end
+	end
+	if aSeq ~= 0 and attackT < dt * 1.5 and headPart then
+		Sfx.play("Creature", "Swipe", headPart, { volume = 1, range = 60 })
+	end
+	if pSeq ~= 0 and pounceT < dt * 1.5 and headPart then
+		Sfx.play("Creature", "Screech", headPart, { volume = 1.2, range = 140 })
+	end
 
 	-- eyeshine: eyes flare when your flashlight is on and pointed at it
 	local cam = workspace.CurrentCamera

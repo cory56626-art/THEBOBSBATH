@@ -24,7 +24,7 @@ renderer.outputEncoding = THREE.sRGBEncoding;
 document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0b0d12);
-scene.fog = new THREE.FogExp2(0x1a1e26, 0.022);
+scene.fog = new THREE.FogExp2(0x1a1e26, location.search.includes('noceil') ? 0.0 : 0.012);
 scene.add(new THREE.HemisphereLight(0x3a4458, 0x0c0a08, 0.55));
 const camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 600);
 
@@ -43,8 +43,14 @@ const GEO = {
   Wedge: wedgeGeo(),
 };
 const col = c => new THREE.Color(c[0]/255, c[1]/255, c[2]/255).convertSRGBToLinear();
+const NOCEIL = location.search.includes('noceil');
+const QS = new URLSearchParams(location.search);
+const NEAR = QS.get('near') ? QS.get('near').split(',').map(Number) : null; // x,z,r: only lights near here
+const NOLIGHTS = QS.has('nolights');
+if (NOLIGHTS) scene.add(new THREE.AmbientLight(0xffffff, 0.9));
 for (const p of PARTS) {
   if (p.transparency >= 1 && !p.lights.length) continue;
+  if (NOCEIL && (p.name === 'Ceiling' || p.name === 'Lamp' || p.name === 'BrokenLamp')) continue;
   const c = p.cf, s = p.size;
   const M = new THREE.Matrix4().set(c[3],c[4],c[5],c[0], c[6],c[7],c[8],c[1], c[9],c[10],c[11],c[2], 0,0,0,1);
   if (p.transparency < 1) {
@@ -63,6 +69,8 @@ for (const p of PARTS) {
     scene.add(mesh);
   }
   for (const L of p.lights) {
+    if (NOLIGHTS) break;
+    if (NEAR && Math.hypot(c[0]-NEAR[0], c[2]-NEAR[1]) > NEAR[2]) continue;
     const pos = new THREE.Vector3(c[0],c[1],c[2]);
     const lc = new THREE.Color(L.color[0]/255, L.color[1]/255, L.color[2]/255);
     if (L.type === 'SpotLight') {
@@ -72,11 +80,13 @@ for (const p of PARTS) {
       sl.castShadow = L.brightness > 5; sl.shadow.mapSize.set(2048,2048); sl.shadow.bias = -0.0004;
       scene.add(sl, sl.target);
     } else {
-      const pl = new THREE.PointLight(lc, L.brightness, L.range); pl.position.copy(pos); scene.add(pl);
+      const pl = new THREE.PointLight(lc, L.brightness * 1.5, L.range * 1.2); pl.position.copy(pos); pl.position.y -= 0.6; scene.add(pl);
     }
   }
 }
 const views = {
+  top: [[0,190,40],[0,0,0]], lobby: [[-80,9,40],[-40,5,10]], corridor: [[-40,7,-22],[60,4,-20]],
+  morgue: [[-70,10,-25],[-60,3,-55]], ward: [[-40,9,-4],[10,3,-4]],
   spawn: [[0,5,-30],[0,7,0]], front: [[2.5,8.5,-13],[0,7.2,-1.5]], face: [[1.2,9.6,-8.2],[0,9.3,-4.3]],
   side: [[-13,7,-2],[0,6,-0.5]], back: [[6,10,11],[0,7.5,0]],
 };
@@ -91,7 +101,7 @@ addEventListener('pointermove',e=>{ if(!drag) return; const t=camera.userData.t;
   const sph=new THREE.Spherical().setFromVector3(off); sph.theta-=(e.clientX-drag.x)*0.006; sph.phi=Math.min(2.9,Math.max(0.2,sph.phi-(e.clientY-drag.y)*0.006));
   camera.position.copy(t).add(new THREE.Vector3().setFromSpherical(sph)); camera.lookAt(t); drag={x:e.clientX,y:e.clientY}; });
 addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();});
-(function loop(){ renderer.render(scene,camera); requestAnimationFrame(loop); })();
+renderer.render(scene,camera);
 window.READY = true;
 </script></body></html>
 """

@@ -3,6 +3,9 @@
 -- and getting unstuck.
 
 local PathfindingService = game:GetService("PathfindingService")
+local RunService = game:GetService("RunService")
+
+local HIP = 6 -- the root sits this far above the ground
 
 local Mover = {}
 Mover.__index = Mover
@@ -23,6 +26,9 @@ function Mover.new(model: Model, hum: Humanoid, root: BasePart)
 	self.faceTarget = nil :: Vector3?
 	self.lastPos = root.Position
 	self.stuckTime = 0
+	self.vaulting = false
+	self.lastVault = 0
+	self.onLand = nil :: (() -> ())?
 	self.path = PathfindingService:CreatePath({
 		AgentRadius = 3,
 		AgentHeight = 10,
@@ -78,7 +84,7 @@ function Mover:clearLine(to: Vector3): boolean
 	if dir.Magnitude < 1 then
 		return true
 	end
-	local hit = workspace:Spherecast(from, 1.6, dir, self.params)
+	local hit = workspace:Spherecast(from, 2.3, dir, self.params)
 	if hit then
 		return false
 	end
@@ -121,8 +127,95 @@ function Mover:_turnToward(dt: number, rate: number)
 	end
 end
 
+-- Vault (low obstacles: beds, counters, crates) or climb (walls with open sky above) toward the goal.
+function Mover:tryVault(): boolean
+	if self.vaulting or not self.goal or os.clock() - self.lastVault < 1.2 then
+		return false
+	end
+	local root = self.root
+	local p = root.Position
+	local flat = Vector3.new(self.goal.X - p.X, 0, self.goal.Z - p.Z)
+	if flat.Magnitude < 5 then
+		return false
+	end
+	local dir = flat.Unit
+	local feet = p - Vector3.new(0, HIP, 0)
+	local hit = workspace:Raycast(feet + Vector3.new(0, 1.5, 0), dir * 6, self.params)
+	if not hit or hit.Normal.Y > 0.5 then
+		return false
+	end
+	-- how tall is it? probe down from just under a possible ceiling, a little past the face
+	local probeXZ = hit.Position + dir * 1.2
+	local high = workspace:Raycast(feet + Vector3.new(0, 7, 0), dir * 6, self.params)
+	local maxH, dur, kind
+	if not high then
+		maxH, dur, kind = 6.5, 0.55, "vault"
+	else
+		-- tall: only climbable if there's open space above it (no ceiling)
+		local up = workspace:Raycast(Vector3.new(probeXZ.X, feet.Y + 15, probeXZ.Z), Vector3.new(0, 12, 0), self.params)
+		if up then
+			return false
+		end
+		maxH, dur, kind = 14, 1.3, "climb"
+	end
+	local topHit = workspace:Raycast(Vector3.new(probeXZ.X, feet.Y + maxH + 0.5, probeXZ.Z), Vector3.new(0, -maxH, 0), self.params)
+	if not topHit then
+		return false
+	end
+	local h = topHit.Position.Y - feet.Y
+	if h < 1.2 or h > maxH then
+		return false
+	end
+	-- find floor on the far side
+	local land: Vector3? = nil
+	for d = 1.5, 10, 1 do
+		local q = probeXZ + dir * d
+		local down = workspace:Raycast(Vector3.new(q.X, topHit.Position.Y + 1, q.Z), Vector3.new(0, -(h + 3), 0), self.params)
+		if down and down.Position.Y < feet.Y + 1 and down.Position.Y > feet.Y - 3 then
+			land = down.Position + dir * 1.5
+			break
+		end
+	end
+	if not land then
+		return false
+	end
+	local landing = land :: Vector3
+	self.vaulting = true
+	self.lastVault = os.clock()
+	local hum = self.hum
+	local look = CFrame.lookAt(p, p + dir)
+	local endPos = landing + Vector3.new(0, HIP, 0)
+	local peak = topHit.Position.Y + HIP * 0.55
+	root.Anchored = true
+	local t = 0
+	local conn
+	conn = RunService.Heartbeat:Connect(function(dtt)
+		t = math.min(1, t + dtt / dur)
+		local pos = p:Lerp(endPos, t)
+		local arc = if kind == "climb" then math.min(1, t * 1.6) else math.sin(t * math.pi)
+		local y = if kind == "climb" and t > 0.62 then peak + (endPos.Y - peak) * ((t - 0.62) / 0.38) else
+			pos.Y + (peak - pos.Y) * arc
+		root.CFrame = CFrame.new(pos.X, y, pos.Z) * (look - look.Position)
+		if t >= 1 then
+			conn:Disconnect()
+			root.Anchored = false
+			root.AssemblyLinearVelocity = dir * (self.speed * 0.6)
+			self.vaulting = false
+			self.pathGoal = nil
+			if self.onLand then
+				self.onLand()
+			end
+		end
+	end)
+	hum:MoveTo(endPos)
+	return true
+end
+
 function Mover:step(dt: number)
 	local hum, root = self.hum, self.root
+	if self.vaulting then
+		return
+	end
 	if not self.goal then
 		hum.WalkSpeed = 0
 		if self.faceTarget then
@@ -140,6 +233,8 @@ function Mover:step(dt: number)
 	if self:clearLine(self.goal) then
 		self.waypoints = nil
 		hum:MoveTo(self.goal)
+	elseif (self.goal - root.Position).Magnitude < 40 and self:tryVault() then
+		return
 	else
 		local stale = not self.pathGoal
 			or (self.pathGoal - self.goal).Magnitude > 4
@@ -170,7 +265,9 @@ function Mover:step(dt: number)
 	if self.speed > 2 and moved < self.speed * dt * 0.15 then
 		self.stuckTime += dt
 		if self.stuckTime > 1.5 then
-			hum.Jump = true
+			if not self:tryVault() then
+				hum.Jump = true
+			end
 			self.pathGoal = nil
 		end
 	else

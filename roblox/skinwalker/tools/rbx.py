@@ -128,6 +128,12 @@ class Inst:
         self.props[key] = (typ, value)
         return self
 
+    def tag(self, *names: str) -> "Inst":
+        existing = self.props.get("Tags", ("BinaryString", ""))[1]
+        tags = [t for t in existing.split("\x00") if t] + list(names)
+        self.props["Tags"] = ("BinaryString", "\x00".join(tags))
+        return self
+
     def add(self, *children: "Inst") -> "Inst":
         self.children.extend(children)
         return self
@@ -171,6 +177,10 @@ def _prop_xml(key, typ, value) -> str:
     if typ == "Color3uint8":
         r, g, b = (int(max(0, min(255, round(c)))) for c in value)
         return f'<Color3uint8 name="{key}">{0xFF000000 | (r << 16) | (g << 8) | b}</Color3uint8>'
+    if typ == "BinaryString":
+        import base64
+        raw = value.encode("utf-8") if isinstance(value, str) else value
+        return f'<BinaryString name="{key}">{base64.b64encode(raw).decode()}</BinaryString>'
     if typ == "Ref":
         return f'<Ref name="{key}">{value.ref if value is not None else "null"}</Ref>'
     if typ == "ProtectedString":
