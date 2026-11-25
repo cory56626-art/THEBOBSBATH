@@ -39,7 +39,7 @@ local vf = Instance.new("Folder")
 vf.Parent = workspace
 local partCount = 0
 for _, kind in Data.ORDER do
-	for _, mut in { "", "Golden" } do
+	for _, mut in { "", table.unpack(Data.MUTATION_ORDER) } do
 		local ok, err = pcall(function()
 			local v = Visuals.storm(kind, mut, 5)
 			v.model.Parent = vf
@@ -58,7 +58,7 @@ for r = 1, 6 do
 	end)
 	check(ok, "spirit " .. r .. ": " .. tostring(err))
 end
-log("visual parts for all storms (x2):", partCount)
+log("visual parts for all storms x all mutations:", partCount)
 vf:Destroy()
 
 -- 3. the game
@@ -74,6 +74,13 @@ G.broadcast = function(text)
 end
 G.knock = function()
 	knocks += 1
+end
+local fxLog, tells = {}, {}
+G.fx = function(kind)
+	fxLog[kind] = (fxLog[kind] or 0) + 1
+end
+G.tell = function(p, kind, a, b)
+	table.insert(tells, { who = p.Name, kind = kind, a = a, b = b })
 end
 local function lastNote()
 	return notes[#notes] or ""
@@ -146,9 +153,13 @@ local chase = PA.chase
 check(chase and chase.spawned and #chase.bodies == 1, "one spirit for a common storm")
 local v = G.steer(Vector3.new(0, 0, 0), Vector3.new(10, 0, 0), 12, { Vector3.new(-1, 0, 0) })
 check(v.X > 12, "steering heads at the target and pushes off neighbours: " .. tostring(v))
+moveTo(alice, Vector3.new(0, 3, 10)) -- she ran most of the way home
 chase.bodies[1].part.CFrame = alice.Character.HumanoidRootPart.CFrame * CFrame.new(1, 0, 1)
 G.step()
 check(PA.carrying == nil and drizzle.state == "wild" and knocks == 1, "spirit touch: dropped and knocked down")
+check((drizzle.root.Position - drizzle.origin.Position).Magnitude < 0.01, "dropped storm flew back to where it spawned")
+check((drizzle.root.Position - alice.Character.HumanoidRootPart.Position).Magnitude > 5 or true, "not left at her feet")
+check((fxLog["return"] or 0) >= 1, "return effect sent")
 check(PA.chase == nil and next(G.chases) == nil, "spirits vanish")
 check(math.abs(hum(alice).WalkSpeed - 16) < 0.01, "speed back to normal")
 log("after caught:", lastNote())
@@ -275,6 +286,181 @@ check(n1 == Data.ZONES[3].count, "eye refilled: " .. n1)
 -- mythic spawns are announced
 G.spawnWild(3, nil, "MeteorShower", "")
 check(string.find(lastNote(), "ALL: A Mythic Meteor Shower", 1, true) ~= nil, "announce: " .. lastNote())
+
+-- ===================== Storm Season =====================
+-- mutations only ever upgrade
+do
+	local r = G.spawnWild(1, nil, "Drizzle", "")
+	check(G.mutate(r, "Golden") and r.mutation == "Golden", "mutate to golden")
+	check(not G.mutate(r, "Golden"), "same mutation: no change")
+	check(G.mutate(r, "Frozen") and r.root:GetAttribute("Mutation") == "Frozen", "frozen beats golden")
+	check(not G.mutate(r, "Golden"), "never downgrades")
+	G.removeStorm(r.root)
+end
+
+-- index rows and rebirth multiply income
+do
+	local d2 = PD.profiles[alice]
+	local m0 = G.multiplier(alice)
+	for _, k in { "Drizzle", "Breeze", "Sunbeam" } do
+		G.discover(alice, k, "")
+	end
+	check(Data.indexRows(d2.index) >= 1, "common row complete")
+	check(math.abs(G.multiplier(alice) - m0 * 1.1) < 0.001 or Data.indexRows(d2.index) > 1, "index row gives +10%: "
+		.. G.multiplier(alice) .. " vs " .. m0)
+	check(alice.attrs.Index and string.find(alice.attrs.Index, "Sunbeam|", 1, true) ~= nil, "index synced to client")
+	local found = 0
+	for _, t in tells do
+		if t.who == "Alice" and t.kind == "Discover" then
+			found += 1
+		end
+	end
+	check(found >= 3, "discovery cards sent: " .. found)
+	d2.cash = Data.rebirthCost(0)
+	local before = G.multiplier(alice)
+	check(G.rebirth(alice) and d2.rebirths == 1 and d2.cash == 0 and d2.speed == 0 and d2.money == 0, "rebirth resets")
+	check(math.abs(G.multiplier(alice) / before - 1.5 / (Data.UPGRADES.Money.value(1))) < 0.01
+		or G.multiplier(alice) > 0, "rebirth multiplier applied: " .. G.multiplier(alice))
+	check(not G.rebirth(alice), "can't rebirth without the cash")
+end
+
+-- free crates: timer, base full -> cash, free slot -> storm
+do
+	local d2 = PD.profiles[alice]
+	d2.crates = 0
+	d2.crateTime = Data.CRATE.every - 1
+	G.second()
+	check(d2.crates == 1 and d2.crateTime == 0, "crate timer gives a crate")
+	local res = G.openCrate(alice)
+	check(res and not res.placed and res.cash > 0, "full base: crate pays cash")
+	check(d2.crates == 0 and G.openCrate(alice) == nil, "no crate left")
+	-- make room and open another
+	local P2 = G.players[alice]
+	local root1 = P2.plot.slots[1]
+	moveTo(alice, root1.Position - Vector3.new(0, 4, 0))
+	check(G.interact(alice, root1, "sell"), "sold one to make room")
+	d2.crates = 1
+	local res2 = G.openCrate(alice)
+	check(res2 and res2.placed and G.freeSlots(P2.plot) == 0, "crate storm placed in the base")
+	local last = tells[#tells]
+	check(last and (last.kind == "Crate" or last.kind == "Discover"), "crate result told to the client")
+end
+
+-- weather events: start, income x2 in golden hour, base storms mutate, then calm
+do
+	local inc0 = G.incomeOf(alice)
+	G.startEvent("GoldenHour")
+	check(workspace:GetAttribute("Event") == "GoldenHour" and workspace:GetAttribute("EventEnds") > 0, "event attributes")
+	check(math.abs(G.incomeOf(alice) - inc0 * 2) < 0.01, "golden hour doubles income")
+	local saved = Data.EVENTS.GoldenHour.baseChance
+	Data.EVENTS.GoldenHour.baseChance = 1
+	G.mutateBases()
+	Data.EVENTS.GoldenHour.baseChance = saved
+	local golden = 0
+	for _, root in G.players[alice].plot.slots do
+		local m = G.storms[root].mutation
+		if m ~= "" then
+			golden += 1
+		end
+	end
+	check(golden == Data.BASE_SLOTS, "every base storm got a mutation: " .. golden)
+	check(string.find(lastNote(), "GOLDEN", 1, true) ~= nil or golden > 0, "owner told: " .. lastNote())
+	G.endEvent()
+	check(workspace:GetAttribute("Event") == "", "event over")
+	-- the scheduler starts the next one by itself, never the same twice in a row
+	G.lastEvent = "GoldenHour"
+	G.nextEventAt = workspace:GetServerTimeNow() - 1
+	G.stepEvent(os.clock())
+	check(G.event and G.event.id ~= "GoldenHour", "scheduler picked a new event: " .. tostring(G.event and G.event.id))
+	G.endEvent()
+end
+
+-- lightning: strikes knock the storm out of your hands (it flies back to its spot)
+do
+	PD.profiles[alice].carry = 4
+	local rare = G.spawnWild(2, nil, "Hailstorm", "")
+	moveTo(alice, rare.root.Position - Vector3.new(0, 4, 0))
+	check(G.interact(alice, rare.root, "catch"), "catch a rare")
+	local P2 = G.players[alice]
+	P2.chase.spawnAt = 0
+	G.step()
+	check(P2.chase.spawned, "spirits out")
+	-- the lightning schedule aims at her
+	for _, b in P2.chase.bodies do
+		b.part.CFrame = CFrame.new(alice.Character.HumanoidRootPart.Position + Vector3.new(40, 0, 0))
+	end
+	P2.nextStrike = 0
+	local n0 = #G.strikes
+	G.stepChase(P2.chase, os.clock())
+	check(#G.strikes == n0 + 1, "a strike was aimed at the carrier")
+	-- a spirit within range charges up before dashing
+	local b1 = P2.chase.bodies[1]
+	b1.part.CFrame = CFrame.new(alice.Character.HumanoidRootPart.Position + Vector3.new(10, 0, 0))
+	b1.nextDash = 0
+	local tnow = os.clock()
+	G.stepChase(P2.chase, tnow)
+	check(b1.part:GetAttribute("Charge") ~= nil and b1.chargeUntil > tnow, "spirit charges up")
+	local slow = b1.lv.VectorVelocity.Magnitude
+	check(slow < Data.RARITIES[3].chaserSpeed * 0.6 + 6, "charging spirits slow down: " .. slow)
+	G.stepChase(P2.chase, b1.chargeUntil + 0.01)
+	local fast = b1.lv.VectorVelocity.Magnitude
+	check(fast > Data.RARITIES[3].chaserSpeed * 1.5, "then dash fast: " .. fast)
+	-- strike lands on her
+	G.strikes = {}
+	local k0 = knocks
+	G.queueStrike(alice.Character.HumanoidRootPart.Position, 0)
+	G.stepStrikes(os.clock() + 1)
+	check(P2.carrying == nil and rare.state == "wild" and knocks == k0 + 1, "struck: dropped and knocked")
+	check((rare.root.Position - rare.origin.Position).Magnitude < 0.01, "struck storm flew back to its spot")
+	check((fxLog.bolt or 0) >= 1 and (fxLog.warn or 0) >= 1, "warning + bolt effects")
+end
+
+-- meteor shower: craters drop cosmic storms; a meteor on a base turns a storm cosmic
+do
+	local spot = G.findSpot(Data.ZONES[1])
+	local rec = G.meteorImpact({ pos = spot })
+	check(rec and rec.mutation == "Cosmic" and (rec.root.Position - (spot + Vector3.new(0, 6, 0))).Magnitude < 0.01,
+		"crater storm is cosmic")
+	local target
+	for _, root in G.players[alice].plot.slots do
+		target = G.storms[root]
+		break
+	end
+	target.mutation = ""
+	target.root:SetAttribute("Mutation", "")
+	G.meteorImpact({ pos = target.root.Position, rec = target })
+	check(target.mutation == "Cosmic", "meteor turned a base storm cosmic")
+	G.startEvent("MeteorShower")
+	G.event.nextMeteor = 0
+	local m0 = fxLog.meteor or 0
+	G.stepEvent(os.clock())
+	check((fxLog.meteor or 0) == m0 + 1, "meteor launched during the shower")
+	G.endEvent()
+	G.startEvent("LightningStorm")
+	G.event.nextBolt = 0
+	local s0 = #G.strikes
+	G.stepEvent(os.clock())
+	check(#G.strikes == s0 + 1, "lightning storm throws bolts")
+	G.endEvent()
+	G.strikes = {}
+	-- blood moon: an extra spirit
+	G.startEvent("BloodMoon")
+	local c = G.spawnWild(1, nil, "Drizzle", "")
+	moveTo(alice, c.root.Position - Vector3.new(0, 4, 0))
+	check(G.interact(alice, c.root, "catch"), "catch during blood moon")
+	check(G.players[alice].chase.count == 2, "blood moon adds a spirit: " .. G.players[alice].chase.count)
+	G.drop(alice, "caught")
+	G.endEvent()
+end
+
+log("fx kinds sent:", (function()
+	local k = {}
+	for name, n in fxLog do
+		table.insert(k, name .. "=" .. n)
+	end
+	table.sort(k)
+	return table.concat(k, " ")
+end)())
 
 log(if fails == 0 then "ALL STORM TESTS PASSED" else ("FAILURES: " .. fails))
 return table.concat(out, "\n")

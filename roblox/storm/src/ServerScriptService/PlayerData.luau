@@ -15,7 +15,20 @@ pcall(function()
 end)
 
 function PD.default()
-	return { cash = 0, speed = 0, carry = 0, money = 0, storms = {}, steals = 0, earned = 0, last = os.time() }
+	return {
+		cash = 0,
+		speed = 0,
+		carry = 0,
+		money = 0,
+		storms = {},
+		steals = 0,
+		earned = 0,
+		last = os.time(),
+		rebirths = 0,
+		index = {}, -- ["Kind|Mutation"] = true for every storm you've owned
+		crates = 1, -- free crates waiting to be opened (everyone starts with one)
+		crateTime = 0, -- seconds played toward the next free crate
+	}
 end
 
 local function isPlayer(p): boolean
@@ -53,6 +66,20 @@ function PD.save(player)
 	end)
 end
 
+-- the storm index travels to the client as a JSON list of "Kind|Mutation" keys
+function PD.syncIndex(player)
+	local d = PD.profiles[player]
+	if not d then
+		return
+	end
+	local keys = {}
+	for k in d.index do
+		table.insert(keys, k)
+	end
+	table.sort(keys)
+	player:SetAttribute("Index", game:GetService("HttpService"):JSONEncode(keys))
+end
+
 -- copy what the HUD needs into attributes (and leaderstats for real players)
 function PD.sync(player, income: number?)
 	local d = PD.profiles[player]
@@ -64,6 +91,9 @@ function PD.sync(player, income: number?)
 	player:SetAttribute("CarryLv", d.carry)
 	player:SetAttribute("MoneyLv", d.money)
 	player:SetAttribute("Steals", d.steals)
+	player:SetAttribute("Rebirths", d.rebirths)
+	player:SetAttribute("Crates", d.crates)
+	player:SetAttribute("CrateIn", math.max(0, Data.CRATE.every - d.crateTime))
 	if income then
 		player:SetAttribute("Income", income)
 	end
@@ -78,10 +108,14 @@ function PD.sync(player, income: number?)
 			local steals = Instance.new("IntValue")
 			steals.Name = "Steals"
 			steals.Parent = ls
+			local rebirths = Instance.new("IntValue")
+			rebirths.Name = "Rebirths"
+			rebirths.Parent = ls
 			ls.Parent = player
 		end
 		(ls :: any).Cash.Value = Data.money(d.cash);
-		(ls :: any).Steals.Value = d.steals
+		(ls :: any).Steals.Value = d.steals;
+		(ls :: any).Rebirths.Value = d.rebirths
 	end
 end
 

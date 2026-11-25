@@ -183,6 +183,35 @@ def build_room(seed=11):
               ellipsoid=True, query=False, shadow=False)
     eye.add(light("PointLight", "Glow", brightness=3, range_=60, color=(170, 120, 255)))
     world.add(vortex)
+    # wind launch pads: "highways" home from deep in the field, and a few heading out
+    pads = Inst("Folder", "GustPads")
+    pad_list = []
+    for x in (-125, -45, 45, 125):
+        for z in (110, 214, 300):
+            pad_list.append((x + rng.uniform(-8, 8), z, (0, 0, -1)))
+    for x in (-110, -20, 70, 150):
+        pad_list.append((x, 15, (0, 0, 1)))
+    for x, z, d in pad_list:
+        ground = 0.0
+        pad = box(pads, "GustPad", CF.along(v(x, ground, z), v(x, ground + 0.35, z)), (0.35, 9, 9), (120, 230, 255), "Neon",
+                  shape="Cylinder", collide=False, transparency=0.25)
+        pad.add(Inst("Vector3Value", "Launch", Value=("Vector3", (d[0] * 100.0, 0.0, d[2] * 100.0))))
+        rim = box(pads, "GustRim", CF.along(v(x, ground, z), v(x, ground + 0.3, z)), (0.3, 10.4, 10.4), (40, 60, 90),
+                  "Metal", shape="Cylinder", collide=False)
+        rim.meta["hidden"] = False
+        # an arrow made of two wedges' worth of blocks, pointing the launch direction
+        yaw = 0.0 if d[2] < 0 else math.pi
+        arrow = CF.angles(0, yaw, 0, v(x, ground + 0.4, z))
+        box(pads, "GustArrow", arrow * CF(v(0, 0, 1.2)), (1.1, 0.12, 3.2), (255, 255, 255), "Neon", collide=False)
+        for sx in (-1, 1):
+            box(pads, "GustArrow", arrow * CF.angles(0, sx * 0.7, 0, v(sx * 0.9, 0, -0.9)), (0.9, 0.12, 2.8), (255, 255, 255),
+                "Neon", collide=False)
+    world.add(pads)
+    # the all-time leaderboard, facing the bases
+    box(world, "Leaderboard", CF(v(40, 10, 16)), (24, 15, 0.8), (30, 34, 50), "SmoothPlastic", collide=True)
+    for sx in (-1, 1):
+        box(world, "BoardPost", CF(v(40 + sx * 11, 4, 16.6)), (1, 8, 1), (70, 60, 50), "Wood")
+    box(world, "BoardTrim", CF(v(40, 17.8, 16)), (25, 0.8, 1.2), (255, 200, 80), "Neon", collide=False)
     # the plots
     plots = Inst("Folder", "Plots")
     for i in range(PLOT_COUNT):

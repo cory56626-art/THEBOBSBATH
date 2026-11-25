@@ -1,10 +1,10 @@
--- StormData: every kind of storm, rarities, the zones they live in, chasers and the upgrade economy.
--- Shared by the server (rules) and clients (labels, shop).
+-- StormData: every kind of storm, rarities, mutations, weather events, the zones storms live in, chasers and
+-- the economy (upgrades, rebirths, the free crate, the storm index). Shared by the server and clients.
 
 local Data = {}
 
 Data.RARITIES = {
-	-- chasers: how many storm spirits chase you; chaserSpeed: their cruise speed (they also dash)
+	-- chasers: how many storm spirits chase you; chaserSpeed: their cruise speed (they also charge and dash)
 	{ name = "Common", color = Color3.fromRGB(205, 210, 215), chasers = 1, chaserSpeed = 12, hold = 0.4 },
 	{ name = "Uncommon", color = Color3.fromRGB(95, 225, 115), chasers = 1, chaserSpeed = 14.5, hold = 0.5 },
 	{ name = "Rare", color = Color3.fromRGB(80, 165, 255), chasers = 2, chaserSpeed = 19, hold = 0.7 },
@@ -32,9 +32,80 @@ Data.KINDS = {
 Data.ORDER = { "Drizzle", "Breeze", "Sunbeam", "RainCloud", "FogBank", "SnowFlurry", "Thunderstorm", "Hailstorm",
 	"Tornado", "Rainbow", "Blizzard", "Aurora", "MeteorShower" }
 
+-- mutations multiply income; a storm has at most one and only ever upgrades to a better one.
+-- chance: natural chance on a wild spawn (the rest come from weather events)
 Data.MUTATIONS = {
-	Golden = { name = "Golden", mult = 2, chance = 0.06, color = Color3.fromRGB(255, 205, 60) },
+	Golden = { name = "Golden", mult = 2, chance = 0.04, color = Color3.fromRGB(255, 205, 60) },
+	Frozen = { name = "Frozen", mult = 2.5, chance = 0, color = Color3.fromRGB(170, 225, 255) },
+	Charged = { name = "Charged", mult = 3, chance = 0.006, color = Color3.fromRGB(90, 185, 255) },
+	Cosmic = { name = "Cosmic", mult = 5, chance = 0, color = Color3.fromRGB(160, 110, 255) },
+	Bloodmoon = { name = "Blood Moon", mult = 6, chance = 0, color = Color3.fromRGB(235, 45, 60) },
+	Rainbow = { name = "Rainbow", mult = 10, chance = 0.002, color = Color3.fromRGB(255, 120, 210) },
 }
+Data.MUTATION_ORDER = { "Golden", "Frozen", "Charged", "Cosmic", "Bloodmoon", "Rainbow" }
+
+-- weather events: one every few minutes. spawnChance = chance a new wild storm gets the event's mutation,
+-- baseChance = chance (every BASE_MUTATE_EVERY seconds) that a storm sitting in a base gets it
+Data.EVENTS = {
+	LightningStorm = {
+		name = "Lightning Storm",
+		mutation = "Charged",
+		spawnChance = 0.3,
+		baseChance = 0.05,
+		desc = "Lightning strikes everywhere! Storms turn CHARGED (x3)",
+		color = Color3.fromRGB(110, 170, 255),
+	},
+	RainbowSky = {
+		name = "Rainbow Sky",
+		mutation = "Rainbow",
+		spawnChance = 0.08,
+		baseChance = 0.012,
+		desc = "Storms can turn RAINBOW (x10)!",
+		color = Color3.fromRGB(255, 140, 220),
+	},
+	MeteorShower = {
+		name = "Meteor Shower",
+		mutation = "Cosmic",
+		spawnChance = 0,
+		baseChance = 0,
+		desc = "Meteors are falling! Every crater drops a COSMIC storm (x5)",
+		color = Color3.fromRGB(255, 140, 60),
+	},
+	DeepFreeze = {
+		name = "Deep Freeze",
+		mutation = "Frozen",
+		spawnChance = 0.4,
+		baseChance = 0.08,
+		desc = "Spirits are frozen slow! Storms turn FROZEN (x2.5)",
+		color = Color3.fromRGB(170, 225, 255),
+		chaserSpeed = 0.7,
+	},
+	BloodMoon = {
+		name = "Blood Moon",
+		mutation = "Bloodmoon",
+		spawnChance = 0.2,
+		baseChance = 0.03,
+		desc = "Rarer storms... and angrier spirits! BLOOD MOON storms (x6)",
+		color = Color3.fromRGB(235, 50, 60),
+		chaserSpeed = 1.15,
+		extraChasers = 1,
+		rarityRolls = 2,
+	},
+	GoldenHour = {
+		name = "Golden Hour",
+		mutation = "Golden",
+		spawnChance = 0.35,
+		baseChance = 0.06,
+		desc = "DOUBLE income for everyone! Storms turn GOLDEN (x2)",
+		color = Color3.fromRGB(255, 205, 60),
+		incomeMult = 2,
+	},
+}
+Data.EVENT_ORDER = { "LightningStorm", "RainbowSky", "MeteorShower", "DeepFreeze", "BloodMoon", "GoldenHour" }
+Data.EVENT_FIRST = 100 -- seconds after a server starts
+Data.EVENT_EVERY = 240 -- from one event start to the next
+Data.EVENT_LENGTH = 80
+Data.BASE_MUTATE_EVERY = 10
 
 -- the wild, from the bases (south) to the far north; weights per rarity (Common..Mythic)
 Data.FIELD_X = { -170, 170 }
@@ -45,12 +116,60 @@ Data.ZONES = {
 }
 Data.WILD_LIFETIME = { 100, 170 } -- seconds before an uncaught storm drifts away
 
+-- lightning strikes at whoever carries a Rare or better storm (seconds between strikes by rarity)
+Data.STRIKE = { radius = 7, warn = 1.0, every = { [3] = 4.5, [4] = 3.6, [5] = 2.9, [6] = 2.3 } }
+-- storm spirits: they slow down to charge (eyes flare), then dash
+Data.SPIRIT = { range = 18, chargeTime = 0.45, chargeSlow = 0.35, dashTime = 0.55, dashMult = 2.0, cooldown = { 2.6, 4.2 } }
+-- your own dash
+Data.DASH = { cooldown = 2.5, speed = 70, time = 0.22 }
+
 Data.BASE_SLOTS = 10
 Data.LOCK_TIME = 45
 Data.LOCK_COOLDOWN = 45
 Data.SELL_SECONDS = 40 -- selling pays this many seconds of the storm's income
 Data.OFFLINE_RATE = 0.25 -- share of income earned while offline
 Data.OFFLINE_CAP = 2 * 3600
+
+-- a free crate every few minutes of play (new players start with one)
+Data.CRATE = { every = 360, max = 3, weights = { 45, 30, 16, 7, 1.8, 0.2 }, fullPaySeconds = 60 }
+
+-- rebirth: resets cash, Speed and Money (keeps your storms, Carry Power and index)
+function Data.rebirthCost(rebirths: number): number
+	return math.floor(25000 * 5 ^ rebirths)
+end
+function Data.rebirthMult(rebirths: number): number
+	return 1 + 0.5 * rebirths
+end
+
+-- the storm index: every completed rarity row (all its storms found) adds 10% income
+Data.INDEX_ROW_BONUS = 0.1
+function Data.indexKey(kind: string, mutation: string?): string
+	return kind .. "|" .. (mutation or "")
+end
+function Data.indexRows(index: { [string]: boolean }): number
+	local rows = 0
+	for r = 1, #Data.RARITIES do
+		local complete = true
+		for _, id in Data.ORDER do
+			if Data.KINDS[id].rarity == r and not index[Data.indexKey(id, "")] then
+				complete = false
+				break
+			end
+		end
+		if complete then
+			rows += 1
+		end
+	end
+	return rows
+end
+function Data.indexCount(index: { [string]: boolean }): number
+	local n = 0
+	for _ in index do
+		n += 1
+	end
+	return n
+end
+Data.INDEX_TOTAL = #Data.ORDER * (1 + #Data.MUTATION_ORDER)
 
 -- upgrades: level 0 is the start
 Data.UPGRADES = {
@@ -92,16 +211,26 @@ function Data.carrySpeedMult(rarity: number, carryLevel: number): number
 	return math.clamp(1 - 0.07 * rarity + 0.07 * carryLevel, 0.6, 0.95)
 end
 
+function Data.mutationMult(mutation: string?): number
+	local m = mutation and Data.MUTATIONS[mutation]
+	return if m then m.mult else 1
+end
+
 function Data.income(kind: string, mutation: string?): number
 	local k = Data.KINDS[kind]
 	if not k then
 		return 0
 	end
-	local m = mutation and Data.MUTATIONS[mutation]
-	return k.income * (if m then m.mult else 1)
+	return k.income * Data.mutationMult(mutation)
 end
 
--- "$1.25K", "$3.4M" ...
+function Data.displayName(kind: string, mutation: string?): string
+	local k = Data.KINDS[kind]
+	local m = mutation and Data.MUTATIONS[mutation]
+	return (if m then m.name .. " " else "") .. (if k then k.name else kind)
+end
+
+-- "$1.25K", "$3.40M" ...
 function Data.money(n: number): string
 	local neg = n < 0
 	n = math.abs(n)
@@ -147,6 +276,11 @@ function Data.kindsOfRarity(rarity: number): { string }
 		end
 	end
 	return list
+end
+
+-- the zone a storm of this rarity normally lives in
+function Data.zoneForRarity(rarity: number): number
+	return if rarity <= 2 then 1 elseif rarity <= 4 then 2 else 3
 end
 
 return Data

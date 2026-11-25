@@ -1,0 +1,31 @@
+-- Runs every world effect (the ones that don't need a player's screen) to catch runtime errors.
+local RS = game:GetService("ReplicatedStorage")
+local Fx = require(RS.StormFx)
+local out = {}
+local function try(name, f)
+	local ok, err = pcall(f)
+	table.insert(out, name .. ": " .. (if ok then "ok" else ("ERROR " .. tostring(err))))
+end
+local c = Color3.fromRGB(255, 120, 60)
+local p0 = Vector3.new(0, 1, 60)
+try("burst", function() Fx.burst(p0, c, 30, 20, 1) end)
+try("pillar", function() Fx.pillar(p0, c, 50, 4, 1) end)
+try("ring", function() Fx.ring(p0, c, 10, 0.5) end)
+try("bolt", function() Fx.bolt(p0, c, 120, 1) end)
+try("warn", function() Fx.warn(p0, 7, 1) end)
+try("meteor", function() Fx.meteor(p0 + Vector3.new(50, 200, 0), p0, 1) end)
+try("impact", function() Fx.impact(p0) end)
+try("coins", function() Fx.coins(p0, 8) end)
+try("float", function() Fx.float(p0, "+$100", c, 30, 5) end)
+try("shake/fov", function() Fx.shake(1); Fx.fov(10) end)
+try("beacon", function()
+	local part = Instance.new("Part"); part.Anchored = true; part.Parent = workspace
+	local b = Fx.beacon(part, c); b:Destroy()
+end)
+try("trail", function()
+	local part = Instance.new("Part"); part.Anchored = true; part.Parent = workspace
+	local t = Fx.trail(part, c, 2); t:Destroy()
+end)
+task.wait(1.5)
+table.insert(out, "parts left in Fx folder after effects: " .. #Fx.folder:GetChildren())
+return table.concat(out, "\n")

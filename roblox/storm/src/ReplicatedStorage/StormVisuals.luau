@@ -344,24 +344,96 @@ BUILD.MeteorShower = function(vis, rng)
 	light(vis.pieces[1].part, rgb(255, 120, 60), 2.5, 18)
 end
 
+-- mutations change how a storm looks (and Rainbow ones cycle through colours every frame)
+local function tint(vis, color: Color3, amount: number, material: Enum.Material?)
+	for _, piece in vis.pieces do
+		local p = piece.part
+		if p.Transparency < 1 then
+			p.Color = p.Color:Lerp(color, amount)
+			if material and p.Material == Enum.Material.SmoothPlastic then
+				p.Material = material
+			end
+		end
+	end
+end
+
+function V.mutate(vis, mutation: string?, rng: Random)
+	if not mutation or mutation == "" then
+		return
+	end
+	local m = Data.MUTATIONS[mutation]
+	local core = vis.pieces[1].part
+	if mutation == "Golden" then
+		tint(vis, m.color, 0.6)
+		for _, piece in vis.pieces do
+			if piece.part.Material == Enum.Material.SmoothPlastic then
+				piece.part.Reflectance = 0.25
+			end
+		end
+		sparkles(core, m.color, 12)
+	elseif mutation == "Frozen" then
+		tint(vis, Color3.fromRGB(205, 238, 255), 0.6, Enum.Material.Ice)
+		sparkles(core, Color3.fromRGB(235, 250, 255), 10)
+		for i = 1, 4 do
+			local a = i / 4 * math.pi * 2
+			addPart(vis, {
+				cf = CFrame.new(math.cos(a) * 1.6, -1.2, math.sin(a) * 1.4) * CFrame.Angles(math.pi, 0, 0),
+				size = Vector3.new(0.35, 1.3, 0.35),
+				color = Color3.fromRGB(210, 240, 255),
+				material = Enum.Material.Glass,
+				transparency = 0.2,
+			})
+		end
+	elseif mutation == "Charged" then
+		tint(vis, Color3.fromRGB(120, 190, 255), 0.35)
+		bolt(vis, rng, Vector3.new(2.2, 1.2, 0), 3, m.color, 0.7)
+		bolt(vis, rng, Vector3.new(-2.2, 1.2, 0.5), 3, m.color, 0.9)
+		light(core, m.color, 2.5, 16)
+	elseif mutation == "Cosmic" then
+		tint(vis, Color3.fromRGB(80, 50, 160), 0.55)
+		sparkles(core, Color3.fromRGB(255, 255, 255), 14)
+		for i = 1, 5 do
+			local r = 2.6 + (i % 2) * 0.6
+			local speed = 1.4 + i * 0.25
+			addPart(vis, {
+				size = Vector3.new(0.35, 0.35, 0.35),
+				color = if i % 2 == 0 then Color3.fromRGB(255, 255, 255) else Color3.fromRGB(190, 160, 255),
+				material = Enum.Material.Neon,
+				shape = Enum.PartType.Ball,
+				anim = function(t)
+					local a = t * speed + i * 1.3
+					return CFrame.new(math.cos(a) * r, math.sin(t * 2 + i) * 0.8, math.sin(a) * r)
+				end,
+			})
+		end
+		light(core, Color3.fromRGB(170, 120, 255), 2, 16)
+	elseif mutation == "Bloodmoon" then
+		tint(vis, Color3.fromRGB(190, 25, 40), 0.6)
+		light(core, Color3.fromRGB(255, 40, 50), 2.5, 16)
+		emitter(core, {
+			Texture = SPARK,
+			Color = ColorSequence.new(Color3.fromRGB(255, 60, 50)),
+			LightEmission = 1,
+			Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(1, 0) }),
+			Rate = 12,
+			Lifetime = NumberRange.new(1, 1.8),
+			Speed = NumberRange.new(1, 3),
+			Acceleration = Vector3.new(0, 3, 0),
+			SpreadAngle = Vector2.new(180, 180),
+		})
+	elseif mutation == "Rainbow" then
+		vis.rainbow = true
+		sparkles(core, Color3.fromRGB(255, 255, 255), 16)
+		light(core, Color3.fromRGB(255, 200, 255), 2, 16)
+	end
+end
+
 function V.storm(kind: string, mutation: string?, seed: number?)
 	local rng = Random.new(seed or 7)
 	local vis = newVisual(kind)
 	local build = BUILD[kind] or BUILD.Drizzle
 	build(vis, rng)
-	if mutation == "Golden" then
-		local gold = Data.MUTATIONS.Golden.color
-		for _, piece in vis.pieces do
-			local p = piece.part
-			if p.Transparency < 1 then
-				p.Color = p.Color:Lerp(gold, 0.6)
-				if p.Material == Enum.Material.SmoothPlastic then
-					p.Reflectance = 0.25
-				end
-			end
-		end
-		sparkles(vis.pieces[1].part, gold, 12)
-	end
+	V.mutate(vis, mutation, rng)
 	for _, piece in vis.pieces do
 		table.insert(vis.parts, piece.part)
 		table.insert(vis.cfs, CFrame.identity)
@@ -433,6 +505,17 @@ function V.update(vis, origin: CFrame, t: number)
 	local cfs = vis.cfs
 	for i, piece in vis.pieces do
 		cfs[i] = o * (if piece.anim then piece.anim(t) else piece.base)
+	end
+	if vis.rainbow then
+		vis.baseColors = vis.baseColors or {}
+		for i, piece in vis.pieces do
+			local p = piece.part
+			if p.Transparency < 1 then
+				local base = vis.baseColors[i] or p.Color
+				vis.baseColors[i] = base
+				p.Color = base:Lerp(Color3.fromHSV((t * 0.25 + i * 0.04) % 1, 0.75, 1), 0.7)
+			end
+		end
 	end
 	workspace:BulkMoveTo(vis.parts, cfs, Enum.BulkMoveMode.FireCFrameChanged)
 end
