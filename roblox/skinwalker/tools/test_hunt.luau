@@ -144,7 +144,13 @@ end
 
 -- 3. hiding: it watches you climb into a locker -> it rips it open
 local Lockers = require(SSS:WaitForChild("Lockers"))
--- stand the creature 14 studs in front of a locker, facing it
+-- stand the creature 14 studs in front of a locker, facing it (after any vault in progress finishes)
+for _ = 1, 30 do
+	if sw:GetAttribute("Climbing") ~= true then
+		break
+	end
+	task.wait(0.1)
+end
 local spot = nil
 local rp = RaycastParams.new()
 rp.FilterType = Enum.RaycastFilterType.Exclude
@@ -279,7 +285,7 @@ for _ = 1, 60 do
 	end
 	task.wait(0.2)
 end
-ai:SetAttribute("SetHunger", 0.15)
+ai:SetAttribute("SetHunger", 0.02)
 local died = false
 for _ = 1, 60 do
 	task.wait(0.2)

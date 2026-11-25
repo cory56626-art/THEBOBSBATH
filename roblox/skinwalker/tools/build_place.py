@@ -116,7 +116,7 @@ def main():
             script("Script", "Diagnostics", read("ServerScriptService/Diagnostics.server.luau")))
 
     starter_player = Inst("StarterPlayer", "StarterPlayer")
-    starter_player.set("GameSettingsAvatar", "token", 1)  # R15 (the procedural animations use R15 joints)
+    starter_player.set("GameSettingsAvatar", "token", 0)  # R6 (the universe's Avatar setting has the final say)
     sps = Inst("StarterPlayerScripts", "StarterPlayerScripts")
     client = ["SkinwalkerAnimator", "SkinwalkerClient", "PlayerControls", "CharacterAnimator", "MapClient",
               "Diagnostics"]

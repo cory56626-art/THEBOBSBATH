@@ -156,18 +156,26 @@ local function animate(R: Rig, dt: number)
 	local c = math.cos(R.phase)
 
 	if R.r6 then
-		-- R6: right-side joints swing forward with +Z, left-side with -Z
-		local legAmp = (0.6 + R.sprint * 0.35) * moving + 0.25 * R.air
-		local armAmp = (0.55 + R.sprint * 0.45) * moving
-		local legL = legAmp * s + 0.35 * R.crouch
-		local legR = -legAmp * s + 0.35 * R.crouch
-		local armL = -armAmp * s + 0.3 * R.crouch + 0.6 * R.air
-		local armR = armAmp * s + 0.3 * R.crouch + 0.6 * R.air
+		-- R6 (the game's avatar type). Mirrors tools/r6_preview.py, checked on a standard R6 rig:
+		-- right-side joints swing forward with +Z, left-side with -Z; RootJoint/Neck: +X leans forward, +Z is up.
+		local m = moving
+		local legAmp = (0.55 + R.sprint * 0.4) * m * (1 - 0.5 * R.crouch)
+		local armAmp = (0.5 + R.sprint * 0.6) * m * (1 - 0.6 * R.crouch)
+		local lean6 = 0.06 * m + 0.25 * R.sprint + 0.35 * R.crouch
+		local drop = 0.85 * R.crouch
+		local bob6 = -math.abs(s) * (0.1 + 0.1 * R.sprint) * m
+		local crouchLegs = 0.95 * R.crouch
+		local legL = legAmp * s + lean6 + crouchLegs + 0.3 * R.air
+		local legR = -legAmp * s + lean6 + crouchLegs - 0.2 * R.air
+		local breathe6 = math.sin(R.t * 1.6) * 0.04 * (1 - m)
+		local armL = -armAmp * s + 0.45 * R.crouch + 0.15 * R.sprint + 1.1 * R.air + breathe6
+		local armR = armAmp * s + 0.45 * R.crouch + 0.15 * R.sprint + 1.1 * R.air + breathe6
+		pose(R, j.RootJoint, CFrame.new(0, 0, -drop + bob6) * CFrame.Angles(lean6, 0, 0))
+		pose(R, j.Neck, CFrame.Angles(-lean6 * 0.7, 0, 0))
 		pose(R, j["Left Hip"], CFrame.Angles(0, 0, -legL))
 		pose(R, j["Right Hip"], CFrame.Angles(0, 0, legR))
 		pose(R, j["Left Shoulder"], CFrame.Angles(0, 0, -armL))
 		pose(R, j["Right Shoulder"], CFrame.Angles(0, 0, armR))
-		pose(R, j.RootJoint, CFrame.new(0, 0, -math.abs(s) * 0.1 * moving)) -- R6 RootJoint's Z axis points up
 		return
 	end
 	local amp = (0.55 + R.sprint * 0.4 - R.crouch * 0.18) * moving
