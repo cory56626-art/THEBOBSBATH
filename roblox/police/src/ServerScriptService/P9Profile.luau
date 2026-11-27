@@ -7,6 +7,7 @@ local Data = require(game:GetService("ReplicatedStorage"):WaitForChild("P9Data")
 
 local Profile = {}
 Profile.data = {} :: { [any]: any }
+-- saved: cash, xp, arrests, bookings, escapes, dept, pistol, cars (owned), mday/mprog/mdone (daily missions)
 
 local store
 pcall(function()
@@ -19,7 +20,8 @@ end
 Profile.isPlayer = isPlayer
 
 function Profile.default()
-	return { cash = 0, xp = 0, arrests = 0, bookings = 0, escapes = 0 }
+	return { cash = 0, xp = 0, arrests = 0, bookings = 0, escapes = 0, dept = "Patrol", pistol = false, cars = {},
+		mday = 0, mprog = {}, mdone = {} }
 end
 
 function Profile.load(player)
@@ -91,7 +93,7 @@ function Profile.give(player, cash: number, xp: number): boolean
 		return false
 	end
 	local before = Data.rankOf(d.xp)
-	d.cash += cash
+	d.cash = math.max(0, d.cash + cash)
 	d.xp += xp
 	Profile.sync(player)
 	return Data.rankOf(d.xp) > before

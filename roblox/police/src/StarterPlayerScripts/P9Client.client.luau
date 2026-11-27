@@ -15,7 +15,8 @@ local CarPhysics = require(ReplicatedStorage:WaitForChild("CarPhysics"))
 local Bank = require(ReplicatedStorage:WaitForChild("P9SoundBank"))
 local remotes = ReplicatedStorage:WaitForChild("P9Remotes")
 local R: { [string]: RemoteEvent } = {}
-for _, n in { "PickTeam", "CarAction", "CarToggle", "SpawnCar", "Taser", "Arrest", "Notify", "Knock", "Fx" } do
+for _, n in { "PickTeam", "CarAction", "CarToggle", "SpawnCar", "Taser", "Arrest", "Notify", "Knock", "Fx", "Equip", "Fire",
+	"Action", "StopInfo" } do
 	R[n] = remotes:WaitForChild(n) :: RemoteEvent
 end
 
@@ -40,7 +41,7 @@ local function makeSound(name: string, volume: number, parent: Instance): Sound?
 		return nil
 	end
 	local snd = Instance.new("Sound")
-	snd.SoundId = Bank.Id
+	snd.SoundId = (Bank.Ids and Bank.Ids[r[3] or 1]) or Bank.Id
 	snd.PlaybackRegionsEnabled = true
 	snd.PlaybackRegion = NumberRange.new(r[1], r[2])
 	snd.Volume = volume
@@ -109,6 +110,7 @@ end
 local DARK = Color3.fromRGB(14, 18, 28)
 local BLUE = Color3.fromRGB(70, 120, 255)
 local ORANGE = Color3.fromRGB(255, 150, 40)
+local GREEN = Color3.fromRGB(80, 210, 120)
 local WHITE = Color3.new(1, 1, 1)
 
 local gui = new("ScreenGui", { Name = "P9Hud", ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling },
@@ -154,19 +156,21 @@ local function refreshCard()
 	local idx = Data.rankOf(xp)
 	local cur, nxt = Data.RANKS[idx], Data.RANKS[idx + 1]
 	cashLbl.Text = Data.money(player:GetAttribute("Cash") or 0)
-	if team == "Criminal" then
-		rankLbl.Text = "CRIMINAL"
-		rankLbl.TextColor3 = ORANGE
-		cardStroke.Color = ORANGE
+	xpBack.Visible = team ~= "Civilian"
+	if team == "Civilian" then
+		local wanted = (player:GetAttribute("Wanted") or 0) > 0
+		rankLbl.Text = if wanted then "WANTED" else "CIVILIAN"
+		rankLbl.TextColor3 = if wanted then Color3.fromRGB(255, 90, 70) else GREEN
+		cardStroke.Color = if wanted then Color3.fromRGB(255, 90, 70) else GREEN
 	else
 		rankLbl.Text = string.upper(cur.name) .. (if nxt then ("  ·  %d/%d XP"):format(xp, nxt.xp) else "  ·  MAX")
 		rankLbl.TextColor3 = WHITE
 		cardStroke.Color = BLUE
 	end
 	xpFill.Size = UDim2.fromScale(if nxt then math.clamp((xp - cur.xp) / (nxt.xp - cur.xp), 0, 1) else 1, 1)
-	xpFill.BackgroundColor3 = if team == "Criminal" then ORANGE else BLUE
+	xpFill.BackgroundColor3 = BLUE
 end
-for _, a in { "Cash", "XP", "Team" } do
+for _, a in { "Cash", "XP", "Team", "Wanted" } do
 	player:GetAttributeChangedSignal(a):Connect(refreshCard)
 end
 refreshCard()
@@ -176,7 +180,7 @@ local starsLbl = label(gui, { AnchorPoint = Vector2.new(0.5, 0), Position = UDim
 	TextSize = 36, TextColor3 = Color3.fromRGB(255, 210, 60), Font = Enum.Font.GothamBlack, Visible = false })
 local function refreshStars()
 	local n = player:GetAttribute("Wanted") or 0
-	starsLbl.Visible = myTeam() == "Criminal" and n > 0
+	starsLbl.Visible = myTeam() == "Civilian" and n > 0
 	starsLbl.Text = string.rep("★", n) .. string.rep("☆", Data.WANTED.max - n)
 end
 player:GetAttributeChangedSignal("Wanted"):Connect(refreshStars)
@@ -267,9 +271,9 @@ end
 teamCard("Police", "POLICE",
 	"Patrol the town. Answer 911 calls, chase stolen cars, taser and cuff suspects, and book them at the station. Earn pay and climb from Cadet to Chief.",
 	Color3.fromRGB(30, 60, 160))
-teamCard("Criminal", "CRIMINAL",
-	"Steal cars, outrun the cops and lay low. Every minute you stay wanted pays. Get caught and you're doing time.",
-	Color3.fromRGB(170, 80, 20))
+teamCard("Civilian", "CIVILIAN",
+	"Live your life in Northfield: deliver pizzas, drive a taxi, buy cars. Or rob the bank, steal cars and outrun the cops. Get caught and you're doing time.",
+	Color3.fromRGB(30, 120, 70))
 local closeTeams = button(teamScreen, "✕", Color3.fromRGB(60, 60, 70), UDim2.fromOffset(48, 48))
 closeTeams.AnchorPoint = Vector2.new(1, 0)
 closeTeams.Position = UDim2.new(1, -12, 0, 12)
@@ -291,9 +295,9 @@ player:GetAttributeChangedSignal("Team"):Connect(function()
 	if team == "Police" then
 		toast("Shift started. Get a car from the lot (CAR), follow 911 calls on your map, taser suspects and hold ARREST.",
 			Color3.fromRGB(170, 210, 255))
-	elseif team == "Criminal" then
-		toast("Steal a parked car (walk up and press Steal). Outrun the cops. The longer you stay wanted, the more you earn.",
-			Color3.fromRGB(255, 200, 140))
+	elseif team == "Civilian" then
+		toast("Welcome to Northfield! Start a job (MENU), buy a car at Northfield Motors, or... rob a store. Your call.",
+			Color3.fromRGB(190, 255, 210))
 	end
 end)
 refreshTeamScreen()
@@ -428,7 +432,7 @@ end
 workspace:GetAttributeChangedSignal("Calls"):Connect(refreshCalls)
 
 ---------------------------------------------------------------- action buttons
-local actions = new("Frame", { AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -12, 1, -190), Size = UDim2.fromOffset(96, 330),
+local actions = new("Frame", { AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -12, 1, -190), Size = UDim2.fromOffset(96, 400),
 	BackgroundTransparency = 1 }, gui)
 new("UIListLayout", { Padding = UDim.new(0, 8), VerticalAlignment = Enum.VerticalAlignment.Bottom,
 	HorizontalAlignment = Enum.HorizontalAlignment.Right, SortOrder = Enum.SortOrder.LayoutOrder }, actions)
@@ -442,8 +446,12 @@ local taserBtn = actionButton("TASER", Color3.fromRGB(230, 190, 30), 5)
 local taserFill = new("Frame", { Size = UDim2.fromScale(0, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.5,
 	ZIndex = 2 }, taserBtn)
 corner(taserFill, 12)
-local carBtn = actionButton("CRUISER", Color3.fromRGB(40, 70, 170), 3)
-local suvBtn = actionButton("SUV", Color3.fromRGB(30, 50, 120), 4)
+local carBtn = actionButton("CAR", Color3.fromRGB(40, 70, 170), 3)
+local myCarBtn = actionButton("MY CAR", Color3.fromRGB(40, 140, 90), 3)
+local gunBtn = actionButton("GUN", Color3.fromRGB(70, 70, 78), 4)
+local fireBtn = actionButton("FIRE", Color3.fromRGB(200, 50, 40), 0)
+local ammoLbl = label(fireBtn, { AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, 2, 1, 6), Size = UDim2.fromOffset(60, 14),
+	TextSize = 11, TextXAlignment = Enum.TextXAlignment.Right, Text = "", ZIndex = 3 })
 local lightsBtn = actionButton("LIGHTS", Color3.fromRGB(200, 40, 40), 1)
 local sirenBtn = actionButton("SIREN", Color3.fromRGB(40, 80, 220), 2)
 local hornBtn = actionButton("HORN", Color3.fromRGB(70, 70, 80), 6)
@@ -487,11 +495,36 @@ local function fireTaser()
 	R.Taser:FireServer(aim.Unit)
 end
 taserBtn.Activated:Connect(fireTaser)
+-- police car menu: cruiser, SUV (Corporal), SWAT van (SWAT, Sergeant)
+local carMenu = new("Frame", { AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -116, 1, -250), Size = UDim2.fromOffset(170, 0),
+	AutomaticSize = Enum.AutomaticSize.Y, BackgroundColor3 = DARK, BackgroundTransparency = 0.15, Visible = false }, gui)
+corner(carMenu, 12)
+new("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, carMenu)
+new("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingBottom = UDim.new(0, 8), PaddingLeft = UDim.new(0, 8),
+	PaddingRight = UDim.new(0, 8) }, carMenu)
+local carChoices: { [string]: TextButton } = {}
+for i, kind in Data.POLICE_CARS do
+	local b = button(carMenu, Data.CARS[kind].name, Color3.fromRGB(40, 70, 170), UDim2.new(1, 0, 0, 40))
+	b.LayoutOrder = i
+	b.Activated:Connect(function()
+		R.SpawnCar:FireServer(kind)
+		carMenu.Visible = false
+	end)
+	carChoices[kind] = b
+end
+local function refreshCarMenu()
+	local rankIdx = player:GetAttribute("RankIndex") or 1
+	local dept = player:GetAttribute("Dept") or "Patrol"
+	for kind, b in carChoices do
+		local spec = Data.CARS[kind]
+		local ok = rankIdx >= (spec.rank or 1) and (spec.dept == nil or spec.dept == dept)
+		b.Text = spec.name .. (if ok then "" else " 🔒")
+		b.BackgroundTransparency = if ok then 0.1 else 0.55
+	end
+end
 carBtn.Activated:Connect(function()
-	R.SpawnCar:FireServer("Cruiser")
-end)
-suvBtn.Activated:Connect(function()
-	R.SpawnCar:FireServer("Interceptor")
+	refreshCarMenu()
+	carMenu.Visible = not carMenu.Visible
 end)
 lightsBtn.Activated:Connect(function()
 	R.CarToggle:FireServer("Lights")
@@ -584,9 +617,11 @@ type CarFx = {
 	beams: { SpotLight },
 	drivePrompt: ProximityPrompt,
 	ridePrompt: ProximityPrompt,
+	stopPrompt: ProximityPrompt?,
 	maxSpeed: number,
 }
 local carFx: { [Model]: CarFx } = {}
+local stopModel: Model? = nil -- the car of the traffic stop panel
 
 local function night(): boolean
 	return workspace:GetAttribute("Night") == true
@@ -646,6 +681,17 @@ local function setupCar(model: Instance)
 		MaxActivationDistance = 10, RequiresLineOfSight = false, HoldDuration = 0, Enabled = false }, dAtt)
 	fx.ridePrompt = new("ProximityPrompt", { ActionText = "Ride", ObjectText = spec.name, KeyboardKeyCode = Enum.KeyCode.F,
 		MaxActivationDistance = 9, RequiresLineOfSight = false, HoldDuration = 0, Enabled = false }, pAtt)
+	fx.stopPrompt = new("ProximityPrompt", { ActionText = "Check driver", ObjectText = spec.name, KeyboardKeyCode = Enum.KeyCode.G,
+		MaxActivationDistance = 11, RequiresLineOfSight = false, HoldDuration = 0, Enabled = false, UIOffset = Vector2.new(0, 70) },
+		dAtt)
+	fx.stopPrompt.Triggered:Connect(function()
+		if model:GetAttribute("Stopped") then
+			stopModel = model
+			R.Action:FireServer("stop", model, "check")
+		else
+			R.Action:FireServer("stop", model, "ticket")
+		end
+	end)
 	fx.drivePrompt.Triggered:Connect(function()
 		R.CarAction:FireServer(model, "drive")
 	end)
@@ -775,8 +821,25 @@ local function refreshPrompts()
 		local mine = (model:GetAttribute("Owner") or 0) == player.UserId
 		local canDrive = team ~= "" and free and not wrecked and inCar == nil and (not police or team == "Police")
 		fx.drivePrompt.Enabled = canDrive
-		fx.drivePrompt.ActionText = if team == "Criminal" and not police and not mine then "Steal" else "Drive"
+		fx.drivePrompt.ActionText = if team == "Civilian" and not police and not mine then "Steal" else "Drive"
 		fx.ridePrompt.Enabled = team ~= "" and inCar == nil and (not police or team == "Police") and not wrecked
+			and not model:GetAttribute("AI")
+		if fx.stopPrompt then
+			local stopped = model:GetAttribute("Stopped") == true and model:GetAttribute("StopCop") == player.UserId
+			local driverId = model:GetAttribute("Driver") or 0
+			local civDriver = false
+			if driverId ~= 0 and driverId ~= player.UserId and not police then
+				local dp = Players:GetPlayerByUserId(driverId)
+				civDriver = dp ~= nil and dp:GetAttribute("Team") == "Civilian"
+					and fx.chassis.AssemblyLinearVelocity.Magnitude < 6
+			end
+			fx.stopPrompt.Enabled = team == "Police" and inCar == nil and (stopped or civDriver)
+			fx.stopPrompt.ActionText = if stopped then "Check driver" else "Ticket driver"
+			fx.stopPrompt.HoldDuration = if stopped then 0 else 0.6
+		end
+		if mine and not police then
+			fx.drivePrompt.ActionText = "Drive"
+		end
 	end
 end
 
@@ -789,6 +852,7 @@ local STATE_TEXT = {
 	stunned = { "TASED · ARREST", Color3.fromRGB(140, 220, 255) },
 	cuffed = { "IN CUSTODY", Color3.fromRGB(120, 160, 255) },
 	transport = { "IN CUSTODY", Color3.fromRGB(120, 160, 255) },
+	robbing = { "ARMED ROBBERY!", Color3.fromRGB(255, 50, 50) },
 }
 local function setupSuspect(model: Instance)
 	if not model:IsA("Model") or suspectTags[model] then
@@ -830,7 +894,11 @@ local function refreshSuspects()
 		local state = model:GetAttribute("State") or "loiter"
 		local info = STATE_TEXT[state] or STATE_TEXT.loiter
 		local stars = model:GetAttribute("Stars") or 1
-		tag.text.Text = info[1] .. (if state == "flee" or state == "loiter" then "  " .. string.rep("★", stars) else "")
+		local h = model:FindFirstChildOfClass("Humanoid")
+		local down = h and h:GetAttribute("Down") == true
+		tag.text.Text = if down and state == "stunned" then "DOWN · ARREST"
+			elseif model:GetAttribute("Armed") and state == "flee" then "ARMED · FLEEING  " .. string.rep("★", stars)
+			else info[1] .. (if state == "flee" or state == "loiter" then "  " .. string.rep("★", stars) else "")
 		tag.text.TextColor3 = info[2]
 		tag.gui.Enabled = cop or state ~= "loiter"
 		tag.prompt.Enabled = cop and state == "stunned"
@@ -856,7 +924,7 @@ local function refreshSuspects()
 				playerPrompts[other] = prompt
 			end
 			if prompt then
-				prompt.Enabled = cop and other:GetAttribute("Team") == "Criminal" and (other:GetAttribute("Wanted") or 0) > 0
+				prompt.Enabled = cop and other:GetAttribute("Team") == "Civilian" and (other:GetAttribute("Wanted") or 0) > 0
 					and (other:GetAttribute("StunnedUntil") or 0) > now
 			end
 		end
@@ -932,6 +1000,53 @@ local function taserFx(from: Vector3, to: Vector3, hit: boolean)
 	end
 end
 
+local hitMarker = label(gui, { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(40, 40),
+	Text = "✕", TextSize = 34, TextColor3 = Color3.fromRGB(255, 255, 255), TextStrokeTransparency = 0, Visible = false, ZIndex = 40 })
+
+local function shotFx(from: Vector3, to: Vector3, hit: boolean, shooterId: number?)
+	playSound("Gunshot", 0.8, from)
+	local len = (to - from).Magnitude
+	if len > 0.5 then
+		local tracer = new("Part", { Anchored = true, CanCollide = false, CanQuery = false, CanTouch = false, CastShadow = false,
+			Material = Enum.Material.Neon, Color = Color3.fromRGB(255, 230, 150), Size = Vector3.new(0.08, 0.08, len),
+			CFrame = CFrame.lookAt((from + to) / 2, to), Transparency = 0.2 }, workspace)
+		TweenService:Create(tracer, TweenInfo.new(0.12), { Transparency = 1 }):Play()
+		Debris:AddItem(tracer, 0.15)
+	end
+	local flashAtt = Instance.new("Attachment")
+	flashAtt.WorldPosition = from
+	flashAtt.Parent = workspace.Terrain
+	new("PointLight", { Brightness = 6, Range = 12, Color = Color3.fromRGB(255, 200, 120) }, flashAtt)
+	Debris:AddItem(flashAtt, 0.06)
+	burst(to, if hit then Color3.fromRGB(255, 240, 200) else Color3.fromRGB(255, 200, 120), if hit then 14 else 8)
+	if not hit then
+		playSound("Impact", 0.5, to)
+	end
+	if hit and shooterId == player.UserId then
+		hitMarker.Visible = true
+		task.delay(0.15, function()
+			hitMarker.Visible = false
+		end)
+	end
+end
+
+local function alarmFx(at: Vector3)
+	playSound("Alarm", 0.9, at)
+	task.delay(2.6, function()
+		playSound("Alarm", 0.9, at)
+	end)
+	local p = new("Part", { Anchored = true, CanCollide = false, CanQuery = false, CanTouch = false, Transparency = 1,
+		Size = Vector3.one, Position = at }, workspace)
+	local light = new("PointLight", { Brightness = 0, Range = 40, Color = Color3.fromRGB(255, 30, 30) }, p)
+	task.spawn(function()
+		for i = 1, 24 do
+			light.Brightness = if i % 2 == 0 then 8 else 0
+			task.wait(0.25)
+		end
+		p:Destroy()
+	end)
+end
+
 local function boom(pos: Vector3)
 	local e = Instance.new("Explosion")
 	e.Position = pos
@@ -943,7 +1058,7 @@ local function boom(pos: Vector3)
 	burst(pos, Color3.fromRGB(255, 160, 60), 50)
 end
 
-R.Fx.OnClientEvent:Connect(function(kind, a, b, c)
+R.Fx.OnClientEvent:Connect(function(kind, a, b, c, d)
 	if kind == "taser" then
 		taserFx(a, b, c)
 	elseif kind == "cuffed" then
@@ -967,25 +1082,46 @@ R.Fx.OnClientEvent:Connect(function(kind, a, b, c)
 		playSound("Horn", 0.9, a)
 	elseif kind == "chirp" then
 		playSound("Chirp", 0.8, a)
+	elseif kind == "shot" then
+		shotFx(a, b, c, d)
+	elseif kind == "hit" then
+		playSound("Thud", 0.9, a)
+		burst(a, Color3.fromRGB(170, 150, 120), 20)
+	elseif kind == "alarm" then
+		alarmFx(a)
+	elseif kind == "breach" then
+		playSound("Crash", 1, a)
+		boom(a)
+		alarmFx(a + Vector3.new(0, 4, 0))
+	elseif kind == "delivered" then
+		playSound("Doorbell", 0.8, a)
+		playSound("Cash", 0.5)
+		burst(a, GREEN, 30)
+	elseif kind == "chime" then
+		playSound("Chirp", 0.5, a)
 	end
 end)
 
 -- tased: you drop for a few seconds
 local stunnedUntil = 0
-R.Knock.OnClientEvent:Connect(function(dir, seconds)
+R.Knock.OnClientEvent:Connect(function(dir, seconds, force)
 	local _, hum, hrp = myChar()
 	if not hum or not hrp then
 		return
 	end
 	stunnedUntil = os.clock() + (seconds or 3)
 	hum.PlatformStand = true
-	if typeof(dir) == "Vector3" and dir.Magnitude > 0.01 then
+	if typeof(force) == "number" and typeof(dir) == "Vector3" then
+		hrp.AssemblyLinearVelocity = dir
+		tasedLbl.Text = "OUCH!"
+	elseif typeof(dir) == "Vector3" and dir.Magnitude > 0.01 then
 		hrp.AssemblyLinearVelocity = Vector3.new(dir.X, 0, dir.Z).Unit * 18 + Vector3.new(0, 6, 0)
+		tasedLbl.Text = "TASED!"
 	end
 	tasedLbl.Visible = true
 	flash.BackgroundTransparency = 0.3
 	TweenService:Create(flash, TweenInfo.new(0.6), { BackgroundTransparency = 1 }):Play()
-	playSound("Taser", 0.6)
+	playSound(if force then "Thud" else "Taser", 0.6)
 	task.delay(seconds or 3, function()
 		if os.clock() >= stunnedUntil - 0.05 then
 			tasedLbl.Visible = false
@@ -998,6 +1134,516 @@ R.Knock.OnClientEvent:Connect(function(dir, seconds)
 	end)
 end)
 
+---------------------------------------------------------------- job / loot line, radar, speed limit
+toastHolder.Position = UDim2.new(0.5, 0, 0, 80)
+local infoLbl = label(gui, { AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 46), Size = UDim2.fromOffset(460, 28),
+	TextSize = 16, Font = Enum.Font.GothamBold, BackgroundColor3 = DARK, BackgroundTransparency = 0.25, Visible = false,
+	TextWrapped = true })
+corner(infoLbl, 8)
+local radarLbl = label(gui, { AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -88), Size = UDim2.fromOffset(260, 26),
+	TextSize = 15, Font = Enum.Font.GothamBlack, BackgroundColor3 = Color3.fromRGB(10, 14, 10), BackgroundTransparency = 0.2,
+	TextColor3 = Color3.fromRGB(120, 255, 140), Visible = false })
+corner(radarLbl, 6)
+local limitLbl = label(speedo, { Position = UDim2.fromOffset(10, 40), Size = UDim2.fromOffset(80, 14), TextSize = 11,
+	TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 220, 120), Text = "" })
+
+local function nearbyCarAhead(myModel: Model, range: number): (Model?, number)
+	local mine = myModel:FindFirstChild("Chassis") :: BasePart?
+	if not mine then
+		return nil, 0
+	end
+	local best, bestZ = nil, math.huge
+	for model, f in carFx do
+		if model ~= myModel then
+			local rel = mine.CFrame:PointToObjectSpace(f.chassis.Position)
+			if rel.Z < -5 and -rel.Z < range and math.abs(rel.X) < (-rel.Z) * 0.25 + 6 and -rel.Z < bestZ then
+				best, bestZ = model, -rel.Z
+			end
+		end
+	end
+	return best, bestZ
+end
+
+---------------------------------------------------------------- traffic stop panel
+local stopPanel = new("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.45), Size = UDim2.fromOffset(330, 250),
+	BackgroundColor3 = DARK, BackgroundTransparency = 0.08, Visible = false, ZIndex = 35 }, gui)
+corner(stopPanel, 14)
+stroke(stopPanel, BLUE, 2)
+label(stopPanel, { Position = UDim2.fromOffset(0, 8), Size = UDim2.new(1, 0, 0, 24), Text = "TRAFFIC STOP", TextSize = 20,
+	Font = Enum.Font.GothamBlack, ZIndex = 36 })
+local stopText = label(stopPanel, { Position = UDim2.fromOffset(16, 38), Size = UDim2.new(1, -32, 0, 132), TextSize = 15,
+	TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top, TextWrapped = true, RichText = true,
+	Font = Enum.Font.Gotham, ZIndex = 36 })
+local stopButtons = new("Frame", { Position = UDim2.new(0, 12, 1, -70), Size = UDim2.new(1, -24, 0, 58), BackgroundTransparency = 1,
+	ZIndex = 36 }, stopPanel)
+new("UIGridLayout", { CellSize = UDim2.new(0.5, -4, 0, 26), CellPadding = UDim2.fromOffset(8, 6) }, stopButtons)
+for _, pair in { { "TICKET", "ticket", Color3.fromRGB(200, 140, 30) }, { "WARNING", "warning", Color3.fromRGB(60, 120, 200) },
+	{ "ARREST", "arrest", Color3.fromRGB(190, 50, 50) }, { "LET GO", "release", Color3.fromRGB(70, 140, 80) } } do
+	local b = button(stopButtons, pair[1], pair[3], UDim2.new())
+	b.ZIndex = 37
+	b.Activated:Connect(function()
+		if stopModel then
+			R.Action:FireServer("stop", stopModel, pair[2])
+		end
+		stopPanel.Visible = false
+	end)
+end
+R.StopInfo.OnClientEvent:Connect(function(info)
+	if type(info) ~= "table" then
+		return
+	end
+	local speed = if info.clocked then ("<font color=\"#ff7060\">%d mph in a %d zone</font>"):format(info.clocked, info.limit or 45)
+		else "not clocked speeding"
+	stopText.Text = ("<b>%s</b> · %s\nDriver: %s\nSpeed: %s\nRegistration: %s\nWarrant: %s"):format(info.plate or "?",
+		info.car or "?", info.name or "?", speed,
+		if info.expired then "<font color=\"#ff7060\">EXPIRED</font>" else "valid",
+		if info.warrant then "<font color=\"#ff4040\"><b>ACTIVE WARRANT</b></font>" else "none")
+	stopPanel.Visible = true
+	playSound("Radio", 0.5)
+end)
+
+---------------------------------------------------------------- menu: missions, jobs, garage, department, help
+local menuBtn = button(gui, "MENU", Color3.fromRGB(60, 60, 72), UDim2.fromOffset(70, 34))
+menuBtn.Position = UDim2.fromOffset(86, 92)
+local menu = new("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.52), Size = UDim2.new(0.92, 0, 0.8, 0),
+	BackgroundColor3 = DARK, BackgroundTransparency = 0.06, Visible = false, ZIndex = 30 }, gui)
+new("UISizeConstraint", { MaxSize = Vector2.new(520, 600) }, menu)
+corner(menu, 14)
+stroke(menu, WHITE, 1.5)
+label(menu, { Position = UDim2.fromOffset(16, 8), Size = UDim2.new(1, -80, 0, 34), Text = "PRECINCT 9", TextSize = 24,
+	Font = Enum.Font.GothamBlack, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 31 })
+local closeMenu = button(menu, "✕", Color3.fromRGB(70, 70, 80), UDim2.fromOffset(40, 40))
+closeMenu.AnchorPoint = Vector2.new(1, 0)
+closeMenu.Position = UDim2.new(1, -8, 0, 6)
+closeMenu.ZIndex = 32
+local menuList = new("ScrollingFrame", { Position = UDim2.fromOffset(12, 52), Size = UDim2.new(1, -24, 1, -62), BackgroundTransparency = 1,
+	CanvasSize = UDim2.new(), AutomaticCanvasSize = Enum.AutomaticSize.Y, ScrollBarThickness = 6, ZIndex = 31,
+	BorderSizePixel = 0 }, menu)
+new("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, menuList)
+local menuGps: { pos: Vector3, text: string }? = nil
+local menuOrder = 0
+
+local function menuHeader(text: string)
+	menuOrder += 1
+	label(menuList, { Size = UDim2.new(1, 0, 0, 26), Text = text, TextSize = 15, Font = Enum.Font.GothamBlack,
+		TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 210, 90), LayoutOrder = menuOrder, ZIndex = 32 })
+end
+local function menuRow(text: string, buttonText: string?, color: Color3?, onClick: (() -> ())?)
+	menuOrder += 1
+	local row = new("Frame", { Size = UDim2.new(1, -6, 0, 44), BackgroundColor3 = Color3.fromRGB(28, 34, 48), LayoutOrder = menuOrder,
+		ZIndex = 32 }, menuList)
+	corner(row, 8)
+	label(row, { Position = UDim2.fromOffset(10, 0), Size = UDim2.new(1, if buttonText then -110 else -20, 1, 0), Text = text,
+		TextSize = 14, TextWrapped = true, TextXAlignment = Enum.TextXAlignment.Left, RichText = true, Font = Enum.Font.Gotham,
+		ZIndex = 33 })
+	if buttonText then
+		local b = button(row, buttonText, color or BLUE, UDim2.fromOffset(92, 34))
+		b.AnchorPoint = Vector2.new(1, 0.5)
+		b.Position = UDim2.new(1, -6, 0.5, 0)
+		b.ZIndex = 34
+		b.Activated:Connect(function()
+			if onClick then
+				onClick()
+			end
+		end)
+	end
+end
+local function gpsTo(pos: Vector3, text: string)
+	menuGps = { pos = pos, text = text }
+	menu.Visible = false
+	toast("GPS set: " .. text, Color3.fromRGB(190, 255, 210))
+end
+
+local function buildMenu()
+	for _, c in menuList:GetChildren() do
+		if not c:IsA("UIListLayout") then
+			c:Destroy()
+		end
+	end
+	menuOrder = 0
+	local team = myTeam()
+	menuHeader("TODAY'S MISSIONS")
+	local ok, list = pcall(function()
+		return HttpService:JSONDecode(player:GetAttribute("Missions") or "[]")
+	end)
+	for _, m in (if ok and type(list) == "table" then list else {}) do
+		menuRow(("%s  <b>%s</b>  <font color=\"#88ff99\">%s</font>"):format(if m.done then "✅" else "▫️", m.text,
+			if m.done then "done" else ("%d/%d · %s"):format(m.progress, m.goal, Data.money(m.cash))))
+	end
+	if team == "Civilian" then
+		local job = player:GetAttribute("Job") or ""
+		menuHeader("JOBS")
+		for name, spec in Data.JOBS do
+			if job == name then
+				menuRow(("<b>%s</b> (working)"):format(spec.name), "QUIT", Color3.fromRGB(170, 60, 50), function()
+					R.Action:FireServer("quitJob")
+					menu.Visible = false
+				end)
+			else
+				menuRow(("<b>%s</b> · start at the %s sign"):format(spec.name, if name == "Pizza" then "PIZZA" else "TAXI"), "GPS",
+					GREEN, function()
+						gpsTo(spec.start, spec.name)
+					end)
+			end
+		end
+		menuHeader("GARAGE · NORTHFIELD MOTORS")
+		local owned = string.split(player:GetAttribute("OwnedCars") or "", ",")
+		local hrp = select(3, myChar())
+		local atDealer = hrp ~= nil and (hrp.Position - Data.DEALERSHIP).Magnitude < 45
+		for _, kind in Data.SHOP_ORDER do
+			local spec = Data.CARS[kind]
+			if table.find(owned, kind) then
+				menuRow(("<b>%s</b> · yours"):format(spec.name), "SPAWN", GREEN, function()
+					R.Action:FireServer("myCar", kind)
+					menu.Visible = false
+				end)
+			elseif atDealer then
+				menuRow(("<b>%s</b> · %s · top speed %d mph"):format(spec.name, Data.money(spec.price),
+					math.floor(spec.maxSpeed * Data.MPH)), "BUY", Color3.fromRGB(200, 140, 30), function()
+					R.Action:FireServer("buyCar", kind)
+					task.delay(0.6, buildMenu)
+				end)
+			else
+				menuRow(("<b>%s</b> · %s"):format(spec.name, Data.money(spec.price)), "GPS", BLUE, function()
+					gpsTo(Data.DEALERSHIP, "Northfield Motors")
+				end)
+			end
+		end
+		if player:GetAttribute("HasPistol") ~= true then
+			menuRow(("<b>Pistol</b> · %s at Ironside Arms"):format(Data.money(Data.GUNS.Pistol.price)), "GPS", BLUE, function()
+				gpsTo(Data.GUN_STORE, "Ironside Arms")
+			end)
+		end
+	elseif team == "Police" then
+		menuHeader("DEPARTMENT")
+		local dept = player:GetAttribute("Dept") or "Patrol"
+		local rankIdx = player:GetAttribute("RankIndex") or 1
+		for _, key in Data.DEPT_ORDER do
+			local d = Data.DEPTS[key]
+			local unlocked = rankIdx >= d.rank
+			menuRow(("<b>%s</b> · %s%s"):format(d.name, d.desc, if unlocked then "" else (" (%s)"):format(Data.RANKS[d.rank].name)),
+				if dept == key then "ON DUTY" elseif unlocked then "JOIN" else "🔒",
+				if dept == key then Color3.fromRGB(60, 60, 70) else BLUE, function()
+					if dept ~= key and unlocked then
+						R.Action:FireServer("dept", key)
+						task.delay(0.6, buildMenu)
+					end
+				end)
+		end
+	end
+	menuHeader("HOW TO PLAY")
+	if team == "Police" then
+		menuRow("Follow 911 calls (map). TASER suspects, hold ARREST, then walk them or drive them to the BOOKING garage.")
+		menuRow("Traffic stops: drive behind a car with LIGHTS on until it pulls over, then walk to the driver's door.")
+		menuRow("Robberies: armed robbers shoot back. Use your GUN on wanted suspects only.")
+	else
+		menuRow("Jobs pay clean money. Crimes (stealing, robbing, hitting people) give stars: AI police will hunt you.")
+		menuRow("Robbery loot only counts once you lose the cops or stash it at JOE'S SCRAP.")
+		menuRow("Arrested friends? Breach the back wall of the county jail. Jailed yourself? Pick the lock (slow).")
+	end
+end
+menuBtn.Activated:Connect(function()
+	if not menu.Visible then
+		buildMenu()
+	end
+	menu.Visible = not menu.Visible
+end)
+closeMenu.Activated:Connect(function()
+	menu.Visible = false
+end)
+for _, a in { "Missions", "OwnedCars", "Job", "Dept", "HasPistol", "Team" } do
+	player:GetAttributeChangedSignal(a):Connect(function()
+		if menu.Visible then
+			buildMenu()
+		end
+	end)
+end
+
+---------------------------------------------------------------- places: rob, buy, work, break out
+local promptFolder = Instance.new("Folder")
+promptFolder.Name = "P9Prompts"
+promptFolder.Parent = workspace
+local function worldPrompt(pos: Vector3, action: string, object: string, hold: number, onTrigger: () -> (),
+	onBegin: (() -> ())?): ProximityPrompt
+	local p = new("Part", { Anchored = true, CanCollide = false, CanQuery = false, CanTouch = false, Transparency = 1,
+		Size = Vector3.one, Position = pos + Vector3.new(0, 3, 0) }, promptFolder)
+	local pr = new("ProximityPrompt", { ActionText = action, ObjectText = object, HoldDuration = hold, KeyboardKeyCode = Enum.KeyCode.E,
+		MaxActivationDistance = 10, RequiresLineOfSight = false, Enabled = false }, p)
+	pr.Triggered:Connect(onTrigger)
+	if onBegin then
+		pr.PromptButtonHoldBegan:Connect(onBegin)
+	end
+	return pr
+end
+local robPrompts: { [ProximityPrompt]: any } = {}
+for _, store in Data.ROBBERIES do
+	local pr = worldPrompt(store.pos, "Rob", store.name, store.time, function()
+		R.Action:FireServer("rob", store.id, "finish")
+	end, function()
+		R.Action:FireServer("rob", store.id, "begin")
+	end)
+	robPrompts[pr] = store
+end
+local gunPrompt = worldPrompt(Data.GUN_STORE, ("Buy pistol %s"):format(Data.money(Data.GUNS.Pistol.price)), "Ironside Arms", 0.4,
+	function()
+		R.Action:FireServer("buyGun")
+	end)
+local dealerPrompt = worldPrompt(Data.DEALERSHIP, "Browse cars", "Northfield Motors", 0, function()
+	buildMenu()
+	menu.Visible = true
+end)
+local jobPrompts: { [string]: ProximityPrompt } = {}
+for name, spec in Data.JOBS do
+	jobPrompts[name] = worldPrompt(spec.start, if name == "Pizza" then "Start pizza job" else "Start taxi shift", spec.name, 0.3,
+		function()
+			R.Action:FireServer("startJob", name)
+			menuGps = nil
+		end)
+end
+local breachPrompt = worldPrompt(Data.JAIL_BREACH, "Breach the wall", "County Jail", 10, function()
+	R.Action:FireServer("breach", "finish")
+end, function()
+	R.Action:FireServer("breach", "begin")
+end)
+local lockPart = new("Part", { Anchored = true, CanCollide = false, CanQuery = false, CanTouch = false, Transparency = 1,
+	Size = Vector3.one, Position = Vector3.new(0, -50, 0) }, promptFolder)
+local lockPrompt = new("ProximityPrompt", { ActionText = "Pick the lock", ObjectText = "Cell door", HoldDuration = 12,
+	KeyboardKeyCode = Enum.KeyCode.E, MaxActivationDistance = 14, RequiresLineOfSight = false, Enabled = false }, lockPart)
+lockPrompt.PromptButtonHoldBegan:Connect(function()
+	R.Action:FireServer("lockpick", "begin")
+end)
+lockPrompt.Triggered:Connect(function()
+	R.Action:FireServer("lockpick", "finish")
+end)
+
+local function refreshPlaces()
+	local team = myTeam()
+	local civ = team == "Civilian"
+	local jailed = (player:GetAttribute("JailUntil") or 0) > workspace:GetServerTimeNow()
+	local inCar = seatedCar() ~= nil
+	local wanted = (player:GetAttribute("Wanted") or 0) > 0
+	local job = player:GetAttribute("Job") or ""
+	for pr in robPrompts do
+		pr.Enabled = civ and not jailed and not inCar
+	end
+	gunPrompt.Enabled = civ and not jailed and player:GetAttribute("HasPistol") ~= true
+	dealerPrompt.Enabled = civ and not jailed
+	for name, pr in jobPrompts do
+		pr.Enabled = civ and not jailed and not wanted and job ~= name
+	end
+	breachPrompt.Enabled = civ and not jailed and not inCar
+	lockPrompt.Enabled = jailed
+	if jailed then
+		local _, _, hrp = myChar()
+		local jail = workspace:FindFirstChild("World") and workspace.World:FindFirstChild("Jail")
+		if hrp and jail then
+			local best, bestD = nil, math.huge
+			for _, c in jail:GetChildren() do
+				if c:IsA("BasePart") and c.Name:sub(1, 4) == "Cell" and c.Name ~= "CellWall" then
+					local d = (c.Position - hrp.Position).Magnitude
+					if d < bestD then
+						best, bestD = c, d
+					end
+				end
+			end
+			if best then
+				lockPart.Position = best.Position + Vector3.new(4, 1, 0)
+			end
+		end
+	end
+	if stopPanel.Visible and stopModel then
+		local _, _, hrp = myChar()
+		local ch = stopModel:FindFirstChild("Chassis") :: BasePart?
+		if not hrp or not ch or (ch.Position - hrp.Position).Magnitude > 30 then
+			stopPanel.Visible = false
+		end
+	end
+end
+
+---------------------------------------------------------------- guns: models in hands, firing
+local function gunModel(kind: string): Model
+	local m = Instance.new("Model")
+	m.Name = "P9Gun"
+	local len = if kind == "Rifle" then 2.6 else 1.1
+	local body = new("Part", { Name = "Body", Size = Vector3.new(0.25, 0.32, len), Color = Color3.fromRGB(30, 30, 34),
+		Material = Enum.Material.Metal, CanCollide = false, CanQuery = false, CanTouch = false, Massless = true }, m)
+	local grip = new("Part", { Name = "Grip", Size = Vector3.new(0.22, 0.55, 0.3), Color = Color3.fromRGB(45, 40, 36),
+		Material = Enum.Material.SmoothPlastic, CanCollide = false, CanQuery = false, CanTouch = false, Massless = true }, m)
+	grip.CFrame = body.CFrame * CFrame.new(0, -0.35, len / 2 - 0.25)
+	new("WeldConstraint", { Part0 = body, Part1 = grip }, grip)
+	m.PrimaryPart = body
+	return m
+end
+local function refreshGuns()
+	for _, p in Players:GetPlayers() do
+		local char = p.Character
+		local hand = char and (char:FindFirstChild("RightHand") or char:FindFirstChild("Right Arm"))
+		if hand and hand:IsA("BasePart") then
+			local want = p:GetAttribute("Equipped") or ""
+			local has = hand:FindFirstChild("P9Gun")
+			if has and has:GetAttribute("Kind") ~= want then
+				has:Destroy()
+				has = nil
+			end
+			if want ~= "" and not has then
+				local m = gunModel(want)
+				m:SetAttribute("Kind", want)
+				local body = m.PrimaryPart :: BasePart
+				local isR6 = hand.Name == "Right Arm"
+				body.CFrame = hand.CFrame * CFrame.new(0, if isR6 then -1.1 else -0.35, -(body.Size.Z / 2) + 0.3)
+				new("WeldConstraint", { Part0 = hand, Part1 = body }, body)
+				m.Parent = hand
+			end
+		end
+	end
+end
+
+local lastShotLocal = 0
+local function aimFromScreen(x: number, y: number): Vector3?
+	local _, _, hrp = myChar()
+	if not hrp then
+		return nil
+	end
+	local ray = camera:ViewportPointToRay(x, y)
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	params.FilterDescendantsInstances = { player.Character :: Instance, promptFolder }
+	local hit = workspace:Raycast(ray.Origin, ray.Direction * 400, params)
+	local point = if hit then hit.Position else ray.Origin + ray.Direction * 400
+	local from = hrp.Position + Vector3.new(0, 1.5, 0)
+	local dir = point - from
+	return if dir.Magnitude > 0.1 then dir.Unit else nil
+end
+local function fireGun(aim: Vector3?)
+	local spec = Data.GUNS[player:GetAttribute("Equipped") or ""]
+	if not spec or not aim then
+		return
+	end
+	local t = os.clock()
+	if t - lastShotLocal < spec.rate then
+		return
+	end
+	lastShotLocal = t
+	R.Fire:FireServer(aim)
+end
+local function screenCenterAim(): Vector3?
+	local vp = camera.ViewportSize
+	return aimFromScreen(vp.X / 2, vp.Y / 2)
+end
+local fireHeld = false
+fireBtn.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+		fireHeld = true
+		fireGun(screenCenterAim())
+	end
+end)
+fireBtn.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+		fireHeld = false
+	end
+end)
+local mouseHeld = false
+UserInputService.InputBegan:Connect(function(input, processed)
+	if processed then
+		return
+	end
+	if input.UserInputType == Enum.UserInputType.MouseButton1 and (player:GetAttribute("Equipped") or "") ~= "" then
+		mouseHeld = true
+		local m = UserInputService:GetMouseLocation()
+		fireGun(aimFromScreen(m.X, m.Y))
+	end
+end)
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		mouseHeld = false
+	end
+end)
+RunService.Heartbeat:Connect(function()
+	if player:GetAttribute("Equipped") == "Rifle" then
+		if fireHeld then
+			fireGun(screenCenterAim())
+		elseif mouseHeld then
+			local m = UserInputService:GetMouseLocation()
+			fireGun(aimFromScreen(m.X, m.Y))
+		end
+	end
+end)
+local function cycleGun()
+	local eq = player:GetAttribute("Equipped") or ""
+	local nextGun = ""
+	if myTeam() == "Police" then
+		if eq == "" then
+			nextGun = "Pistol"
+		elseif eq == "Pistol" and player:GetAttribute("Dept") == "SWAT" then
+			nextGun = "Rifle"
+		end
+	elseif eq == "" then
+		nextGun = "Pistol"
+	end
+	R.Equip:FireServer(nextGun)
+	if nextGun ~= "" then
+		playSound("Reload", 0.5)
+	end
+end
+gunBtn.Activated:Connect(cycleGun)
+UserInputService.InputBegan:Connect(function(input, processed)
+	if not processed and input.KeyCode == Enum.KeyCode.T and gunBtn.Visible then
+		cycleGun()
+	end
+end)
+myCarBtn.Activated:Connect(function()
+	local owned = string.split(player:GetAttribute("OwnedCars") or "", ",")
+	if #owned == 1 and owned[1] ~= "" then
+		R.Action:FireServer("myCar", owned[1])
+	else
+		buildMenu()
+		menu.Visible = true
+	end
+end)
+
+---------------------------------------------------------------- AI officers' tags, traffic lights
+local function tagOfficer(model: Instance)
+	local head = model:WaitForChild("Head", 5)
+	if not head or head:FindFirstChild("P9Tag") then
+		return
+	end
+	local g = new("BillboardGui", { Name = "P9Tag", Size = UDim2.fromOffset(140, 34), StudsOffset = Vector3.new(0, 2.4, 0), MaxDistance = 120 },
+		head)
+	label(g, { Size = UDim2.new(1, 0, 0.55, 0), Text = model:GetAttribute("OfficerName") or "Officer", TextScaled = true,
+		TextColor3 = Color3.fromRGB(170, 200, 255), TextStrokeTransparency = 0.3 })
+	label(g, { Position = UDim2.fromScale(0, 0.55), Size = UDim2.new(1, 0, 0.45, 0), Text = "POLICE", TextScaled = true,
+		Font = Enum.Font.GothamBlack, TextColor3 = Color3.fromRGB(90, 140, 255), TextStrokeTransparency = 0.3 })
+end
+CollectionService:GetInstanceAddedSignal("AIOfficer"):Connect(function(m)
+	task.spawn(tagOfficer, m)
+end)
+for _, m in CollectionService:GetTagged("AIOfficer") do
+	task.spawn(tagOfficer, m)
+end
+
+local trafficLights: { Model } = {}
+do
+	local world = workspace:WaitForChild("World", 10)
+	local props = world and world:FindFirstChild("StreetProps")
+	for _, m in (if props then props:GetChildren() else {}) do
+		if m:IsA("Model") and m.Name == "TrafficLight" then
+			table.insert(trafficLights, m)
+		end
+	end
+end
+local function refreshTrafficLights()
+	local phase = math.floor(workspace:GetServerTimeNow()) % 16
+	local lamp = if phase < 8 then "LampGreen" elseif phase < 10 then "LampAmber" else "LampRed"
+	for _, m in trafficLights do
+		for _, n in { "LampRed", "LampAmber", "LampGreen" } do
+			local p = m:FindFirstChild(n)
+			if p and p:IsA("BasePart") then
+				p.Transparency = if n == lamp then 0 else 0.75
+			end
+		end
+	end
+end
+
 ---------------------------------------------------------------- the loops
 local function hudStep()
 	local team = myTeam()
@@ -1006,12 +1652,22 @@ local function hudStep()
 	local driving = myCar ~= nil
 	local police = myCar and myCar:GetAttribute("Police") == true
 	local cop = team == "Police"
+	local jailed = (player:GetAttribute("JailUntil") or 0) > workspace:GetServerTimeNow()
+	local civ = team == "Civilian"
+	local equipped = player:GetAttribute("Equipped") or ""
 	taserBtn.Visible = cop and not car
 	carBtn.Visible = cop and not car
-	suvBtn.Visible = cop and not car
-	local rankIdx = player:GetAttribute("RankIndex") or 1
-	local suvRank = Data.CARS.Interceptor.rank or 1
-	suvBtn.Text = if rankIdx >= suvRank then "SUV" else "SUV 🔒"
+	if not carBtn.Visible then
+		carMenu.Visible = false
+	end
+	local owned = player:GetAttribute("OwnedCars") or ""
+	myCarBtn.Visible = civ and not car and not jailed and owned ~= ""
+	gunBtn.Visible = not car and not jailed and (cop or (civ and player:GetAttribute("HasPistol") == true))
+	gunBtn.Text = if equipped == "" then "GUN" else string.upper(equipped)
+	gunBtn.BackgroundColor3 = if equipped == "" then Color3.fromRGB(70, 70, 78) else Color3.fromRGB(150, 110, 40)
+	fireBtn.Visible = gunBtn.Visible and equipped ~= ""
+	local ammo = player:GetAttribute("Ammo") or 0
+	ammoLbl.Text = if ammo < 0 then "RELOAD" else tostring(ammo)
 	lightsBtn.Visible = driving and police == true
 	sirenBtn.Visible = driving and police == true
 	hornBtn.Visible = driving
@@ -1030,10 +1686,47 @@ local function hudStep()
 		if chassis then
 			speedLbl.Text = tostring(math.floor(chassis.AssemblyLinearVelocity.Magnitude * 0.62))
 		end
+		if chassis then
+			limitLbl.Text = ("LIMIT %d"):format(Data.speedLimit(chassis.Position))
+		end
 		local hp = (car:GetAttribute("Health") or 100) / (car:GetAttribute("MaxHealth") or 100)
 		hpFill.Size = UDim2.fromScale(math.clamp(hp, 0, 1), 1)
 		hpFill.BackgroundColor3 = if hp > 0.5 then Color3.fromRGB(90, 230, 110) elseif hp > 0.2 then Color3.fromRGB(255, 190, 60)
 			else Color3.fromRGB(255, 70, 60)
+	end
+	-- radar (police cars)
+	radarLbl.Visible = false
+	if myCar and police then
+		local range = if player:GetAttribute("Dept") == "Traffic" then 320 else 220
+		local target = nearbyCarAhead(myCar, range)
+		local tch = target and target:FindFirstChild("Chassis") :: BasePart?
+		if tch then
+			local mph = math.floor(Vector3.new(tch.AssemblyLinearVelocity.X, 0, tch.AssemblyLinearVelocity.Z).Magnitude * Data.MPH)
+			local limit = Data.speedLimit(tch.Position)
+			radarLbl.Visible = true
+			radarLbl.Text = ("RADAR  %d MPH  ·  %s"):format(mph, target:GetAttribute("Plate") or "NO PLATE")
+			radarLbl.TextColor3 = if mph > limit + 8 then Color3.fromRGB(255, 90, 80) else Color3.fromRGB(120, 255, 140)
+		end
+	end
+	-- job / loot line
+	local loot = player:GetAttribute("Loot") or 0
+	local job = player:GetAttribute("Job") or ""
+	if loot > 0 then
+		infoLbl.Visible = true
+		infoLbl.Text = ("LOOT %s · lose the cops or stash it at JOE'S SCRAP"):format(Data.money(loot))
+		infoLbl.TextColor3 = Color3.fromRGB(255, 200, 90)
+	elseif job ~= "" then
+		local deadline = player:GetAttribute("JobDeadline") or 0
+		local left = deadline - workspace:GetServerTimeNow()
+		local target = player:GetAttribute("JobTarget") or Vector3.zero
+		local dist = if hrp then math.floor((Vector3.new(hrp.Position.X, 0, hrp.Position.Z) - target).Magnitude * 0.28) else 0
+		infoLbl.Visible = true
+		infoLbl.Text = ("%s · %d m%s"):format(player:GetAttribute("JobText") or job, dist,
+			if deadline > 0 then (if left > 0 then ("  ·  %d:%02d"):format(math.floor(left / 60), math.floor(left % 60)) else "  ·  LATE")
+			else "")
+		infoLbl.TextColor3 = Color3.fromRGB(190, 255, 210)
+	else
+		infoLbl.Visible = false
 	end
 	-- jail
 	local jailUntil = player:GetAttribute("JailUntil") or 0
@@ -1055,8 +1748,10 @@ local function hudStep()
 			dot(i, c.x, c.z, if c.id == gpsCall then Color3.fromRGB(255, 255, 255) else Color3.fromRGB(255, 60, 60), pulse)
 		end
 	end
+	local wantedMe = (player:GetAttribute("Wanted") or 0) > 0
 	for model, fx in carFx do
-		if model:GetAttribute("Police") and (model:GetAttribute("Driver") or 0) ~= 0 then
+		local isCop = model:GetAttribute("Police") and ((model:GetAttribute("Driver") or 0) ~= 0 or model:GetAttribute("AIPolice"))
+		if isCop and (cop or (wantedMe and hrp and (fx.chassis.Position - hrp.Position).Magnitude < 350)) then
 			i += 1
 			local p = fx.chassis.Position
 			dot(i, p.X, p.Z, Color3.fromRGB(80, 140, 255), 6)
@@ -1065,7 +1760,7 @@ local function hudStep()
 	if cop then
 		for _, other in Players:GetPlayers() do
 			local ohrp = other ~= player and other.Character and other.Character:FindFirstChild("HumanoidRootPart")
-			if ohrp and other:GetAttribute("Team") == "Criminal" and (other:GetAttribute("Wanted") or 0) > 0 then
+			if ohrp and other:GetAttribute("Team") == "Civilian" and (other:GetAttribute("Wanted") or 0) > 0 then
 				i += 1
 				dot(i, ohrp.Position.X, ohrp.Position.Z, ORANGE, 7)
 			end
@@ -1099,6 +1794,15 @@ local function hudStep()
 			end
 		end
 		setGps(Vector3.new(pick.x, 0, pick.z), pick.kind, Color3.fromRGB(255, 70, 60))
+	elseif not cop and loot > 0 then
+		setGps(Data.HIDEOUT, "JOE'S SCRAP", ORANGE)
+	elseif not cop and job ~= "" then
+		setGps(player:GetAttribute("JobTarget") or Vector3.zero, if job == "Pizza" then "DELIVERY" else "TAXI", GREEN)
+	elseif menuGps then
+		setGps(menuGps.pos, menuGps.text, Color3.fromRGB(120, 200, 255))
+		if hrp and (Vector3.new(hrp.Position.X, 0, hrp.Position.Z) - Vector3.new(menuGps.pos.X, 0, menuGps.pos.Z)).Magnitude < 20 then
+			menuGps = nil
+		end
 	else
 		setGps(nil)
 	end
@@ -1129,6 +1833,9 @@ task.spawn(function()
 			refreshSuspects()
 			hudStep()
 			refreshStars()
+			refreshPlaces()
+			refreshGuns()
+			refreshTrafficLights()
 		end)
 		if not ok then
 			warn("[P9] hud: " .. tostring(err))

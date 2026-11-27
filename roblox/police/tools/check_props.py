@@ -46,6 +46,8 @@ LinearVelocity ForceLimitsEnabled ForceLimitMode VelocityConstraintMode Relative
 AlignOrientation Mode MaxTorque Responsiveness CFrame|Smoke Color Size RiseVelocity Opacity
 SurfaceGui Face SizingMode PixelsPerStud|Team TeamColor AutoAssignable|Part CustomPhysicalProperties Massless
 BillboardGui StudsOffset MaxDistance AlwaysOnTop|TextButton AutoButtonColor TextScaled
+ProximityPrompt ActionText HoldDuration Enabled UIOffset|PointLight Brightness Color|TextLabel RichText
+Humanoid Health WalkSpeed Sit|Part AssemblyLinearVelocity Massless|WeldConstraint Part0 Part1
 """
 for group in direct.replace("\n", "|").split("|"):
     words = group.split()

@@ -1,4 +1,5 @@
 -- Wires Precinct 9 to the world: teams, characters (uniforms, name tags), remotes, the game loops, day and night.
+-- Game rules live in P9Game and the modules it loads (P9World, P9AiCops, P9Traffic, P9Economy).
 
 local Players = game:GetService("Players")
 local Teams = game:GetService("Teams")
@@ -29,13 +30,17 @@ local Arrest = remote("Arrest") -- target model
 local Notify = remote("Notify")
 local Knock = remote("Knock")
 local Fx = remote("Fx")
+local Equip = remote("Equip") -- gun name or ""
+local Fire = remote("Fire") -- aim direction
+local Action = remote("Action") -- (name, ...) shops, jobs, robberies, jailbreaks, departments, traffic stops
+local StopInfo = remote("StopInfo") -- server -> client: the traffic-stop panel
 
 -- teams
 local teamObjs = {}
 for key, info in Data.TEAMS do
 	local t = Instance.new("Team")
-	t.Name = if key == "Criminal" then "Criminals" else "Police"
-	t.TeamColor = if key == "Police" then BrickColor.new("Really blue") else BrickColor.new("Deep orange")
+	t.Name = if key == "Civilian" then "Civilians" else "Police"
+	t.TeamColor = if key == "Police" then BrickColor.new("Really blue") else BrickColor.new("Sea green")
 	t.AutoAssignable = false
 	t.Parent = Teams
 	teamObjs[key] = t
@@ -47,9 +52,14 @@ G.notify = function(player, text, sound)
 		Notify:FireClient(player, text, sound)
 	end
 end
-G.knock = function(player, dir, seconds)
+G.knock = function(player, dir, seconds, force)
 	if Profile.isPlayer(player) then
-		Knock:FireClient(player, dir, seconds)
+		Knock:FireClient(player, dir, seconds, force)
+	end
+end
+G.stopInfo = function(player, info)
+	if Profile.isPlayer(player) then
+		StopInfo:FireClient(player, info)
 	end
 end
 G.fx = function(kind, ...)
@@ -134,16 +144,6 @@ local function gearUp(player: Player, char: Model, team: string)
 		brim.Color = Color3.fromRGB(20, 22, 30)
 		weldTo(brim, head, CFrame.new(0, head.Size.Y * 0.3, -head.Size.Z * 0.6))
 		brim.Parent = char
-	else
-		-- a dark beanie
-		local beanie = Instance.new("Part")
-		beanie.Name = "Beanie"
-		beanie.Shape = Enum.PartType.Ball
-		beanie.Size = Vector3.one * head.Size.X * 1.05
-		beanie.Color = Color3.fromRGB(40, 40, 46)
-		beanie.Material = Enum.Material.Fabric
-		weldTo(beanie, head, CFrame.new(0, head.Size.Y * 0.28, 0.02))
-		beanie.Parent = char
 	end
 	-- overhead tag: name, plus rank (police) or wanted stars (criminals)
 	local tag = Instance.new("BillboardGui")
@@ -174,15 +174,20 @@ local function gearUp(player: Player, char: Model, team: string)
 	sub.Parent = tag
 	local function refresh()
 		if team == "Police" then
-			sub.Text = player:GetAttribute("Rank") or "Cadet"
+			local dept = player:GetAttribute("Dept") or "Patrol"
+			sub.Text = (player:GetAttribute("Rank") or "Cadet") .. (if dept ~= "Patrol" then " · " .. dept else "")
 		else
 			local stars = player:GetAttribute("Wanted") or 0
-			sub.Text = if stars > 0 then string.rep("★", stars) else ""
+			local job = player:GetAttribute("Job") or ""
+			sub.Text = if stars > 0 then string.rep("★", stars) elseif job == "Pizza" then "Pizza Delivery"
+				elseif job == "Taxi" then "Taxi Driver" else ""
+			sub.TextColor3 = if stars > 0 then Color3.fromRGB(255, 80, 60) else Color3.fromRGB(200, 255, 210)
 		end
 	end
 	refresh()
-	player:GetAttributeChangedSignal("Wanted"):Connect(refresh)
-	player:GetAttributeChangedSignal("Rank"):Connect(refresh)
+	for _, a in { "Wanted", "Rank", "Dept", "Job" } do
+		player:GetAttributeChangedSignal(a):Connect(refresh)
+	end
 	tag.Parent = head
 end
 
@@ -269,6 +274,57 @@ end)
 Arrest.OnServerEvent:Connect(function(player, target)
 	if typeof(target) == "Instance" and throttle(player, 0.3) then
 		G.arrest(player, target)
+	end
+end)
+Equip.OnServerEvent:Connect(function(player, gun)
+	if type(gun) == "string" and throttle(player, 0.2) then
+		G.equip(player, gun)
+	end
+end)
+Fire.OnServerEvent:Connect(function(player, aim)
+	if typeof(aim) == "Vector3" then
+		G.fire(player, aim)
+	end
+end)
+local actions = {
+	rob = function(player, id, phase)
+		return type(id) == "string" and (phase == "begin" or phase == "finish") and G.rob(player, id, phase)
+	end,
+	lockpick = function(player, phase)
+		return (phase == "begin" or phase == "finish") and G.lockpick(player, phase)
+	end,
+	breach = function(player, phase)
+		return (phase == "begin" or phase == "finish") and G.breach(player, phase)
+	end,
+	buyGun = function(player)
+		return G.buyGun(player)
+	end,
+	buyCar = function(player, kind)
+		return type(kind) == "string" and G.buyCar(player, kind)
+	end,
+	myCar = function(player, kind)
+		return type(kind) == "string" and G.spawnOwned(player, kind)
+	end,
+	startJob = function(player, name)
+		return type(name) == "string" and G.startJob(player, name)
+	end,
+	quitJob = function(player)
+		G.quitJob(player)
+	end,
+	dept = function(player, name)
+		return type(name) == "string" and G.setDept(player, name)
+	end,
+	stop = function(player, model, what)
+		return typeof(model) == "Instance" and type(what) == "string" and G.trafficStop(player, model, what)
+	end,
+}
+Action.OnServerEvent:Connect(function(player, name, a, b)
+	local f = type(name) == "string" and actions[name]
+	if f and throttle(player, 0.15) then
+		local ok, err = pcall(f, player, a, b)
+		if not ok then
+			warn("[Precinct9] action " .. name .. ": " .. tostring(err))
+		end
 	end
 end)
 Players.PlayerRemoving:Connect(function(p)

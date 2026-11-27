@@ -1,12 +1,15 @@
 -- P9Game: the rules of Precinct 9 (server).
---   * Police and Criminal teams. Cops spawn at the station and take a cruiser; criminals spawn at the scrapyard.
+--   * Police and Civilian teams. Cops spawn at the station; civilians at the apartments. Civilians work jobs, buy
+--     cars, or turn to crime (stealing, robbing, running people over) and get wanted stars.
 --   * Cars: the driver's device runs the car's physics (CarPhysics); the server hands over ownership, tracks
 --     damage, lights and sirens. AI getaway drivers run on the server.
 --   * AI suspects: loiterers who bolt when a cop gets close, and stolen cars that flee along the roads. A car that
 --     gets wrecked or boxed in stops, and the driver bails out on foot.
 --   * Taser -> stunned -> Arrest (cuffs) -> escort or put them in your car -> drive into the booking garage.
---   * Player criminals: steal cars (wanted stars), get chased, get tased and arrested -> jail time per star.
+--   * Wanted civilians get chased by police (players and AI police), tased and arrested -> jail time per star.
 --   * 911 dispatch calls follow every active suspect. Pay and experience for police work; ranks.
+-- More systems plug in through hooks: P9World (people, pedestrians, run-overs, guns), P9AiCops, P9Traffic,
+-- P9Economy (robberies, jailbreaks, jobs, dealership, missions, departments).
 -- A "player" may be a real Player or a test stand-in table (UserId, Name, Character, Get/SetAttribute).
 
 local Players = game:GetService("Players")
@@ -28,6 +31,15 @@ G.spots = {} :: { any }
 G.rand = Random.new()
 G.nextCall = 0
 G.nodes, G.edges = Data.roadGraph()
+G.onInit = {} :: { () -> () }
+G.onStep = {} :: { (number, number) -> () }
+G.onSecond = {} :: { (number) -> () }
+G.onPlayerAdded = {} :: { (any) -> () }
+G.onPlayerRemoving = {} :: { (any) -> () }
+G.onJailed = {} :: { (any) -> () }
+G.extraCops = {} :: { [any]: any } -- AI officers (P9AiCops): { pos = Vector3, lights = boolean }
+G.onEscaped = {} :: { (any) -> () }
+G.aiSteppers = {} :: { [string]: (any, number, number) -> () } -- AI car brains by kind (getaway is built in)
 -- hooks set by the server script (no-ops in tests)
 G.notify = function(_player, _text: string, _sound: string?) end
 G.fx = function(_kind: string, ...) end
@@ -41,6 +53,7 @@ local cells: { BasePart } = {}
 local bookingZone: BasePart?
 local copSpawn: BasePart?
 local hideoutSpawn: BasePart?
+local civSpawn: BasePart?
 local policeSpots: { BasePart } = {}
 local rayParams = RaycastParams.new()
 rayParams.FilterType = Enum.RaycastFilterType.Exclude
@@ -55,6 +68,7 @@ local function humOf(actor): Humanoid?
 	local char = actor and actor.Character
 	return char and char:FindFirstChildOfClass("Humanoid")
 end
+G.humOf = humOf
 function G.nameOf(player): string
 	return player.DisplayName or player.Name or "Someone"
 end
@@ -99,6 +113,11 @@ function G.cops(): { { player: any, pos: Vector3, lights: boolean } }
 			end
 		end
 	end
+	for _, c in G.extraCops do
+		if c.pos then
+			table.insert(list, { player = nil, pos = c.pos, lights = c.lights == true, ai = c })
+		end
+	end
 	return list
 end
 
@@ -113,6 +132,27 @@ local function nearestCop(pos: Vector3): (any, number)
 	return best, bestD
 end
 G.nearestCop = nearestCop
+
+-- overridden by P9Economy: daily mission progress and department pay bonuses
+G.progress = function(_player, _id: string, _n: number) end
+G.payMult = function(_player, _kind: string): number
+	return 1
+end
+
+-- pay an officer (or anyone) for work: department bonus, a message, and promotions
+function G.pay(player, kind: string, cash: number, xp: number, text: string, sound: string?)
+	if not player or not G.players[player] then
+		return
+	end
+	local m = G.payMult(player, kind)
+	cash = math.floor(cash * m)
+	local up = Profile.give(player, cash, xp)
+	G.notify(player, ("%s  +%s%s"):format(text, Data.money(cash), if xp > 0 then ("  +%d XP"):format(xp) else ""),
+		sound or "Cash")
+	if up then
+		G.notify(player, "PROMOTED to " .. (player:GetAttribute("Rank") or "") .. "!", "Promotion")
+	end
+end
 
 ---------------------------------------------------------------- dispatch calls
 function G.newCall(kind: string, target, stars: number)
@@ -143,6 +183,7 @@ function G.publishCalls()
 		if t and t.model and t.model.Parent then
 			pos = t.model:GetPivot().Position
 		end
+		pos = pos or call.pos
 		if pos then
 			table.insert(list, { id = call.id, kind = call.kind, x = math.floor(pos.X), z = math.floor(pos.Z), stars = call.stars })
 		end
@@ -165,24 +206,35 @@ function G.addPlayer(player)
 		driving = nil,
 		policeCar = nil,
 		escorting = {},
+		loot = 0,
+		lastHitBy = nil,
 	}
 	player:SetAttribute("Team", "")
 	player:SetAttribute("Wanted", 0)
 	player:SetAttribute("JailUntil", 0)
+	player:SetAttribute("Loot", 0)
+	for _, f in G.onPlayerAdded do
+		f(player)
+	end
 	return d
 end
 
 function G.setTeam(player, team: string): boolean
 	local P = G.players[player]
-	if not P or (team ~= "Police" and team ~= "Criminal") then
+	if not P or (team ~= "Police" and team ~= "Civilian") then
 		return false
 	end
 	if P.jailUntil > os.clock() then
 		G.notify(player, "You can't switch teams from jail!", "Error")
 		return false
 	end
+	if P.policeCar and P.policeCar.model.Parent and team ~= "Police" then
+		G.destroyCar(P.policeCar)
+	end
 	P.team = team
 	P.wanted = 0
+	P.loot = 0
+	player:SetAttribute("Loot", 0)
 	player:SetAttribute("Team", team)
 	player:SetAttribute("Wanted", 0)
 	G.setTeamInstance(player, team)
@@ -195,14 +247,14 @@ function G.spawnCFrame(player): CFrame
 	if P and P.jailUntil > os.clock() and P.cell then
 		return P.cell.CFrame + Vector3.new(0, 3, 0)
 	end
-	local base = if P and P.team == "Criminal" then hideoutSpawn elseif P and P.team == "Police" then copSpawn else copSpawn
+	local base = if P and P.team == "Civilian" then civSpawn elseif P and P.team == "Police" then copSpawn else copSpawn
 	local cf = if base then base.CFrame else CFrame.new(Data.STATION + Vector3.new(0, 3, 0))
 	return cf * CFrame.new(G.rand:NextNumber(-4, 4), 3, G.rand:NextNumber(-4, 4))
 end
 
 function G.addWanted(player, n: number, reason: string)
 	local P = G.players[player]
-	if not P or P.team ~= "Criminal" then
+	if not P or P.team ~= "Civilian" or P.cell then
 		return
 	end
 	local before = P.wanted
@@ -237,8 +289,16 @@ function G.jail(player, seconds: number)
 	P.jailUntil = os.clock() + seconds
 	P.wanted = 0
 	P.stunnedUntil = 0
+	if P.loot > 0 then
+		G.notify(player, ("The police took your loot (%s)."):format(Data.money(P.loot)), "Error")
+	end
+	P.loot = 0
+	player:SetAttribute("Loot", 0)
 	player:SetAttribute("Wanted", 0)
 	player:SetAttribute("JailUntil", workspace:GetServerTimeNow() + seconds)
+	for _, f in G.onJailed do
+		f(player)
+	end
 	if P.driving then
 		G.leaveCar(player)
 	end
@@ -274,6 +334,9 @@ function G.removePlayer(player)
 	end
 	for S in P.escorting do
 		G.despawnSuspect(S)
+	end
+	for _, f in G.onPlayerRemoving do
+		f(player)
 	end
 	G.players[player] = nil
 end
@@ -421,7 +484,7 @@ function G.enterCar(player, model: Instance, how: string): boolean
 		if rec.seat.Occupant or rec.ai then
 			return false
 		end
-		if not rec.spec.police and P.team == "Criminal" and rec.owner ~= player then
+		if not rec.spec.police and P.team == "Civilian" and rec.owner ~= player then
 			rec.owner = player
 			rec.model:SetAttribute("Owner", player.UserId)
 			G.addWanted(player, Data.WANTED.stealCar, "Car theft")
@@ -633,11 +696,11 @@ local function animateNpc(model: Model, hum: Humanoid)
 	end)
 end
 
-function G.makeNpc(pos: Vector3, name: string?): (Model?, Humanoid?)
+function G.makeNpc(pos: Vector3, name: string?, look: { shirt: Color3?, pants: Color3? }?): (Model?, Humanoid?)
 	local desc = Instance.new("HumanoidDescription")
 	local skin = SKIN[G.rand:NextInteger(1, #SKIN)]
-	local shirt = SHIRT[G.rand:NextInteger(1, #SHIRT)]
-	local pants = PANTS[G.rand:NextInteger(1, #PANTS)]
+	local shirt = (look and look.shirt) or SHIRT[G.rand:NextInteger(1, #SHIRT)]
+	local pants = (look and look.pants) or PANTS[G.rand:NextInteger(1, #PANTS)]
 	desc.HeadColor = skin
 	desc.LeftArmColor = skin
 	desc.RightArmColor = skin
@@ -775,6 +838,21 @@ function G.stepSuspect(S, t: number)
 		return
 	end
 	local pos = S.hrp.Position
+	if S.armed and (S.state == "flee" or S.state == "robbing") and G.robberShoot then
+		G.robberShoot(S, t)
+	end
+	if S.state == "robbing" then
+		local cop, d = nearestCop(pos)
+		if t >= (S.robEnd or 0) or (cop and d < 30) then
+			setState(S, "flee")
+			S.hum.WalkSpeed = Data.SUSPECTS.footSpeed
+			S.lastCopSeen = t
+			if S.call then
+				S.call.kind = "Armed robber fleeing"
+			end
+		end
+		return
+	end
 	if S.state == "loiter" then
 		local cop, d = nearestCop(pos)
 		if cop and d < Data.SUSPECTS.spotRange then
@@ -799,7 +877,11 @@ function G.stepSuspect(S, t: number)
 			G.despawnSuspect(S)
 		end
 	elseif S.state == "stunned" then
-		if t >= S.stunUntil then
+		if S.down then
+			if t - S.stunUntil > 90 then
+				G.despawnSuspect(S)
+			end
+		elseif t >= S.stunUntil then
 			S.hum.PlatformStand = false
 			setState(S, "flee")
 			S.hum.WalkSpeed = Data.SUSPECTS.footSpeed
@@ -860,11 +942,8 @@ function G.book(S)
 		if d then
 			d.bookings += 1
 		end
-		local up = Profile.give(cop, pay.cash, pay.xp)
-		G.notify(cop, ("Suspect booked! +%s  +%d XP"):format(Data.money(pay.cash), pay.xp), "Cash")
-		if up then
-			G.notify(cop, "PROMOTED to " .. (cop:GetAttribute("Rank") or "") .. "!", "Promotion")
-		end
+		G.pay(cop, "booking", pay.cash, pay.xp, "Suspect booked!")
+		G.progress(cop, "book", 1)
 	end
 end
 
@@ -914,7 +993,7 @@ function G.spawnGetaway(): any
 		return nil
 	end
 	rec.seat:Sit(hum)
-	rec.ai = { mode = "cruise", from = start, to = nextKey, npc = npc, hum = hum, stuckSince = nil }
+	rec.ai = { kind = "getaway", mode = "cruise", from = start, to = nextKey, npc = npc, hum = hum, stuckSince = nil }
 	rec.ai.after = G.aiChoose(rec.ai, nextKey, start, nil)
 	rec.model:SetAttribute("AI", true)
 	rec.model:SetAttribute("Stars", 2)
@@ -955,7 +1034,76 @@ function G.bail(rec)
 end
 
 -- the road an AI driver takes at the junction it arrives at (fleeing drivers pick the road away from the cop)
+-- shortest road route: the first road to take from `at` toward `goal`
+function G.pathNext(at: string, goal: string): string?
+	if at == goal then
+		return nil
+	end
+	local dist, first = { [at] = 0 }, {}
+	local open = { at }
+	while #open > 0 do
+		local bi = 1
+		for i = 2, #open do
+			if dist[open[i]] < dist[open[bi]] then
+				bi = i
+			end
+		end
+		local k = table.remove(open, bi)
+		if k == goal then
+			return first[k]
+		end
+		for _, n in G.edges[k] do
+			local d = dist[k] + (G.nodes[n] - G.nodes[k]).Magnitude
+			if dist[n] == nil or d < dist[n] then
+				if dist[n] == nil then
+					table.insert(open, n)
+				end
+				dist[n] = d
+				first[n] = if k == at then n else first[k]
+			end
+		end
+	end
+	return nil
+end
+
+function G.nearestNode(pos: Vector3): string
+	local best, bestD = nil, math.huge
+	for k, p in G.nodes do
+		local d = (Vector3.new(p.X - pos.X, 0, p.Z - pos.Z)).Magnitude
+		if d < bestD then
+			best, bestD = k, d
+		end
+	end
+	return best :: string
+end
+
+-- the closest point on a road (curb lane) to pos, as a CFrame pointing along the road
+function G.roadSpot(pos: Vector3, lane: number?): CFrame
+	local best, bestD, bestDir = pos, math.huge, Vector3.xAxis
+	for k, list in G.edges do
+		for _, k2 in list do
+			local a, b = G.nodes[k], G.nodes[k2]
+			local ab = b - a
+			local tt = math.clamp((Vector3.new(pos.X, 0, pos.Z) - a):Dot(ab) / ab:Dot(ab), 0.08, 0.92)
+			local p = a + ab * tt
+			local d = (Vector3.new(pos.X, 0, pos.Z) - p).Magnitude
+			if d < bestD then
+				best, bestD, bestDir = p, d, ab.Unit
+			end
+		end
+	end
+	local right = Vector3.new(-bestDir.Z, 0, bestDir.X)
+	local at = best + right * (lane or 9) + Vector3.new(0, 1, 0)
+	return CFrame.lookAt(at, at + bestDir)
+end
+
 function G.aiChoose(ai, at: string, prev: string, cop): string
+	if ai.goal then
+		local nxt = G.pathNext(at, ai.goal)
+		if nxt then
+			return nxt
+		end
+	end
 	local options = {}
 	for _, k in G.edges[at] do
 		if k ~= prev or #G.edges[at] == 1 then
@@ -1046,8 +1194,8 @@ function G.stepAiCar(rec, t: number, dt: number)
 	if rec.model:GetAttribute("Disabled") or (ai.stuckSince and t - ai.stuckSince > Data.SUSPECTS.disabledAfter) then
 		if cop and d < 120 then
 			local pay = Data.PAY.disable
-			Profile.give(cop.player, pay.cash, pay.xp)
-			G.notify(cop.player, ("Vehicle stopped! +%s"):format(Data.money(pay.cash)), "Cash")
+			G.pay(cop.player, "disable", pay.cash, pay.xp, "Vehicle stopped!")
+			G.progress(cop.player, "disable", 1)
 		end
 		G.bail(rec)
 	end
@@ -1089,12 +1237,12 @@ function G.taser(player, aim: Vector3): boolean
 		end
 	end
 	for _, S in G.suspects do
-		if S.state == "loiter" or S.state == "flee" or S.state == "stunned" then
+		if S.state == "loiter" or S.state == "flee" or S.state == "stunned" or S.state == "robbing" then
 			consider(S, S.hrp.Position)
 		end
 	end
 	for other, OP in G.players do
-		if OP.team == "Criminal" and not OP.driving and OP.jailUntil <= t then
+		if OP.team == "Civilian" and OP.wanted > 0 and not OP.driving and not OP.cell then
 			local ohrp = hrpOf(other)
 			if ohrp then
 				consider(other, ohrp.Position)
@@ -1124,6 +1272,32 @@ function G.taser(player, aim: Vector3): boolean
 end
 
 -- cuff a stunned suspect (an AI suspect, or a wanted player)
+-- send a wanted civilian to jail; `by` (an officer player, or nil for AI police) gets the arrest pay
+function G.arrestPlayer(criminal, by): boolean
+	local CP = G.players[criminal]
+	if not CP or CP.wanted <= 0 or CP.cell then
+		return false
+	end
+	local stars = CP.wanted
+	local chrp = hrpOf(criminal)
+	G.jail(criminal, math.max(15, stars * Data.WANTED.jailPerStar))
+	if by and G.players[by] then
+		local pay = Data.PAY.arrestPlayer
+		local d = Profile.data[by]
+		if d then
+			d.arrests += 1
+		end
+		G.pay(by, "arrest", pay.cash * stars, pay.xp * stars, ("You arrested %s (%d stars)!"):format(G.nameOf(criminal), stars),
+			"Cuffs")
+		G.progress(by, "cuff", 1)
+	end
+	if chrp then
+		G.fx("cuffed", chrp.Position)
+	end
+	return true
+end
+
+-- cuff a stunned suspect (an AI suspect, or a wanted player)
 function G.arrest(player, target: Instance): boolean
 	local P = G.players[player]
 	local hrp = hrpOf(player)
@@ -1137,50 +1311,39 @@ function G.arrest(player, target: Instance): boolean
 		end
 		S.by = player
 		P.escorting[S] = true
+		S.down = false
 		S.hum.PlatformStand = false
 		setState(S, "cuffed")
 		S.model:SetAttribute("Officer", player.UserId)
 		if S.call then
 			S.call.kind = "Suspect in custody"
 		end
-		local pay = Data.PAY.arrest
 		local d = Profile.data[player]
 		if d then
 			d.arrests += 1
 		end
-		local up = Profile.give(player, pay.cash, pay.xp)
-		G.notify(player, ("Suspect cuffed! +%s  +%d XP. Walk them into the BOOKING garage or put them in your car."):format(
-			Data.money(pay.cash), pay.xp), "Cuffs")
-		if up then
-			G.notify(player, "PROMOTED to " .. (player:GetAttribute("Rank") or "") .. "!", "Promotion")
+		if S.kind == "robber" then
+			local pay = Data.PAY.robberyStop
+			G.pay(player, "robbery", pay.cash, pay.xp, "Armed robber in cuffs!", "Cuffs")
+			G.progress(player, "robbery", 1)
+		else
+			local pay = Data.PAY.arrest
+			G.pay(player, "arrest", pay.cash, pay.xp, "Suspect cuffed! Walk them to BOOKING or put them in your car.", "Cuffs")
 		end
+		G.progress(player, "cuff", 1)
 		G.fx("cuffed", S.hrp.Position)
 		return true
 	end
 	local criminal = G.playerFromCharacter(target)
 	local CP = criminal and G.players[criminal]
 	local chrp = hrpOf(criminal)
-	if not CP or CP.team ~= "Criminal" or not chrp then
+	if not CP or CP.team ~= "Civilian" or not chrp then
 		return false
 	end
 	if CP.stunnedUntil < os.clock() or CP.wanted <= 0 or (chrp.Position - hrp.Position).Magnitude > Data.ARREST.range + 3 then
 		return false
 	end
-	local stars = CP.wanted
-	G.jail(criminal, math.max(15, stars * Data.WANTED.jailPerStar))
-	local pay = Data.PAY.arrestPlayer
-	local d = Profile.data[player]
-	if d then
-		d.arrests += 1
-	end
-	local up = Profile.give(player, pay.cash * stars, pay.xp * stars)
-	G.notify(player, ("You arrested %s (%d stars)! +%s"):format(G.nameOf(criminal), stars, Data.money(pay.cash * stars)),
-		"Cuffs")
-	if up then
-		G.notify(player, "PROMOTED to " .. (player:GetAttribute("Rank") or "") .. "!", "Promotion")
-	end
-	G.fx("cuffed", chrp.Position)
-	return true
+	return G.arrestPlayer(criminal, player)
 end
 
 ---------------------------------------------------------------- the loops
@@ -1197,7 +1360,7 @@ function G.checkImpact(rec, t: number)
 	G.damageCar(rec, (dv - 25) * 0.9)
 	G.fx("crash", rec.chassis.Position)
 	local P = rec.driver and G.players[rec.driver]
-	if P and P.team == "Criminal" and t >= rec.ramAt then
+	if P and P.team == "Civilian" and t >= rec.ramAt then
 		for _, other in G.cars do
 			if other.spec.police and other ~= rec and (other.chassis.Position - rec.chassis.Position).Magnitude < 14 then
 				rec.ramAt = t + 5
@@ -1213,7 +1376,8 @@ function G.step(dt: number)
 	for _, rec in G.cars do
 		if rec.model.Parent then
 			if rec.ai then
-				G.stepAiCar(rec, t, dt)
+				local brain = G.aiSteppers[rec.ai.kind or "getaway"] or G.stepAiCar
+				brain(rec, t, dt)
 			end
 			if rec.driver or rec.ai or rec.lastVel.Magnitude > 1 then
 				G.checkImpact(rec, t)
@@ -1222,6 +1386,9 @@ function G.step(dt: number)
 	end
 	for _, S in G.suspects do
 		G.stepSuspect(S, t)
+	end
+	for _, f in G.onStep do
+		f(t, dt)
 	end
 end
 
@@ -1241,7 +1408,7 @@ function G.second()
 			end
 		end
 		-- wanted criminals: chased = more stars, unseen = fewer, and evasion pays
-		if P.team == "Criminal" and P.wanted > 0 and P.jailUntil <= t then
+		if P.team == "Civilian" and P.wanted > 0 and not P.cell then
 			local hrp = hrpOf(player)
 			if hrp then
 				local _, d = nearestCop(hrp.Position)
@@ -1264,6 +1431,9 @@ function G.second()
 						if d0 then
 							d0.escapes += 1
 						end
+						for _, f in G.onEscaped do
+							f(player)
+						end
 					end
 				end
 				if t - P.lastEvadePay >= 30 then
@@ -1276,12 +1446,12 @@ function G.second()
 	-- keep the town supplied with suspects
 	local onFoot, inCars = 0, 0
 	for _, S in G.suspects do
-		if S.state == "loiter" or S.state == "flee" or S.state == "stunned" then
+		if not S.kind and (S.state == "loiter" or S.state == "flee" or S.state == "stunned") then
 			onFoot += 1
 		end
 	end
 	for _, rec in G.cars do
-		if rec.ai then
+		if rec.ai and rec.ai.kind == "getaway" then
 			inCars += 1
 		end
 	end
@@ -1308,6 +1478,9 @@ function G.second()
 			spot.nextAt = t + 30
 			spot.car = G.spawnCar(Data.CIVILIAN_CARS[G.rand:NextInteger(1, #Data.CIVILIAN_CARS)], spot.part.CFrame, nil)
 		end
+	end
+	for _, f in G.onSecond do
+		f(t)
 	end
 	G.publishCalls()
 end
@@ -1341,6 +1514,7 @@ function G.init()
 	local blocks = world:FindFirstChild("Blocks")
 	local hide = blocks and blocks:FindFirstChild("Hideout")
 	hideoutSpawn = hide and hide:FindFirstChild("HideoutSpawn")
+	civSpawn = blocks and blocks:FindFirstChild("CivSpawn")
 	local spots = world:FindFirstChild("Spots")
 	for _, s in (if spots then spots:GetChildren() else {}) do
 		if s:IsA("BasePart") and s.Name == "CivSpot" then
@@ -1372,6 +1546,15 @@ function G.init()
 	G.nextFoot = os.clock() + 3
 	G.nextCar = os.clock() + 8
 	workspace:SetAttribute("Calls", "[]")
+	G.world = world
+	G.npcFolder = npcFolder
+	G.carsFolder = carsFolder
+	G.rayParams = rayParams
+	G.cellList = cells
+	G.bookingZone = bookingZone
+	for _, f in G.onInit do
+		f()
+	end
 end
 
 -- police door lettering is added to every spawned car
@@ -1397,5 +1580,10 @@ CollectionService:GetInstanceAddedSignal("Car"):Connect(function(model)
 		end
 	end
 end)
+
+-- the other systems
+for _, name in { "P9World", "P9AiCops", "P9Traffic", "P9Economy" } do
+	require(script.Parent:WaitForChild(name))(G)
+end
 
 return G

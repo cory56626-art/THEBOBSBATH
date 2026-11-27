@@ -3,7 +3,8 @@
 Everything is flat at ground level (roads and sidewalks are paint on the ground) so cars never catch on curbs.
 build_room() -> (map Model, [extra workspace instances]).
   World/Spots: CFrame markers for parked civilian cars ("CivSpot") and police parking ("PoliceSpot")
-  World/Station/BookingZone, World/Jail/Cell1..4, World/Hideout/HideoutSpawn, World/Station/CopSpawn
+  World/Station/BookingZone, World/Jail/Cell1..4, World/Hideout/HideoutSpawn, World/Station/CopSpawn,
+  World/Blocks/CivSpawn (civilians), World/Blocks/GunStore, World/Blocks/TaxiStand
 """
 from __future__ import annotations
 
@@ -197,6 +198,9 @@ def build_station(world, rng):
             box(jail, "Bars", CF(v(jx + 2.2, 6, cz - 4 + b)), (0.25, 12, 0.25), (70, 72, 78), "Metal")
     box(jail, "CellWall", CF(v(jx - 4, 6, jz + 25)), (12, 12, 0.6), (150, 150, 154), "Concrete")
     box(jail, "BackWall", CF(v(jx - 10.3, 6, jz + 5)), (0.6, 12, 40), (150, 150, 154), "Concrete")
+    # the outside of the back wall: a weak, patched section (jailbreaks are breached here)
+    box(jail, "Patch", CF(v(jx - 10.7, 4, jz)), (0.3, 7, 8), (128, 124, 120), "Brick")
+    sign(jail, CF.look(v(jx - 10.9, 9, jz), v(-1, 0, 0)), (8, 1.4, 0.2), "COUNTY JAIL", (60, 62, 70))
     box(jail, "JailRoof", CF(v(jx - 4, 12.3, jz + 5)), (13, 0.6, 41), (60, 62, 70), "Slate")
     box(jail, "Corridor", CF(v(jx + 6, 6, jz + 5)), (0.6, 12, 40), (200, 196, 186), "Concrete")
     world.add(jail)
@@ -325,6 +329,16 @@ def build_room(seed=9):
     sign(gas, CF.look(v(70, 14.6, 72.8), v(0, 0, -1)), (20, 2.4, 0.4), "FUEL & GO", (180, 30, 30))
     paint(gas, "GasLot", 90, 90, 140, 130, LOT, "Asphalt", y=0.09)
     blocks.add(gas)
+    # gun store (civilians buy a pistol here)
+    guns = building(blocks, "GunStore", 55, 142, 34, 22, 12, (120, 110, 100), "Brick", 1, win=(150, 170, 180))
+    sign(guns, CF.look(v(55, 10, 130.6), v(0, 0, -1)), (20, 2.8, 0.4), "IRONSIDE ARMS", (40, 40, 44), (255, 190, 90))
+    box(guns, "Door", CF(v(55, 4, 130.9)), (5, 8, 0.3), (60, 50, 40), "Wood")
+    # taxi stand in the mall lot
+    taxi = Inst("Model", "TaxiStand")
+    box(taxi, "Post", CF(v(206, 4, 84)), (0.5, 8, 0.5), (60, 62, 68), "Metal")
+    sign(taxi, CF.look(v(206, 8.6, 84), v(0, 0, -1)), (5, 1.8, 0.3), "TAXI", (250, 200, 30), (20, 20, 20))
+    box(taxi, "Bench", CF(v(212, 1.2, 86)), (6, 0.4, 1.8), (120, 80, 50), "Wood")
+    blocks.add(taxi)
     # town park (-90, 90)
     park = Inst("Model", "Park")
     paint(park, "Lawn", -90, 90, 134, 134, (96, 160, 80), "Grass", y=0.09)
@@ -378,6 +392,9 @@ def build_room(seed=9):
     paint(blocks, "AptLot", -270, 40, 130, 30, LOT, "Asphalt", y=0.09)
     for i in range(7):
         car_spot(spots, "CivSpot", -320 + i * 16, 40, 0.0)
+    civ = box(blocks, "CivSpawn", CF.look(v(-270, 1, 62), v(0, 0, -1)), (8, 1, 8), (60, 200, 120), collide=False,
+              transparency=1, query=False)
+    civ.meta["hidden"] = True
     # industrial and offices (row z = -270)
     building(blocks, "Offices", -270, -270, 60, 60, 64, (120, 140, 160), "Glass", 12, roof=(80, 84, 92),
              win=(140, 190, 230))

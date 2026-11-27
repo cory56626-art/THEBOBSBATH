@@ -231,11 +231,11 @@ local alice, bob = fake(101, "Alice"), fake(102, "Bob")
 G.addPlayer(alice)
 G.addPlayer(bob)
 check(G.setTeam(alice, "Police") and alice.attrs.Team == "Police", "alice joins the police")
-check(G.setTeam(bob, "Criminal") and bob.attrs.Team == "Criminal", "bob turns to crime")
+check(G.setTeam(bob, "Civilian") and bob.attrs.Team == "Civilian", "bob is a civilian")
 check(not G.setTeam(bob, "Mayor"), "no such team")
 local PA, PB = G.players[alice], G.players[bob]
 check((G.spawnCFrame(alice).Position - Data.STATION).Magnitude < 40, "cops spawn at the station")
-check((G.spawnCFrame(bob).Position - Vector3.new(255, 1, -260)).Magnitude < 12, "criminals spawn at the scrapyard")
+check((G.spawnCFrame(bob).Position - Data.CIV_SPAWN).Magnitude < 12, "civilians spawn at the apartments")
 
 -- police car from the lot
 local cruiser = G.spawnPoliceCar(alice, "Cruiser")
@@ -305,7 +305,8 @@ check(not G.arrest(alice, S.model), "too far to cuff")
 moveTo(alice, S.hrp.Position + Vector3.new(0, 0, 5))
 local before = cash(alice)
 check(G.arrest(alice, S.model), "cuffed")
-check(S.state == "cuffed" and S.by == alice and cash(alice) == before + Data.PAY.arrest.cash, "arrest pays")
+check(S.state == "cuffed" and S.by == alice and cash(alice) == before + math.floor(Data.PAY.arrest.cash * G.payMult(alice, "arrest")),
+	"arrest pays (Patrol bonus)")
 check(not G.arrest(alice, S.model), "can't cuff twice")
 -- walk them to booking
 S.model:PivotTo(CFrame.new(Data.BOOKING + Vector3.new(0, 3, 0)))
@@ -313,7 +314,8 @@ moveTo(alice, Data.BOOKING + Vector3.new(4, 3, 0))
 before = cash(alice)
 G.stepSuspect(S, os.clock())
 check(G.suspects[S.model] == nil and not S.model.Parent, "suspect booked and gone")
-check(cash(alice) == before + Data.PAY.booking.cash and Profile.data[alice].bookings == 1, "booking pays")
+check(cash(alice) == before + math.floor(Data.PAY.booking.cash * G.payMult(alice, "booking")) and Profile.data[alice].bookings == 1,
+	"booking pays")
 check(alice.attrs.Rank == "Officer", "alice made Officer: " .. tostring(alice.attrs.Rank) .. " xp " .. Profile.data[alice].xp)
 check(G.calls[S.call.id] == nil, "call closed")
 
@@ -377,7 +379,7 @@ moveTo(alice, Vector3.new(100, 3, 126))
 before = cash(alice)
 check(G.arrest(alice, bob.Character), "bob arrested")
 check(PB.jailUntil > os.clock() and PB.wanted == 0 and bob.attrs.Wanted == 0 and PB.cell ~= nil, "bob in jail")
-check(cash(alice) == before + Data.PAY.arrestPlayer.cash * 3, "arrest pay per star")
+check(cash(alice) == before + math.floor(Data.PAY.arrestPlayer.cash * 3 * G.payMult(alice, "arrest")), "arrest pay per star")
 check((bob.Character.HumanoidRootPart.Position - PB.cell.Position).Magnitude < 6, "bob is in a cell")
 check(not G.setTeam(bob, "Police"), "no switching teams from jail")
 check((G.spawnCFrame(bob).Position - PB.cell.Position).Magnitude < 6, "respawn in jail")
@@ -447,6 +449,337 @@ check(foot >= 1 and inCars >= 1, "suspects keep spawning: foot " .. foot .. " ca
 for _ = 1, 20 do
 	G.step(1 / 30)
 end
+-- 11. phase 2: people, guns, robberies, AI police, traffic, jobs, shops, missions, departments, jailbreaks
+local stops = {}
+G.stopInfo = function(p, info)
+	table.insert(stops, { who = p, info = info })
+end
+local function reset(p)
+	local P = G.players[p]
+	P.wanted, P.cell, P.jailUntil, P.loot, P.stunnedUntil, P.driving = 0, nil, 0, 0, 0, nil
+	p.attrs.Wanted, p.attrs.JailUntil, p.attrs.Loot = 0, 0, 0
+end
+reset(bob)
+bob.Character:Destroy()
+bob.Character = fake(102, "Bob").Character -- the old stand-in still counts as seated from the car tests
+for unit in G.units do
+	G.removeUnit(unit)
+end
+G.nextUnitAt = math.huge
+local carol = fake(103, "Carol")
+G.addPlayer(carol)
+G.setTeam(carol, "Civilian")
+local PC = G.players[carol]
+
+-- pedestrians walk the sidewalks
+for _ = 1, 4 do
+	G.second()
+end
+local pedCount = 0
+for _ in G.peds do
+	pedCount += 1
+end
+check(pedCount >= 3, "pedestrians spawn: " .. pedCount)
+local ped
+for _, W in G.peds do
+	ped = W
+	break
+end
+local seesPed = false
+for _, e in G.people() do
+	if e.kind == "ped" then
+		seesPed = true
+	end
+end
+check(seesPed, "people list includes pedestrians")
+
+-- running someone over (a civilian driver): they're knocked down, the driver gets a star
+do
+	civ.driver = bob
+	civ.model:PivotTo(CFrame.new(-45, 1.3, 420))
+	civ.chassis.AssemblyLinearVelocity = Vector3.new(0, 0, -60)
+	local v = civ.chassis.AssemblyLinearVelocity
+	log("velocity set in a session:", v)
+	ped.model:PivotTo(civ.chassis.CFrame * CFrame.new(0, 1.5, -9))
+	ped.state = "walk"
+	G.runOvers(os.clock())
+	if v.Magnitude > 20 then
+		check(ped.state == "knocked", "a pedestrian hit by a car is knocked down: " .. tostring(ped.state))
+		check(PB.wanted == 1 and (fxLog.hit or 0) >= 1, "hit and run: 1 star: " .. PB.wanted)
+	else
+		log("(no velocity in sessions: run-over checked by forcing the hit)")
+		G.damagePerson({ kind = "ped", ref = ped, model = ped.model, hum = ped.hum, hrp = ped.hrp, cop = false, wanted = false }, 30,
+			bob, "car", Vector3.new(0, 20, -30))
+		check(ped.state == "knocked", "a pedestrian hit by a car is knocked down")
+	end
+	civ.driver = nil
+	civ.chassis.AssemblyLinearVelocity = Vector3.zero
+	reset(bob)
+end
+
+-- guns: bob buys a pistol and shoots a pedestrian (assault: 2 stars); cops can't shoot innocents
+do
+	Profile.give(bob, 5000, 0)
+	moveTo(bob, Data.GUN_STORE + Vector3.new(0, 3, 0))
+	check(G.buyGun(bob) and Profile.data[bob].pistol and bob.attrs.HasPistol, "bob buys a pistol")
+	check(not G.buyGun(bob), "can't buy it twice")
+	G.equip(bob, "Pistol")
+	check(bob.attrs.Equipped == "Pistol" and bob.attrs.Ammo == Data.GUNS.Pistol.mag, "pistol equipped")
+	moveTo(bob, Vector3.new(-45, 3, 390))
+	ped.model:PivotTo(CFrame.new(-45, 3, 372))
+	ped.state = "walk"
+	ped.hum.PlatformStand = false
+	check(G.fire(bob, Vector3.new(0, 0, -1)), "bob fires")
+	check(ped.state == "knocked" and PB.wanted == Data.WANTED.assault and bob.attrs.Ammo == Data.GUNS.Pistol.mag - 1,
+		"shooting a pedestrian: knocked down, 2 stars: " .. tostring(ped.state) .. " " .. PB.wanted)
+	check(not G.fire(bob, Vector3.new(0, 0, -1)), "fire rate limit")
+	G.equip(alice, "Pistol")
+	moveTo(alice, Vector3.new(-45, 3, 390))
+	ped.state = "walk"
+	ped.hum.PlatformStand = false
+	PA.lastShot = -100
+	G.fire(alice, Vector3.new(0, 0, -1))
+	check(ped.state ~= "knocked", "cops can't shoot people who aren't wanted (they just panic): " .. ped.state)
+	check(not G.ownsGun(alice, "Rifle"), "rifle is SWAT only")
+	G.equip(alice, "")
+	reset(bob)
+end
+
+-- robbery: hold at the store, loot, stars, a call the AI police answer; escaping banks the loot
+do
+	moveTo(bob, Data.ROBBERIES[2].pos + Vector3.new(0, 3, 2))
+	check(G.rob(bob, "gas", "begin"), "robbery starts")
+	check(not G.rob(bob, "gas", "finish"), "too quick: the hold has to finish")
+	G.rob(bob, "gas", "begin")
+	task.wait(Data.ROBBERIES[2].time * 0.85)
+	check(G.rob(bob, "gas", "finish"), "robbery done")
+	check(PB.loot > 0 and bob.attrs.Loot == PB.loot and PB.wanted == Data.ROBBERIES[2].stars, "loot and stars: "
+		.. PB.loot .. " " .. PB.wanted)
+	local robCall
+	for _, c in G.calls do
+		if c.kind:find("Robbery at") then
+			robCall = c
+		end
+	end
+	check(robCall and robCall.aiRespond and robCall.pos, "robbery call for the AI police")
+	check(not G.rob(bob, "gas", "begin"), "store cooldown")
+	-- lose the cops: stars drop to 0 and the loot is banked
+	local loot = PB.loot
+	local before0 = cash(bob)
+	moveTo(alice, Vector3.new(-400, 3, -400))
+	moveTo(bob, Vector3.new(400, 3, 400))
+	for _ = 1, PB.wanted do
+		PB.lastSeen = os.clock() - Data.WANTED.decayEvery - 1
+		G.second()
+	end
+	check(PB.wanted == 0 and PB.loot == 0 and cash(bob) >= before0 + loot, "escaped: loot banked " .. cash(bob) - before0)
+end
+
+-- AI robbery: an armed robber shoots at officers; a cop downs and cuffs them
+do
+	G.nextRobbery = math.huge
+	local R0 = nil
+	for _ = 1, 3 do
+		moveTo(bob, Vector3.new(400, 3, 400))
+		moveTo(carol, Vector3.new(400, 3, 420))
+		moveTo(alice, Vector3.new(-400, 3, -400))
+		R0 = G.spawnRobbery()
+		if R0 then
+			break
+		end
+	end
+	check(R0 ~= nil and R0.kind == "robber" and R0.armed and R0.state == "robbing", "AI armed robbery")
+	if R0 then
+		local stand
+		for _, off in { Vector3.new(0, 0, 20), Vector3.new(0, 0, -20), Vector3.new(20, 0, 0), Vector3.new(-20, 0, 0) } do
+			if G.lineOfFire(R0.hrp.Position + Vector3.new(0, 1.5, 0), R0.hrp.Position + off, { R0.model, G.carsFolder }) then
+				stand = R0.hrp.Position + off
+				break
+			end
+		end
+		moveTo(alice, stand)
+		R0.nextShot = 0
+		local shots = fxLog.shot or 0
+		G.robberShoot(R0, os.clock())
+		check((fxLog.shot or 0) > shots, "the armed robber shoots at the officer")
+		G.equip(alice, "Pistol")
+		local downed = false
+		for _ = 1, 12 do
+			PA.lastShot = -100
+			PA.reloadUntil = 0
+			G.fire(alice, (R0.hrp.Position - (alice.Character.HumanoidRootPart.Position + Vector3.new(0, 1.5, 0))).Unit)
+			if R0.down then
+				downed = true
+				break
+			end
+		end
+		check(downed and R0.state == "stunned", "robber shot down (no kill): " .. tostring(R0.hum.Health))
+		moveTo(alice, R0.hrp.Position + Vector3.new(0, 0, 4))
+		local b0 = cash(alice)
+		check(G.arrest(alice, R0.model) and cash(alice) > b0, "downed robber cuffed, robbery pay")
+		G.despawnSuspect(R0)
+		G.equip(alice, "")
+	end
+end
+
+-- AI police chase a wanted player, get out, taser and arrest them
+do
+	reset(bob)
+	moveTo(bob, Vector3.new(180, 3, 40))
+	moveTo(alice, Vector3.new(-400, 3, -400))
+	G.addWanted(bob, 2, "Test")
+	local unit = G.spawnUnit(G.roadSpot(Vector3.new(180, 0, -60), 7))
+	check(unit ~= nil and unit.rec.ai.kind == "cop", "AI police unit spawned")
+	if unit then
+		G.second()
+		check(unit.target and unit.target.ref == bob and unit.state == "pursuit", "AI unit assigned to the wanted player")
+		G.step(1 / 30)
+		check(unit.rec.model:GetAttribute("Lights") == true and unit.rec.drive.VectorVelocity.Magnitude > 0,
+			"pursuit: lights on, driving")
+		-- bob is on foot right next to the cruiser
+		moveTo(bob, unit.rec.chassis.Position + Vector3.new(14, 2, 0))
+		G.step(1 / 30)
+		check(unit.state == "foot", "officer gets out: " .. unit.state)
+		local arrested = false
+		for _ = 1, 20 do
+			unit.lastTaser = -100
+			moveTo(bob, unit.hrp.Position + Vector3.new(5, 0, 0))
+			G.nextFootStep = 0
+			G.step(1 / 30)
+			if PB.cell then
+				arrested = true
+				break
+			end
+		end
+		check(arrested and PB.wanted == 0, "AI officer tased and arrested bob")
+		G.removeUnit(unit)
+	end
+	reset(bob)
+	moveTo(bob, Vector3.new(400, 3, 400))
+end
+
+-- traffic: pull-over, ID check, tickets and warrant arrests
+do
+	local tr
+	for _ = 1, 5 do
+		tr = G.spawnTraffic()
+		if tr then
+			break
+		end
+	end
+	check(tr ~= nil and tr.ai.kind == "traffic" and tr.model:GetAttribute("Plate") ~= nil, "traffic car with a plate")
+	if tr then
+		tr.ai.warrant = false
+		tr.ai.expired = true
+		cruiser.model:PivotTo(tr.chassis.CFrame * CFrame.new(0, 0, 30))
+		cruiser.driver = alice
+		cruiser.model:SetAttribute("Lights", true)
+		G.aiSteppers.traffic(tr, os.clock(), 1)
+		G.aiSteppers.traffic(tr, os.clock(), 1)
+		check(tr.ai.mode == "pulling", "the driver pulls over for the lights: " .. tr.ai.mode)
+		cruiser.driver = nil
+		cruiser.model:SetAttribute("Lights", false)
+		tr.ai.mode = "stopped"
+		tr.ai.stoppedAt = os.clock()
+		tr.model:SetAttribute("Stopped", true)
+		moveTo(alice, tr.chassis.Position + Vector3.new(-6, 2, 0))
+		check(not G.trafficStop(alice, tr.model, "ticket"), "check the driver first")
+		check(G.trafficStop(alice, tr.model, "check") and #stops == 1 and stops[1].info.plate == tr.ai.plate, "ID check")
+		local b0 = cash(alice)
+		G.trafficStop(alice, tr.model, "ticket")
+		check(cash(alice) > b0 and tr.ai.mode == "cruise", "ticket for expired registration, car moves on")
+		-- warrant
+		tr.ai.warrant = true
+		tr.ai.mode = "stopped"
+		tr.ai.stoppedAt = os.clock()
+		G.trafficStop(alice, tr.model, "check")
+		G.trafficStop(alice, tr.model, "arrest")
+		local cuffed = false
+		for _, S in G.suspects do
+			if S.by == alice and S.state == "cuffed" then
+				cuffed = true
+			end
+		end
+		check(cuffed and tr.ai == nil, "warrant: the driver is cuffed")
+	end
+end
+
+-- jobs: pizza delivery and taxi
+do
+	reset(bob)
+	moveTo(bob, Data.JOBS.Pizza.start + Vector3.new(0, 3, 0))
+	check(G.startJob(bob, "Pizza") and bob.attrs.Job == "Pizza" and PB.job.car ~= nil, "pizza job with a delivery car")
+	check(PB.job.car.owner == bob, "the delivery car is yours (not stolen)")
+	local b0 = cash(bob)
+	moveTo(bob, PB.job.target + Vector3.new(0, 3, 0))
+	G.second()
+	check(cash(bob) > b0 + 50, "pizza delivered and paid: " .. cash(bob) - b0)
+	G.quitJob(bob)
+	check(bob.attrs.Job == "" and PB.job == nil, "quit job")
+	moveTo(bob, Data.JOBS.Taxi.start + Vector3.new(0, 3, 0))
+	check(G.startJob(bob, "Taxi") and PB.job.passenger ~= nil and PB.job.stage == "pickup", "taxi shift: a passenger waits")
+	local cab = PB.job.car
+	PB.driving = cab.model
+	cab.model:PivotTo(CFrame.new(PB.job.passenger:GetPivot().Position + Vector3.new(6, -1.7, 0)))
+	G.second()
+	check(PB.job.stage == "dropoff", "passenger picked up")
+	b0 = cash(bob)
+	cab.model:PivotTo(CFrame.new(PB.job.target + Vector3.new(0, 1.3, 0)))
+	G.second()
+	check(cash(bob) > b0 and PB.job.stage == "pickup", "fare paid: " .. cash(bob) - b0)
+	PB.driving = nil
+	G.quitJob(bob)
+end
+
+-- dealership and owned cars
+do
+	Profile.give(bob, 2000, 0)
+	moveTo(bob, Data.DEALERSHIP + Vector3.new(0, 3, 5))
+	check(G.buyCar(bob, "Hatchback") and table.find(Profile.data[bob].cars, "Hatchback"), "bought a hatchback")
+	local mine = G.spawnOwned(bob, "Hatchback")
+	check(mine ~= nil and mine.owner == bob and (mine.chassis.Position - Data.DEALERSHIP).Magnitude < 200, "MY CAR spawns nearby")
+end
+
+-- missions and departments
+do
+	G.syncMissions(bob)
+	local list = HttpService:JSONDecode(bob.attrs.Missions)
+	check(#list == 3, "3 daily missions")
+	local m
+	for _, mm in Data.missionsFor("Civilian", Data.dayNumber(os.time())) do
+		if not Profile.data[bob].mdone[mm.id] then
+			m = mm
+			break
+		end
+	end
+	local b0 = cash(bob)
+	G.progress(bob, m.id, m.goal)
+	check(Profile.data[bob].mdone[m.id] and cash(bob) == b0 + m.cash, "mission complete pays")
+	check(not G.setDept(alice, "SWAT"), "SWAT needs Sergeant")
+	check(G.setDept(alice, "Traffic") and alice.attrs.Dept == "Traffic", "alice joins Traffic")
+	check(G.payMult(alice, "ticket") == 1.5, "Traffic ticket bonus")
+end
+
+-- jailbreaks: picking the lock, and breaching the wall from outside
+do
+	reset(bob)
+	PB.wanted = 1
+	G.jail(bob, 120)
+	check(PB.cell ~= nil, "bob jailed")
+	G.lockpick(bob, "begin")
+	task.wait(12 * 0.85)
+	check(G.lockpick(bob, "finish") and PB.cell == nil and PB.wanted == Data.WANTED.jailbreak, "lock picked: out with 3 stars")
+	reset(bob)
+	PB.wanted = 1
+	G.jail(bob, 120)
+	reset(carol)
+	moveTo(carol, Data.JAIL_BREACH + Vector3.new(0, 3, 0))
+	G.breach(carol, "begin")
+	task.wait(10 * 0.85)
+	check(G.breach(carol, "finish") and PB.cell == nil and PC.wanted == Data.WANTED.jailbreak, "wall breached: bob is out")
+	G.removePlayer(carol)
+end
+
 G.removePlayer(alice)
 check(not cruiser.model.Parent, "leaving returns your cruiser")
 

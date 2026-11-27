@@ -228,15 +228,67 @@ def whoosh():
     return S.norm(out * np.sin(np.pi * t / sec) ** 1.5, 0.6)
 
 
+def gunshot():
+    sec = 1.2
+    t = tt(sec)
+    crack = S.hp(rng.standard_normal(len(t)), 1200) * np.exp(-t / 0.012)
+    body = S.lp(rng.standard_normal(len(t)), 900) * np.exp(-t / 0.06)
+    thump = tone(70, sec, 0.08) * 0.8
+    x = S.norm(crack) * 0.9 + S.norm(body) * 0.8 + thump
+    return S.norm(S.reverb(np.tanh(x * 2.2), 0.9, 0.22, 2500), 0.9)
+
+
+def reload():
+    parts = [(0, click(0.7, 0.06) * 0.8), (0.18, click(0.9, 0.06) * 0.7)]
+    slide = S.bp(rng.standard_normal(int(0.12 * SR)), 1500, 5000) * np.exp(-tt(0.12) / 0.04)
+    parts += [(0.55, slide * 0.5), (0.7, click(1.1, 0.05))]
+    return S.norm(mix(parts, 0.9), 0.65)
+
+
+def impact():
+    sec = 0.5
+    t = tt(sec)
+    hit = S.hp(rng.standard_normal(len(t)), 2500) * np.exp(-t / 0.01)
+    f = 3200 * (1800 / 3200) ** (t / sec)
+    whine = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t / 0.15) * 0.25
+    return S.norm(S.norm(hit) * 0.7 + whine, 0.55)
+
+
+def alarm():
+    sec = 2.6
+    parts = []
+    k = 0
+    while k * 0.055 < sec - 0.3:
+        parts.append((k * 0.055, bell(1450, 0.25) * 0.5))
+        k += 1
+    x = mix(parts, sec)
+    return S.norm(x * np.minimum(1, (sec - tt(sec)) / 0.2), 0.75)
+
+
+def thud():
+    sec = 0.45
+    t = tt(sec)
+    x = S.lp(rng.standard_normal(len(t)), 260) * np.exp(-t / 0.05) + tone(90, sec, 0.06) * 0.6
+    return S.norm(x, 0.8)
+
+
+def doorbell():
+    return S.norm(S.reverb(mix([(0, bell(note("E5"), 1.0)), (0.35, bell(note("C5"), 1.2))], 1.7), 0.5, 0.2), 0.7)
+
+
 def main():
-    items = [("Wail", siren(3.2, 640, 1480, 2, "wail")), ("Yelp", siren(0.34, 700, 1500, 9, "yelp")),
-             ("Engine", engine()), ("Taser", taser()), ("Cuffs", cuffs()), ("Radio", radio()), ("Cash", cash()),
-             ("Crash", crash()), ("Wanted", wanted()), ("Release", release()), ("Promotion", promotion()),
-             ("Error", error()), ("Booked", booked()), ("Door", door()), ("Horn", horn()), ("Chirp", chirp()),
-             ("Whoosh", whoosh())]
-    regions = S.sheet("p9", items)
+    # sheet 1 (approved on Roblox) must stay byte-identical: same sounds, same order, same random draws
+    items1 = [("Wail", siren(3.2, 640, 1480, 2, "wail")), ("Yelp", siren(0.34, 700, 1500, 9, "yelp")),
+              ("Engine", engine()), ("Taser", taser()), ("Cuffs", cuffs()), ("Radio", radio()), ("Cash", cash()),
+              ("Crash", crash()), ("Wanted", wanted()), ("Release", release()), ("Promotion", promotion()),
+              ("Error", error()), ("Booked", booked()), ("Door", door()), ("Horn", horn()), ("Chirp", chirp()),
+              ("Whoosh", whoosh())]
+    items2 = [("Gunshot", gunshot()), ("Reload", reload()), ("Impact", impact()), ("Alarm", alarm()), ("Thud", thud()),
+              ("Doorbell", doorbell())]
+    r1 = S.sheet("p9", items1)
+    r2 = S.sheet("p9b", items2)
     with open(os.path.join(S.OUT, "regions.json"), "w") as fh:
-        json.dump({"P9": regions}, fh, indent=1)
+        json.dump({"P9": r1, "P9b": r2}, fh, indent=1)
 
 
 if __name__ == "__main__":

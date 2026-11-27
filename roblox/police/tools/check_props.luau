@@ -8,6 +8,7 @@ do n += 1; local ok = pcall(function() local i = Instance.new("Attachment"); loc
 do n += 1; local ok = pcall(function() local i = Instance.new("Attachment"); local _ = (i :: any).Position end) if not ok then table.insert(bad, "Attachment.Position") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("BillboardGui"); local _ = (i :: any).AlwaysOnTop end) if not ok then table.insert(bad, "BillboardGui.AlwaysOnTop") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("BillboardGui"); local _ = (i :: any).MaxDistance end) if not ok then table.insert(bad, "BillboardGui.MaxDistance") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("BillboardGui"); local _ = (i :: any).Name end) if not ok then table.insert(bad, "BillboardGui.Name") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("BillboardGui"); local _ = (i :: any).Size end) if not ok then table.insert(bad, "BillboardGui.Size") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("BillboardGui"); local _ = (i :: any).StudsOffset end) if not ok then table.insert(bad, "BillboardGui.StudsOffset") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("BillboardGui"); local _ = (i :: any).StudsOffsetWorldSpace end) if not ok then table.insert(bad, "BillboardGui.StudsOffsetWorldSpace") end end
@@ -21,13 +22,17 @@ do n += 1; local ok = pcall(function() local i = Instance.new("Frame"); local _ 
 do n += 1; local ok = pcall(function() local i = Instance.new("Frame"); local _ = (i :: any).BackgroundTransparency end) if not ok then table.insert(bad, "Frame.BackgroundTransparency") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Frame"); local _ = (i :: any).BorderSizePixel end) if not ok then table.insert(bad, "Frame.BorderSizePixel") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Frame"); local _ = (i :: any).ClipsDescendants end) if not ok then table.insert(bad, "Frame.ClipsDescendants") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("Frame"); local _ = (i :: any).LayoutOrder end) if not ok then table.insert(bad, "Frame.LayoutOrder") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Frame"); local _ = (i :: any).Position end) if not ok then table.insert(bad, "Frame.Position") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Frame"); local _ = (i :: any).Size end) if not ok then table.insert(bad, "Frame.Size") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Frame"); local _ = (i :: any).Visible end) if not ok then table.insert(bad, "Frame.Visible") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Frame"); local _ = (i :: any).ZIndex end) if not ok then table.insert(bad, "Frame.ZIndex") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Humanoid"); local _ = (i :: any).DisplayDistanceType end) if not ok then table.insert(bad, "Humanoid.DisplayDistanceType") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("Humanoid"); local _ = (i :: any).Health end) if not ok then table.insert(bad, "Humanoid.Health") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Humanoid"); local _ = (i :: any).PlatformStand end) if not ok then table.insert(bad, "Humanoid.PlatformStand") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Humanoid"); local _ = (i :: any).SeatPart end) if not ok then table.insert(bad, "Humanoid.SeatPart") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("Humanoid"); local _ = (i :: any).Sit end) if not ok then table.insert(bad, "Humanoid.Sit") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("Humanoid"); local _ = (i :: any).WalkSpeed end) if not ok then table.insert(bad, "Humanoid.WalkSpeed") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("LinearVelocity"); local _ = (i :: any).ForceLimitMode end) if not ok then table.insert(bad, "LinearVelocity.ForceLimitMode") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("LinearVelocity"); local _ = (i :: any).ForceLimitsEnabled end) if not ok then table.insert(bad, "LinearVelocity.ForceLimitsEnabled") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("LinearVelocity"); local _ = (i :: any).MaxAxesForce end) if not ok then table.insert(bad, "LinearVelocity.MaxAxesForce") end end
@@ -36,6 +41,7 @@ do n += 1; local ok = pcall(function() local i = Instance.new("LinearVelocity");
 do n += 1; local ok = pcall(function() local i = Instance.new("LinearVelocity"); local _ = (i :: any).VelocityConstraintMode end) if not ok then table.insert(bad, "LinearVelocity.VelocityConstraintMode") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Motor6D"); local _ = (i :: any).Transform end) if not ok then table.insert(bad, "Motor6D.Transform") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Part"); local _ = (i :: any).Anchored end) if not ok then table.insert(bad, "Part.Anchored") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("Part"); local _ = (i :: any).AssemblyLinearVelocity end) if not ok then table.insert(bad, "Part.AssemblyLinearVelocity") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Part"); local _ = (i :: any).CFrame end) if not ok then table.insert(bad, "Part.CFrame") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Part"); local _ = (i :: any).CanCollide end) if not ok then table.insert(bad, "Part.CanCollide") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Part"); local _ = (i :: any).CanQuery end) if not ok then table.insert(bad, "Part.CanQuery") end end
@@ -46,6 +52,7 @@ do n += 1; local ok = pcall(function() local i = Instance.new("Part"); local _ =
 do n += 1; local ok = pcall(function() local i = Instance.new("Part"); local _ = (i :: any).Massless end) if not ok then table.insert(bad, "Part.Massless") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Part"); local _ = (i :: any).Material end) if not ok then table.insert(bad, "Part.Material") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Part"); local _ = (i :: any).Name end) if not ok then table.insert(bad, "Part.Name") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("Part"); local _ = (i :: any).Position end) if not ok then table.insert(bad, "Part.Position") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Part"); local _ = (i :: any).Size end) if not ok then table.insert(bad, "Part.Size") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Part"); local _ = (i :: any).Transparency end) if not ok then table.insert(bad, "Part.Transparency") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("ParticleEmitter"); local _ = (i :: any).Color end) if not ok then table.insert(bad, "ParticleEmitter.Color") end end
@@ -68,9 +75,18 @@ do n += 1; local ok = pcall(function() local i = Instance.new("ProximityPrompt")
 do n += 1; local ok = pcall(function() local i = Instance.new("ProximityPrompt"); local _ = (i :: any).MaxActivationDistance end) if not ok then table.insert(bad, "ProximityPrompt.MaxActivationDistance") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("ProximityPrompt"); local _ = (i :: any).ObjectText end) if not ok then table.insert(bad, "ProximityPrompt.ObjectText") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("ProximityPrompt"); local _ = (i :: any).RequiresLineOfSight end) if not ok then table.insert(bad, "ProximityPrompt.RequiresLineOfSight") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("ProximityPrompt"); local _ = (i :: any).UIOffset end) if not ok then table.insert(bad, "ProximityPrompt.UIOffset") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("ScreenGui"); local _ = (i :: any).Name end) if not ok then table.insert(bad, "ScreenGui.Name") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("ScreenGui"); local _ = (i :: any).ResetOnSpawn end) if not ok then table.insert(bad, "ScreenGui.ResetOnSpawn") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("ScreenGui"); local _ = (i :: any).ZIndexBehavior end) if not ok then table.insert(bad, "ScreenGui.ZIndexBehavior") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("ScrollingFrame"); local _ = (i :: any).AutomaticCanvasSize end) if not ok then table.insert(bad, "ScrollingFrame.AutomaticCanvasSize") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("ScrollingFrame"); local _ = (i :: any).BackgroundTransparency end) if not ok then table.insert(bad, "ScrollingFrame.BackgroundTransparency") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("ScrollingFrame"); local _ = (i :: any).BorderSizePixel end) if not ok then table.insert(bad, "ScrollingFrame.BorderSizePixel") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("ScrollingFrame"); local _ = (i :: any).CanvasSize end) if not ok then table.insert(bad, "ScrollingFrame.CanvasSize") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("ScrollingFrame"); local _ = (i :: any).Position end) if not ok then table.insert(bad, "ScrollingFrame.Position") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("ScrollingFrame"); local _ = (i :: any).ScrollBarThickness end) if not ok then table.insert(bad, "ScrollingFrame.ScrollBarThickness") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("ScrollingFrame"); local _ = (i :: any).Size end) if not ok then table.insert(bad, "ScrollingFrame.Size") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("ScrollingFrame"); local _ = (i :: any).ZIndex end) if not ok then table.insert(bad, "ScrollingFrame.ZIndex") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Smoke"); local _ = (i :: any).Color end) if not ok then table.insert(bad, "Smoke.Color") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Smoke"); local _ = (i :: any).Opacity end) if not ok then table.insert(bad, "Smoke.Opacity") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("Smoke"); local _ = (i :: any).RiseVelocity end) if not ok then table.insert(bad, "Smoke.RiseVelocity") end end
@@ -107,6 +123,7 @@ do n += 1; local ok = pcall(function() local i = Instance.new("TextLabel"); loca
 do n += 1; local ok = pcall(function() local i = Instance.new("TextLabel"); local _ = (i :: any).Font end) if not ok then table.insert(bad, "TextLabel.Font") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("TextLabel"); local _ = (i :: any).LayoutOrder end) if not ok then table.insert(bad, "TextLabel.LayoutOrder") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("TextLabel"); local _ = (i :: any).Position end) if not ok then table.insert(bad, "TextLabel.Position") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("TextLabel"); local _ = (i :: any).RichText end) if not ok then table.insert(bad, "TextLabel.RichText") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("TextLabel"); local _ = (i :: any).Size end) if not ok then table.insert(bad, "TextLabel.Size") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("TextLabel"); local _ = (i :: any).Text end) if not ok then table.insert(bad, "TextLabel.Text") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("TextLabel"); local _ = (i :: any).TextColor3 end) if not ok then table.insert(bad, "TextLabel.TextColor3") end end
@@ -119,6 +136,8 @@ do n += 1; local ok = pcall(function() local i = Instance.new("TextLabel"); loca
 do n += 1; local ok = pcall(function() local i = Instance.new("TextLabel"); local _ = (i :: any).Visible end) if not ok then table.insert(bad, "TextLabel.Visible") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("TextLabel"); local _ = (i :: any).ZIndex end) if not ok then table.insert(bad, "TextLabel.ZIndex") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("UICorner"); local _ = (i :: any).CornerRadius end) if not ok then table.insert(bad, "UICorner.CornerRadius") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("UIGridLayout"); local _ = (i :: any).CellPadding end) if not ok then table.insert(bad, "UIGridLayout.CellPadding") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("UIGridLayout"); local _ = (i :: any).CellSize end) if not ok then table.insert(bad, "UIGridLayout.CellSize") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("UIListLayout"); local _ = (i :: any).FillDirection end) if not ok then table.insert(bad, "UIListLayout.FillDirection") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("UIListLayout"); local _ = (i :: any).HorizontalAlignment end) if not ok then table.insert(bad, "UIListLayout.HorizontalAlignment") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("UIListLayout"); local _ = (i :: any).Padding end) if not ok then table.insert(bad, "UIListLayout.Padding") end end
@@ -136,4 +155,6 @@ do n += 1; local ok = pcall(function() local i = Instance.new("UIStroke"); local
 do n += 1; local ok = pcall(function() local i = Instance.new("VehicleSeat"); local _ = (i :: any).Occupant end) if not ok then table.insert(bad, "VehicleSeat.Occupant") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("VehicleSeat"); local _ = (i :: any).SteerFloat end) if not ok then table.insert(bad, "VehicleSeat.SteerFloat") end end
 do n += 1; local ok = pcall(function() local i = Instance.new("VehicleSeat"); local _ = (i :: any).ThrottleFloat end) if not ok then table.insert(bad, "VehicleSeat.ThrottleFloat") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("WeldConstraint"); local _ = (i :: any).Part0 end) if not ok then table.insert(bad, "WeldConstraint.Part0") end end
+do n += 1; local ok = pcall(function() local i = Instance.new("WeldConstraint"); local _ = (i :: any).Part1 end) if not ok then table.insert(bad, "WeldConstraint.Part1") end end
 return ("checked %d properties; missing: %s"):format(n, if #bad == 0 then "none" else table.concat(bad, ", "))
